@@ -1,5 +1,4 @@
 import Navbar from "./navbar";
-import EmptyPage from "./emptyPage";
 import { Plus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input"
@@ -15,9 +14,10 @@ import { Pill } from 'lucide-react';
 import { Spinner } from "@/components/ui/spinner"
 import { Lock } from "lucide-react"
 import { Fuel } from 'lucide-react';
-import { useEstimateGas, useEstimateFeesPerGas, useAccount,useChainId } from 'wagmi'
+import { useEstimateGas, useEstimateFeesPerGas, useAccount } from 'wagmi'
 import { formatEther, parseEther } from 'viem'
 import { useMemo,useEffect,useState } from "react";
+import ViewCapsuleModal from "@/components/viewCapsuleModal"
 
 export default function Dashboard() {
   const ref = useRef(null)
@@ -30,7 +30,8 @@ export default function Dashboard() {
     fetch("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd")
       .then(res => res.json())
       .then(data=>setEthPrice(data.ethereum.usd))
-  },[])
+  }, [])
+  
   const tx = useMemo(() => {
     if (!openConnectModal || !address) return undefined
     return {
@@ -155,9 +156,11 @@ export default function Dashboard() {
                 <span className="inline-flex rounded-full items-center gap-1 bg-green-100 text-green-600 px-2.5 py-1 text-sm font-medium uppercase">Ready</span>
               </div>
               <div className="px-4 py-2.5 mt-2 flex justify-end">
+                <ViewCapsuleModal title={"Yo Whats up"} date={"2025-02-19"} message={"Hello World"}>
                 <Button className="px-4 py-2 text-white text-xs font-bold rounded-full hover:bg-primary/80 transition-all shadow-md w-full transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer border-0">
                   <span>Open Capsule</span>
-                </Button>
+                  </Button>
+                  </ViewCapsuleModal>
               </div>
             </div>
 
@@ -175,7 +178,7 @@ export default function Dashboard() {
                 </div>
                 <span className="inline-flex rounded-full items-center gap-1 px-2.5 py-1 text-sm font-medium text-yellow-600 bg-yellow-100 uppercase">Open</span>
               </div>
-              <div className="px-4 py-4.5 mt-2 flex justify-start text-xs">
+              <div className="px-4 py-4.5 mt-2 flex justify-start text-sm">
                 <span className="pl-14">Waiting for block confirmation!</span>
               </div>
             </div>
