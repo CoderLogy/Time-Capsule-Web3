@@ -13,4 +13,6 @@ export async function getContract(): Promise<ethers.Contract> {
     return contract;
 }
 
+
+
 //TODO ADD ALL OTHER API FUNCTIONS
