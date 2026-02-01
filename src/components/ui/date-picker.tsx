@@ -54,7 +54,7 @@ export default function DatePicker({
                             buttonClassName
                         )}
                     >
-                        {date ? date.toLocaleDateString() : "Select date"}
+                        {date ? date.toLocaleDateString() : "Select date (MM/DD/YYYY)"}
                         <ChevronDownIcon className="h-4 w-4 opacity-70" />
                     </Button>
                 </PopoverTrigger>

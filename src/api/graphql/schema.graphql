@@ -1,0 +1,8 @@
+type CapsuleEntity @entity {
+  id: ID!
+  owner: Bytes!
+  capsuleIndex: BigInt!
+  unlockDate: BigInt!
+  dataURI: String!
+  opened: Boolean!
+}

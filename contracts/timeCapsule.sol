@@ -17,12 +17,14 @@ contract TimeCapsule {
     event CapsuleCreated(
         address indexed owner,
         uint256 indexed capsuleIndex,
-        uint256 unlockDate
+        uint256 unlockDate,
+        string dataURI
     );
 
     event CapsuleOpened(
         address indexed owner,
-        uint256 indexed capsuleIndex
+        uint256 indexed capsuleIndex,
+        string dataURI
     );
 
     constructor(address payable _feeReceiver, uint256 _capsuleFee) {
@@ -53,10 +55,13 @@ contract TimeCapsule {
             })
         );
 
+        uint256 index = userCapsules[msg.sender].length - 1;
+
         emit CapsuleCreated(
             msg.sender,
-            userCapsules[msg.sender].length - 1,
-            unlockDate
+            index,
+            unlockDate,
+            dataURI  // FIXED: now emitting dataURI
         );
     }
 
@@ -97,6 +102,11 @@ contract TimeCapsule {
         require(!c.opened, "Already opened");
 
         c.opened = true;
-        emit CapsuleOpened(msg.sender, index);
+
+        emit CapsuleOpened(
+            msg.sender,
+            index,
+            c.dataURI  // FIXED: now emitting dataURI
+        );
     }
 }

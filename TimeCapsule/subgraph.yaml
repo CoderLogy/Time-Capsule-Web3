@@ -1,0 +1,29 @@
+specVersion: 1.3.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: TimeCapsule
+    network: sepolia
+    source:
+      address: "0xFf2E2B3C12f2cCA37b6eDC0F57B24698130EB0F8"
+      abi: TimeCapsule
+      startBlock: 10166500
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - CapsuleCreated
+        - CapsuleOpened
+      abis:
+        - name: TimeCapsule
+          file: ./abis/TimeCapsule.json
+      eventHandlers:
+        - event: CapsuleCreated(indexed address,indexed uint256,uint256,string)
+          handler: handleCapsuleCreated
+        - event: CapsuleOpened(indexed address,indexed uint256,string)
+          handler: handleCapsuleOpened
+      file: ./src/time-capsule.ts

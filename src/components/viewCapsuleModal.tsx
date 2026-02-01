@@ -2,7 +2,7 @@ import { Dialog, DialogTitle, DialogHeader, DialogTrigger, DialogContent } from 
 
 type ViewCapsuleModalProps = {
   title: string,
-  date: string,
+  date: number,
   message: string,
   children: React.ReactNode
 }

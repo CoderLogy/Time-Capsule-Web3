@@ -10,7 +10,7 @@ async function main() {
     const user = (await conn.ethers.getSigners())[0];
 
     const feeReceiver = await contract.feeReceiver();
-    const capsuleFee = await contract.capsuleFee();
+    const capsuleFee = BigInt(await contract.capsuleFee());
     console.log("Fee receiver:", feeReceiver);
     console.log("Capsule fee:", conn.ethers.formatEther(capsuleFee), "ETH");
 

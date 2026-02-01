@@ -1,16 +1,36 @@
-import { PinataSDK } from "pinata"
-import "dotenv/config"
+import { PinataSDK } from "pinata";
+import "dotenv/config";
 
 const pinata = new PinataSDK({
-    pinataJwt: process.env.PINATA_JWT,
-    pinataGateway: process.env.PINATA_GATEWAY
-})
+    pinataJwt: process.env.PINATA_JWT!,
+    pinataGateway: process.env.PINATA_GATEWAY!,
+});
 
-async function uploadCapsule(text:string) {
-    const res = await pinata.upload.public.json({
-        message: text,
-        createdAt: Date.now()
-    });
-    console.log( `ipfs://${res.cid}`)
+// -------------------------------------------------------------------
+// Payload type (matches encryptForWallet)
+// -------------------------------------------------------------------
+export interface CapsulePayload {
+    encryptedText: string;
+    encryptedDataKey: string;
+
+    dataIv: string;
+
+    keyIv: string;
+
+    capsuleNonce: string;
+    version: number;
+    //expiresAt: number;
+    createdAt?: number;
 }
-uploadCapsule("hello from other side of world")
+
+// -------------------------------------------------------------------
+// Upload to IPFS
+// -------------------------------------------------------------------
+export async function uploadCapsule(payload: CapsulePayload) {
+    const gateway = process.env.PINATA_GATEWAY!;
+    const res = await pinata.upload.public.json({
+        ...payload
+    });
+
+    return `https://${gateway}/ipfs/${res.cid}`
+}
