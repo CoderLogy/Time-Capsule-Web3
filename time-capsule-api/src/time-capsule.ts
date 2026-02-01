@@ -10,6 +10,7 @@ export function handleCapsuleCreated(event: CapsuleCreatedEvent): void {
   )
   entity.owner = event.params.owner
   entity.capsuleIndex = event.params.capsuleIndex
+  entity.title = event.params.title
   entity.unlockDate = event.params.unlockDate
   entity.dataURI = event.params.dataURI
 
@@ -26,6 +27,7 @@ export function handleCapsuleOpened(event: CapsuleOpenedEvent): void {
   )
   entity.owner = event.params.owner
   entity.capsuleIndex = event.params.capsuleIndex
+  entity.title = event.params.title
   entity.dataURI = event.params.dataURI
 
   entity.blockNumber = event.block.number

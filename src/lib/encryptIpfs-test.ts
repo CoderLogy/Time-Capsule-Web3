@@ -20,7 +20,7 @@ const PLAINTEXT = "hello from other side of world";
 // Payload type (matches encryptForWallet output)
 // -------------------------------------------------------------------
 interface CapsulePayload {
-    encryptedText: string;
+    encryptedMessage: string;
     encryptedDataKey: string;
 
     dataIv: string;
@@ -63,7 +63,7 @@ async function test() {
     // Decrypt
     // ---------------------------------------------------------------
     const decrypted = await decryptForWallet(signer, {
-        encryptedText: ipfsPayload.encryptedText,
+        encryptedMessage: ipfsPayload.encryptedMessage,
         encryptedDataKey: ipfsPayload.encryptedDataKey,
 
         dataIv: ipfsPayload.dataIv,

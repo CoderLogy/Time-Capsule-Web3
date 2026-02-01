@@ -15,6 +15,7 @@ import { formatEther, parseEther } from 'viem'
 import { useMemo, useEffect, useState } from "react";
 import { setSignatureSigner, clearSignatureSigner, deriveMasterKey } from "@/lib/encrypt-decrypt.ts"
 import Cards from "./cards";
+import { createEncryptedCapsule } from "@/lib/createEncryptedCapsule.ts";
 
 export default function Dashboard() {
   const ref = useRef(null)
@@ -23,7 +24,20 @@ export default function Dashboard() {
   const { address } = useAccount()
   const [ethPrice, setEthPrice] = useState<number | null>(null)
   const [signer, setSigner] = useState<ethers.Signer | null>(null);
+  const [title, setTitle] = useState("");
+  const [message, setMessage] = useState("");
+  const [unlockDate, setUnlockDate] = useState<Date | null>(null);
+  const [loading, setLoading] = useState(false);
 
+  const handleCreatCapsule = async () => {
+    if (!unlockDate) return alert("Select Unlock Date")
+    try {
+      setLoading(true);
+      const payload = JSON.stringify({ title, message });
+      const timeStamp = Math.floor(unlockDate.getTime() / 1000)
+      await createEncryptedCapsule(payload,timeStamp)
+    }
+  }
   useEffect(() => {
     let canceled = false;
 
@@ -74,7 +88,7 @@ export default function Dashboard() {
     if (!openConnectModal || !address) return undefined
     return {
       account: address as `0x${string}`,
-      to: "0xFf2E2B3C12f2cCA37b6eDC0F57B24698130EB0F8" as `0x${string}`,
+      to: "0x330b880e6eAD0B2c7C837C3F2cb1B4c5D6D3e733" as `0x${string}`,
       value: parseEther("0.01"),
       chainId: 42161
     }

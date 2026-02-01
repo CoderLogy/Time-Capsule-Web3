@@ -21,8 +21,9 @@ async function main() {
     // Create capsule
     const unlockDate = Math.floor(Date.now() / 1000) + 60;
     const tx = await contract.connect(user).createCapsule(
+        "Title",
         unlockDate,
-        "test",
+        "test message!",
         { value: capsuleFee }
     );
     await tx.wait();

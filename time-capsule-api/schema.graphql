@@ -2,6 +2,7 @@ type CapsuleCreated @entity(immutable: true) {
   id: Bytes!
   owner: Bytes! # address
   capsuleIndex: BigInt! # uint256
+  title: String! # string
   unlockDate: BigInt! # uint256
   dataURI: String! # string
   blockNumber: BigInt!
@@ -13,6 +14,7 @@ type CapsuleOpened @entity(immutable: true) {
   id: Bytes!
   owner: Bytes! # address
   capsuleIndex: BigInt! # uint256
+  title: String! # string
   dataURI: String! # string
   blockNumber: BigInt!
   blockTimestamp: BigInt!

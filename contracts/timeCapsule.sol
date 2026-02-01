@@ -3,8 +3,9 @@ pragma solidity ^0.8.20;
 
 contract TimeCapsule {
     struct Capsule {
+        string title;       // New: title of the capsule
         uint256 unlockDate;
-        string dataURI; // ipfs://... or encrypted payload
+        string dataURI;     // ipfs://... or encrypted payload
         bool opened;
     }
 
@@ -17,6 +18,7 @@ contract TimeCapsule {
     event CapsuleCreated(
         address indexed owner,
         uint256 indexed capsuleIndex,
+        string title,
         uint256 unlockDate,
         string dataURI
     );
@@ -24,6 +26,7 @@ contract TimeCapsule {
     event CapsuleOpened(
         address indexed owner,
         uint256 indexed capsuleIndex,
+        string title,
         string dataURI
     );
 
@@ -37,6 +40,7 @@ contract TimeCapsule {
     // CREATE
     // ------------------------
     function createCapsule(
+        string calldata title,
         uint256 unlockDate,
         string calldata dataURI
     ) external payable {
@@ -49,6 +53,7 @@ contract TimeCapsule {
 
         userCapsules[msg.sender].push(
             Capsule({
+                title: title,
                 unlockDate: unlockDate,
                 dataURI: dataURI,
                 opened: false
@@ -60,8 +65,9 @@ contract TimeCapsule {
         emit CapsuleCreated(
             msg.sender,
             index,
+            title,
             unlockDate,
-            dataURI  // FIXED: now emitting dataURI
+            dataURI
         );
     }
 
@@ -76,21 +82,22 @@ contract TimeCapsule {
         address user,
         uint256 index
     ) external view returns (
+        string memory title,
         uint256 unlockDate,
         string memory dataURI,
         bool opened
     ) {
         Capsule memory c = userCapsules[user][index];
-        return (c.unlockDate, c.dataURI, c.opened);
+        return (c.title, c.unlockDate, c.dataURI, c.opened);
     }
 
     function openCapsule(
         uint256 index
-    ) external view returns (string memory) {
+    ) external view returns (string memory title, string memory dataURI) {
         Capsule memory c = userCapsules[msg.sender][index];
         require(block.timestamp >= c.unlockDate, "Too early");
         require(!c.opened, "Already opened");
-        return c.dataURI;
+        return (c.title, c.dataURI);
     }
 
     // ------------------------
@@ -106,7 +113,8 @@ contract TimeCapsule {
         emit CapsuleOpened(
             msg.sender,
             index,
-            c.dataURI  // FIXED: now emitting dataURI
+            c.title,
+            c.dataURI
         );
     }
 }

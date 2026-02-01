@@ -8,6 +8,7 @@ import {
 export function createCapsuleCreatedEvent(
   owner: Address,
   capsuleIndex: BigInt,
+  title: string,
   unlockDate: BigInt,
   dataURI: string
 ): CapsuleCreated {
@@ -25,6 +26,9 @@ export function createCapsuleCreatedEvent(
     )
   )
   capsuleCreatedEvent.parameters.push(
+    new ethereum.EventParam("title", ethereum.Value.fromString(title))
+  )
+  capsuleCreatedEvent.parameters.push(
     new ethereum.EventParam(
       "unlockDate",
       ethereum.Value.fromUnsignedBigInt(unlockDate)
@@ -40,6 +44,7 @@ export function createCapsuleCreatedEvent(
 export function createCapsuleOpenedEvent(
   owner: Address,
   capsuleIndex: BigInt,
+  title: string,
   dataURI: string
 ): CapsuleOpened {
   let capsuleOpenedEvent = changetype<CapsuleOpened>(newMockEvent())
@@ -54,6 +59,9 @@ export function createCapsuleOpenedEvent(
       "capsuleIndex",
       ethereum.Value.fromUnsignedBigInt(capsuleIndex)
     )
+  )
+  capsuleOpenedEvent.parameters.push(
+    new ethereum.EventParam("title", ethereum.Value.fromString(title))
   )
   capsuleOpenedEvent.parameters.push(
     new ethereum.EventParam("dataURI", ethereum.Value.fromString(dataURI))

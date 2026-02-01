@@ -19,11 +19,13 @@ describe("Describe entity assertions", () => {
   beforeAll(() => {
     let owner = Address.fromString("0x0000000000000000000000000000000000000001")
     let capsuleIndex = BigInt.fromI32(234)
+    let title = "Example string value"
     let unlockDate = BigInt.fromI32(234)
     let dataURI = "Example string value"
     let newCapsuleCreatedEvent = createCapsuleCreatedEvent(
       owner,
       capsuleIndex,
+      title,
       unlockDate,
       dataURI
     )
@@ -52,6 +54,12 @@ describe("Describe entity assertions", () => {
       "0xa16081f360e3847006db660bae1c6d1b2e17ec2a-1",
       "capsuleIndex",
       "234"
+    )
+    assert.fieldEquals(
+      "CapsuleCreated",
+      "0xa16081f360e3847006db660bae1c6d1b2e17ec2a-1",
+      "title",
+      "Example string value"
     )
     assert.fieldEquals(
       "CapsuleCreated",

@@ -10,7 +10,7 @@ const pinata = new PinataSDK({
 // Payload type (matches encryptForWallet)
 // -------------------------------------------------------------------
 export interface CapsulePayload {
-    encryptedText: string;
+    encryptedMessage: string;
     encryptedDataKey: string;
 
     dataIv: string;
@@ -26,11 +26,13 @@ export interface CapsulePayload {
 // -------------------------------------------------------------------
 // Upload to IPFS
 // -------------------------------------------------------------------
-export async function uploadCapsule(payload: CapsulePayload) {
+export async function uploadCapsule(payload: CapsulePayload,titleString:string) {
     const gateway = process.env.PINATA_GATEWAY!;
     const res = await pinata.upload.public.json({
-        ...payload
+        title: titleString,
+        ...payload,
     });
 
     return `https://${gateway}/ipfs/${res.cid}`
 }
+

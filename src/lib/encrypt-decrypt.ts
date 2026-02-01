@@ -3,7 +3,7 @@ import { BrowserProvider, ethers } from "ethers";
 
 const ARBITRUM_CHAIN_ID = 11155111n; // Sepolia
 let signer: ethers.Signer | null = null;
-const CONTRACT_ADDRESS = "0xFf2E2B3C12f2cCA37b6eDC0F57B24698130EB0F8"
+const CONTRACT_ADDRESS = "0x330b880e6eAD0B2c7C837C3F2cb1B4c5D6D3e733"
 /* ------------------------------------------------------------------ */
 /* Wallet signer                                                      */
 /* ------------------------------------------------------------------ */
@@ -125,7 +125,7 @@ export async function encryptForWallet(
 
     // Encrypt plaintext
     const dataIv = randomBytes(12);
-    const encryptedTextBuffer = await crypto.subtle.encrypt(
+    const encryptedMessageBuffer = await crypto.subtle.encrypt(
         { name: "AES-GCM", iv: dataIv },
         dataKey,
         new TextEncoder().encode(plaintext)
@@ -140,7 +140,7 @@ export async function encryptForWallet(
     );
 
     return {
-        encryptedText: Buffer.from(encryptedTextBuffer).toString("hex"),
+        encryptedMessage: Buffer.from(encryptedMessageBuffer).toString("hex"),
         encryptedDataKey: Buffer.from(encryptedDataKeyBuffer).toString("hex"),
         dataIv: Buffer.from(dataIv).toString("hex"),
         keyIv: Buffer.from(keyIv).toString("hex"),
@@ -157,7 +157,7 @@ export async function encryptForWallet(
 export async function decryptForWallet(
     signer: ethers.Signer,
     payload: {
-        encryptedText: string;
+        encryptedMessage: string;
         encryptedDataKey: string;
         dataIv: string;
         keyIv: string;
@@ -167,9 +167,9 @@ export async function decryptForWallet(
     }
 ) {
     // Optional: enforce expiry
-    
+
     //if (payload.expiresAt && Math.floor(Date.now() / 1000) > payload.expiresAt)
-      //  throw new Error("Capsule expired");
+    //  throw new Error("Capsule expired");
 
     const masterKey = await deriveMasterKey(
         signer,
@@ -197,12 +197,12 @@ export async function decryptForWallet(
     );
 
     // Decrypt text
-    const encryptedText = Uint8Array.from(Buffer.from(payload.encryptedText, "hex"));
+    const encryptedMessage = Uint8Array.from(Buffer.from(payload.encryptedMessage, "hex"));
     const dataIv = Uint8Array.from(Buffer.from(payload.dataIv, "hex"));
     const decryptedBuffer = await crypto.subtle.decrypt(
         { name: "AES-GCM", iv: dataIv },
         dataKey,
-        encryptedText
+        encryptedMessage
     );
 
     return new TextDecoder().decode(decryptedBuffer);

@@ -8,9 +8,9 @@ dataSources:
     name: TimeCapsule
     network: sepolia
     source:
-      address: "0xFf2E2B3C12f2cCA37b6eDC0F57B24698130EB0F8"
+      address: "0x330b880e6eAD0B2c7C837C3F2cb1B4c5D6D3e733"
       abi: TimeCapsule
-      startBlock: 10166500
+      startBlock: 10167257
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
@@ -22,8 +22,8 @@ dataSources:
         - name: TimeCapsule
           file: ./abis/TimeCapsule.json
       eventHandlers:
-        - event: CapsuleCreated(indexed address,indexed uint256,uint256,string)
+        - event: CapsuleCreated(indexed address,indexed uint256,string,uint256,string)
           handler: handleCapsuleCreated
-        - event: CapsuleOpened(indexed address,indexed uint256,string)
+        - event: CapsuleOpened(indexed address,indexed uint256,string,string)
           handler: handleCapsuleOpened
       file: ./src/time-capsule.ts
