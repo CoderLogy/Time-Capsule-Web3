@@ -23,7 +23,6 @@ type DatePickerProps = {
 }
 
 export default function DatePicker({
-    value,
     onChange,
     className,
     buttonClassName,

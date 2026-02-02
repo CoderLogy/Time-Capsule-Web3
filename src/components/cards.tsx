@@ -70,13 +70,13 @@ function Cards({title,message,timeRemaining}:CardProps) {
                     <Spinner className="w-6 h-6"/>
                   </div>
                   <div>
-                    <h3 className="font-bold text-sm">Card Title</h3>
+                <h3 className="font-bold text-sm">{title}</h3>
                   </div>
                 </div>
                 <span className="inline-flex rounded-full items-center gap-1 px-2.5 py-1 text-sm font-medium text-yellow-600 bg-yellow-100 uppercase">Open</span>
               </div>
-              <div className="px-4 py-4.5 mt-2 flex justify-start text-sm">
-                <span className="pl-14">Waiting for block confirmation!</span>
+              <div className="px-4 py-4.5 mt-2 flex justify-center text-sm">
+                <span>Waiting for block confirmation!</span>
               </div>
             </div>
         </div >

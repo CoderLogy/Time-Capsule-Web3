@@ -5,7 +5,8 @@ import "dotenv/config";
 import {
     encryptForWallet,
     decryptForWallet,
-} from "./encrypt-decrypt.ts"; // updated file name
+    deriveMasterKeyFromAddress,
+} from "./encrypt-decrypt.ts";
 
 import { uploadCapsule } from "./ipfs.ts";
 
@@ -14,78 +15,95 @@ import { uploadCapsule } from "./ipfs.ts";
 // -------------------------------------------------------------------
 const RPC_URL = process.env.SEPOLIA_URL!;
 const PRIVATE_KEY = process.env.PRIVATE_KEY!;
-const PLAINTEXT = "hello from other side of world";
+const PLAINTEXT = "hello from the other side of the world";
 
 // -------------------------------------------------------------------
-// Payload type (matches encryptForWallet output)
+// Payload type (local only, for TypeScript type-checking)
 // -------------------------------------------------------------------
 interface CapsulePayload {
     encryptedMessage: string;
     encryptedDataKey: string;
-
     dataIv: string;
     keyIv: string;
-
     capsuleNonce: string;
+    issuedAt: number;
+    expiresAt: number;
     version: number;
-    signatureExpiresAt?: number;
-    issuedAt?: number;
 }
 
 // -------------------------------------------------------------------
-// Test
+// Test function
 // -------------------------------------------------------------------
 async function test() {
+    // 1️⃣ Setup provider and signer
     const provider = new ethers.JsonRpcProvider(RPC_URL);
     const signer = new ethers.Wallet(PRIVATE_KEY, provider);
+    console.log("Wallet address:", await signer.getAddress());
 
-    console.log("Wallet:", await signer.getAddress());
+    // 2️⃣ Derive a session key (simulate Case 2)
+    const capsuleNonce = ethers.hexlify(ethers.randomBytes(16)).slice(2); // 16 bytes hex
+    const issuedAt = Math.floor(Date.now() / 1000);
+    const expiresAt = issuedAt + 3600; // 1 hour validity
 
-    // ---------------------------------------------------------------
-    // Encrypt
-    // ---------------------------------------------------------------
-    const encrypted = await encryptForWallet(signer, PLAINTEXT);
-    console.log("Encrypted payload:", encrypted);
+    const sessionKey = await deriveMasterKeyFromAddress(
+        signer,
+        capsuleNonce,
+        issuedAt,
+        expiresAt
+    );
 
-    // ---------------------------------------------------------------
-    // Upload to IPFS
-    // ---------------------------------------------------------------
-    const cidUrl = await uploadCapsule(encrypted);
-    console.log("Stored at CID:", cidUrl);
+    console.log("Session key derived ✅");
 
-    // ---------------------------------------------------------------
-    // Fetch from IPFS
-    // ---------------------------------------------------------------
-    const ipfsPayload = (await fetch(cidUrl).then(r => r.json())) as CapsulePayload;
-    console.log("Fetched payload:", ipfsPayload);
+    // 3️⃣ Encrypt first capsule using session key
+    const encrypted1: CapsulePayload = await encryptForWallet(
+        signer,
+        PLAINTEXT,
+        undefined, // validForSeconds defaults
+        sessionKey
+    );
 
-    // ---------------------------------------------------------------
-    // Decrypt
-    // ---------------------------------------------------------------
-    const decrypted = await decryptForWallet(signer, {
-        encryptedMessage: ipfsPayload.encryptedMessage,
-        encryptedDataKey: ipfsPayload.encryptedDataKey,
+    console.log("Encrypted capsule 1:", encrypted1);
 
-        dataIv: ipfsPayload.dataIv,
-        keyIv: ipfsPayload.keyIv,
+    // 4️⃣ Upload first capsule to IPFS
+    const cidUrl1 = await uploadCapsule(encrypted1, "Test Capsule 1");
+    console.log("Stored capsule 1 at CID:", cidUrl1);
 
-        capsuleNonce: ipfsPayload.capsuleNonce,
-        issuedAt: ipfsPayload.issuedAt!, // '!' tells TS it's not undefined
-        signatureExpiresAt: ipfsPayload.signatureExpiresAt ?? (ipfsPayload.issuedAt! + 3600) // fallback
-    });
+    // 5️⃣ Fetch from IPFS
+    const ipfsPayload1 = (await fetch(cidUrl1).then(r => r.json())) as CapsulePayload;
+    console.log("Fetched capsule 1 payload:", ipfsPayload1);
 
-    console.log("Decrypted:", decrypted);
+    // 6️⃣ Decrypt first capsule
+    const decrypted1 = await decryptForWallet(signer, ipfsPayload1);
+    console.log("Decrypted capsule 1:", decrypted1);
 
-    // ---------------------------------------------------------------
-    // Assert
-    // ---------------------------------------------------------------
-    if (decrypted === PLAINTEXT) {
-        console.log("✅ TEST PASSED");
+    // 7️⃣ Encrypt second capsule using the SAME session key
+    const encrypted2: CapsulePayload = await encryptForWallet(
+        signer,
+        "This is the second capsule using the same session key",
+        undefined,
+        sessionKey
+    );
+
+    console.log("Encrypted capsule 2:", encrypted2);
+
+    const cidUrl2 = await uploadCapsule(encrypted2, "Test Capsule 2");
+    console.log("Stored capsule 2 at CID:", cidUrl2);
+
+    const ipfsPayload2 = (await fetch(cidUrl2).then(r => r.json())) as CapsulePayload;
+    const decrypted2 = await decryptForWallet(signer, ipfsPayload2);
+    console.log("Decrypted capsule 2:", decrypted2);
+
+    // 8️⃣ Assert results
+    if (decrypted1 === PLAINTEXT && decrypted2 === "This is the second capsule using the same session key") {
+        console.log("✅ TEST PASSED: Both capsules decrypted successfully");
     } else {
-        console.log("❌ TEST FAILED");
+        console.log("❌ TEST FAILED: Decryption mismatch");
     }
 }
 
+// -------------------------------------------------------------------
+// Run test
+// -------------------------------------------------------------------
 test().catch(err => {
     console.error("❌ Test error:", err);
     process.exit(1);
