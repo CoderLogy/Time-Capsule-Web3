@@ -8,9 +8,9 @@ dataSources:
     name: TimeCapsule
     network: sepolia
     source:
-      address: "0x330b880e6eAD0B2c7C837C3F2cb1B4c5D6D3e733"
+      address: "0x19FF5dc69033523f1C5b1B5589f95D49b5EF7926"
       abi: TimeCapsule
-      startBlock: 10167257
+      startBlock: 10284165
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9

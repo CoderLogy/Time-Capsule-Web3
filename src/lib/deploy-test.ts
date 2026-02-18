@@ -15,7 +15,7 @@ async function main() {
     console.log("Capsule fee:", conn.ethers.formatEther(capsuleFee), "ETH");
 
     // ✅ get balances
-    const balanceBefore = await user.provider!.getBalance(feeReceiver);
+    const balanceBefore = await user.provider!.getBalance(feeReceiver, "latest");
     console.log("Balance before:", conn.ethers.formatEther(balanceBefore), "ETH");
 
     // Create capsule
@@ -26,11 +26,11 @@ async function main() {
         "test message!",
         { value: capsuleFee }
     );
-    await tx.wait();
+    const receipt = await tx.wait();
     console.log("Capsule created! Tx hash:", tx.hash);
 
-    // Check balances after
-    const balanceAfter = await user.provider!.getBalance(feeReceiver);
+    // Wait for the block to be confirmed, then query at that specific block
+    const balanceAfter = await user.provider!.getBalance(feeReceiver, receipt.blockNumber);
     console.log("Balance after:", conn.ethers.formatEther(balanceAfter), "ETH");
 
     // Calculate received ETH (bigint subtraction)

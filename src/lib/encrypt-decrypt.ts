@@ -5,7 +5,7 @@ import { BrowserProvider, ethers } from "ethers";
 /* ------------------------------------------------------------------ */
 
 const SEPOLIA_CHAIN_ID = 11155111n;
-const CONTRACT_ADDRESS = "0x330b880e6eAD0B2c7C837C3F2cb1B4c5D6D3e733";
+const CONTRACT_ADDRESS = "0x19FF5dc69033523f1C5b1B5589f95D49b5EF7926";
 
 let signer: ethers.Signer | null = null;
 
