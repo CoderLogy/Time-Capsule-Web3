@@ -6,9 +6,9 @@ import {arbitrum,sepolia} from 'wagmi/chains';
 import { ReactNode } from 'react';
 import { QueryClientProvider, QueryClient} from "@tanstack/react-query";
 
-const config = getDefaultConfig({
+export const config = getDefaultConfig({
     appName: 'myproject',
-    projectId: '501d84a519fa4c7147c0dcbe4e412f20',
+    projectId: 'd6d73254b873a6c64d325465fa9c4a2c',
     chains: [arbitrum, sepolia],
     ssr: false, // If your dApp uses server side rendering (SSR)
 });

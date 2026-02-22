@@ -29,7 +29,7 @@ export function CustomConnectButton() {
                     return (
                         <Button
                             onClick={openConnectModal}
-                            className="bg-primary text-white text-sm rounded-lg px-4 py-1 md:rounded-full md:py-2 hover:bg-primary/80 transition cursor-pointer"
+                            className="border-primary bg-transparent text-foreground text-sm rounded-lg px-2 md:px-4 py-1 md:rounded-full md:py-2 active:scale-90 hover:text-white hover:bg-primary/80 transition cursor-pointer"
                         >
                             <div className="flex items-center gap-3">
                                 <LogIn />
@@ -55,7 +55,7 @@ export function CustomConnectButton() {
                 return (
                     <Button
                         onClick={openAccountModal}
-                        className="bg-primary text-white text-sm rounded-lg px-4 py-1 md:rounded-full md:py-2 hover:bg-primary/80 transition"
+                        className="border-primary/80 bg-slate-400/30 text-primary text-xs rounded-lg  px-1 sm:px-3 md:px-4 py-1 md:rounded-full md:py-2 hover:bg-primary/80 active:scale-95 hover:text-white transition-all cursor-pointer ease-linear duration-300"
                     >
                         <div className="flex items-center gap-3">
                             <span className="hidden md:block">

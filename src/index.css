@@ -167,9 +167,10 @@
   --shadow-2xl: var(--shadow-2xl);
 }
 
-@layer utilities {
+@layer components {
   .glass-ios {
-    @apply relative overflow-hidden bg-white/20 backdrop-blur-2xl backdrop-saturate-180 backdrop-brightness-110 border border-white/20;
+    isolation: isolate;
+    @apply relative overflow-hidden bg-white/15 backdrop-blur-2xl backdrop-saturate-180 backdrop-brightness-110 border border-white/70;
     box-shadow:
         0 1px 1px rgba(0, 0, 0, 0.06),
         0 8px 24px rgba(0, 0, 0, 0.12),
@@ -227,4 +228,31 @@ textarea::-webkit-scrollbar {
 /* Optional: corner for both scrollbars */
 ::-webkit-scrollbar-corner {
   background: transparent;
+}
+
+@layer components {
+  [data-sonner-toast] {
+    isolation: isolate;
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(40px) saturate(180%) brightness(110%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(110%);
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow:
+      0 1px 1px rgba(0, 0, 0, 0.06),
+      0 8px 24px rgba(0, 0, 0, 0.12),
+      0 16px 48px rgba(0, 0, 0, 0.08);
+  }
+
+  [data-sonner-toast]::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg,
+        rgba(255, 255, 255, .4),
+        rgba(255, 255, 255, .1),
+        transparent);
+    pointer-events: none;
+  }
 }

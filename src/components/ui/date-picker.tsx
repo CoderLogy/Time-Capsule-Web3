@@ -5,7 +5,6 @@ import { ChevronDownIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
-import { Label } from "@/components/ui/label"
 import {
     Popover,
     PopoverContent,
@@ -37,6 +36,7 @@ export default function DatePicker({
     }
     const today = React.useMemo(() => {
         const d = new Date()
+        d.setDate(d.getDate()+1)
         d.setHours(0, 0, 0, 0) // normalize to midnight
         return d
     }, [])
@@ -46,15 +46,15 @@ export default function DatePicker({
                 <PopoverTrigger asChild>
                     <Button
                         variant="outline"
-                        id="date"
+                        id="CapsuleDatePicker"
                         className={cn(
-                            "w-full justify-between font-normal rounded-lg border-input shadow-sm",
-                            "data-[state=open]:bg-white", "data-[state=open]:ring-4 data-[state=open]:ring-gray-200",
+                            "w-full justify-between font-normal rounded-lg border-input text-sm! shadow-sm",
+                            "data-[state=open]:bg-white", "data-[state=open]:ring-3 data-[state=open]:ring-gray-200",
                             buttonClassName
                         )}
                     >
-                        {date ? date.toLocaleDateString() : "Select date (MM/DD/YYYY)"}
-                        <ChevronDownIcon className="h-4 w-4 opacity-70" />
+                        {date ? date.toLocaleDateString() : "Pick a date!"}
+                        <ChevronDownIcon className="h-4 w-4 opacity-70"/>
                     </Button>
                 </PopoverTrigger>
 

@@ -1,5 +1,7 @@
 import { BrowserProvider, ethers } from "ethers";
-
+import { getWalletClient } from '@wagmi/core'
+import { config } from '@/components/Wallet'
+import { WalletClient } from 'viem'
 /* ------------------------------------------------------------------ */
 /* Config                                                             */
 /* ------------------------------------------------------------------ */
@@ -13,19 +15,18 @@ let signer: ethers.Signer | null = null;
 /* Wallet signer                                                      */
 /* ------------------------------------------------------------------ */
 
-export async function setSignatureSigner(): Promise<ethers.Signer> {
-    if (!window.ethereum) throw new Error("No injected wallet");
-
-    const provider = new BrowserProvider(window.ethereum);
-    await provider.send("eth_requestAccounts", []);
-
-    const network = await provider.getNetwork();
-    if (network.chainId !== SEPOLIA_CHAIN_ID) {
-        throw new Error("Please switch to Sepolia");
+export async function setSignatureSigner(walletClient?: WalletClient): Promise<ethers.Signer> {
+    if (walletClient) {
+        const provider = new ethers.BrowserProvider(walletClient.transport)
+        signer = await provider.getSigner()
+        return signer
     }
-
-    signer = await provider.getSigner();
-    return signer;
+    // fallback to existing logic
+    const wc = await getWalletClient(config)
+    if (!wc) throw new Error("No wallet connected")
+    const provider = new ethers.BrowserProvider(wc.transport)
+    signer = await provider.getSigner()
+    return signer
 }
 
 export function getSigner(): ethers.Signer {
@@ -98,10 +99,6 @@ export async function deriveMasterKeyFromAddress(
     issuedAt: number,
     expiresAt: number
 ): Promise<CryptoKey> {
-    if (Math.floor(Date.now() / 1000) > expiresAt) {
-        throw new Error("Authorization expired");
-    }
-
     const { domain, types, value } = getTypedData(
         capsuleNonce,
         issuedAt,
@@ -171,14 +168,14 @@ export interface CapsulePayload {
 export async function encryptForWallet(
     signer: ethers.Signer,
     plaintext: string,
-    validForSeconds = 300,
-    sessionKey?: CryptoKey
+    unlockDate: number,
+    //sessionKey?: CryptoKey //ignore this
 ): Promise<CapsulePayload> {
     const issuedAt = Math.floor(Date.now() / 1000);
-    const expiresAt = issuedAt + validForSeconds;
+    const expiresAt = unlockDate;
     const capsuleNonce = toHex(randomBytes(16));
 
-    const masterKey = sessionKey ?? await deriveMasterKeyFromAddress(
+    const masterKey = await deriveMasterKeyFromAddress(
         signer,
         capsuleNonce,
         issuedAt,
