@@ -1,7 +1,7 @@
-import path from "path"
-import tailwindcss from "@tailwindcss/vite"
-import react from "@vitejs/plugin-react"
-import { defineConfig } from "vite"
+import path from "path";
+import tailwindcss from "@tailwindcss/vite";
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -11,8 +11,23 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  define: { 'process.env': {} },
+  define: { "process.env": {} },
   optimizeDeps: {
-  include: ['viem', 'ox', '@noble/hashes']
-  }
-})
+    include: ["viem", "ox", "@noble/hashes"],
+  },
+  build: {
+    cssMinify: "esbuild",
+    minify: "esbuild",
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "react-vendor": ["react", "react-dom"],
+          wallet: ["wagmi", "viem", "@rainbow-me/rainbowkit", "@wagmi/core"],
+          ethers: ["ethers"],
+          motion: ["motion"],
+          ui: ["lucide-react", "sonner", "radix-ui"],
+        },
+      },
+    },
+  },
+});

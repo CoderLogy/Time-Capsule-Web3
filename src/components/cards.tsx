@@ -4,12 +4,12 @@ import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import ViewCapsuleModal from "@/components/ViewCapsuleModal";
 import type { Capsule } from "@/lib/capsule-query";
-import { motion, AnimatePresence, useInView } from "framer-motion";
+import { motion, AnimatePresence, useInView } from "motion/react";
 
 type CardsProps = {
   capsules: Capsule[];
   pendingTitles?: string[];
-  containerRef?: React.RefObject<HTMLDivElement>;
+  containerRef?: React.RefObject<HTMLDivElement | null>;
 };
 
 function LockedCard({ capsule }: { capsule: Capsule }) {
@@ -37,7 +37,7 @@ function LockedCard({ capsule }: { capsule: Capsule }) {
           </div>
           <h3
             className="font-bold truncate capitalize text-sm"
-            style={{ fontFamily: "Raleway", fontWeight: "600" }}
+            style={{ fontFamily: "Raleway Variable", fontWeight: "600" }}
           >
             {capsule.title}
           </h3>
@@ -78,7 +78,7 @@ function ReadyCard({ capsule }: { capsule: Capsule }) {
           </div>
           <h3
             className="font-bold truncate capitalize text-sm"
-            style={{ fontFamily: "Raleway", fontWeight: "600" }}
+            style={{ fontFamily: "Raleway Variable", fontWeight: "600" }}
           >
             {capsule.title}
           </h3>
@@ -112,7 +112,7 @@ function PendingCard({ title }: { title: string }) {
           </div>
           <h3
             className="font-bold text-sm truncate"
-            style={{ fontFamily: "Raleway", fontWeight: "600" }}
+            style={{ fontFamily: "Raleway Variable", fontWeight: "600" }}
           >
             {title}
           </h3>

@@ -1,5 +1,4 @@
 import Navbar from "./Navbar";
-import { Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import CountUp from "./ui/CountUp";
@@ -20,7 +19,7 @@ import { getCapsules } from "@/lib/contract-api";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ArrowUp } from "lucide-react";
-import { contain } from "three/src/extras/TextureUtils.js";
+import type { Capsule } from "@/lib/capsule-query";
 
 const HeroText = memo(function HeroText() {
   return (
@@ -31,7 +30,11 @@ const HeroText = memo(function HeroText() {
         by="word"
         once={false}
         className="inline-flex"
-        style={{ fontFamily: "Raleway", fontSize: "1.15em", fontWeight: "600" }}
+        style={{
+          fontFamily: "Raleway Variable",
+          fontSize: "1.15em",
+          fontWeight: "600",
+        }}
       >
         Preserve your moments
       </TextAnimate>
@@ -62,7 +65,6 @@ export default function Dashboard() {
   const cardsContainerRef = useRef<HTMLDivElement>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
-
   useEffect(() => {
     const container = cardsContainerRef.current;
     if (!container) return;
@@ -71,7 +73,7 @@ export default function Dashboard() {
     window.addEventListener("scroll", handleWindowScroll);
     container.addEventListener("scroll", handleScroll);
     return () => {
-      container.removeEventListener("scroll", handleScroll); 
+      container.removeEventListener("scroll", handleScroll);
       window.removeEventListener("scroll", handleWindowScroll);
     };
   }, []);
@@ -108,11 +110,16 @@ export default function Dashboard() {
       const { data: newCapsules } = await refetchCapsules();
       toast.success("Capsule created successfully");
       setTimeout(() => {
-          const container = cardsContainerRef.current;
-          if (!container) return;
-          const target = container.querySelector(`[data-capsule-title="${currentTitle}"]`);
-          if (!target) return;
-          (target as HTMLElement).scrollIntoView({ behavior: "smooth", block: "center" });
+        const container = cardsContainerRef.current;
+        if (!container) return;
+        const target = container.querySelector(
+          `[data-capsule-title="${currentTitle}"]`,
+        );
+        if (!target) return;
+        (target as HTMLElement).scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
       }, 500);
     } catch (err) {
       console.error("Failed to create capsule:", err);
@@ -225,11 +232,14 @@ export default function Dashboard() {
   // Remove the entire initWallet useEffect
   */
   useEffect(() => {
-    fetch(
-      "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd",
-    )
-      .then((res) => res.json())
-      .then((data) => setEthPrice(data.ethereum.usd));
+    const id = requestIdleCallback(() => {
+      fetch(
+        "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd",
+      )
+        .then((res) => res.json())
+        .then((data) => setEthPrice(data.ethereum.usd));
+    });
+    return () => cancelIdleCallback(id);
   }, []);
 
   // ------------------ Transaction & Fees ------------------
@@ -243,7 +253,7 @@ export default function Dashboard() {
     };
   }, [isConnected, address]);
 
-  const { data: gas } = useEstimateGas(tx);
+  const { data: gas } = useEstimateGas(tx());
   const { data: fees } = useEstimateFeesPerGas({ chainId: 42161 });
 
   const totalFee = useMemo(() => {
@@ -300,7 +310,10 @@ export default function Dashboard() {
                 <div>
                   <h2
                     className="text-xl md:text-2xl font-bold mb-1 flex items-center gap-2"
-                    style={{ fontFamily: "Raleway", fontWeight: "600" }}
+                    style={{
+                      fontFamily: "Raleway Variable",
+                      fontWeight: "600",
+                    }}
                   >
                     New Capsule
                   </h2>
@@ -311,8 +324,8 @@ export default function Dashboard() {
                 <Button
                   onClick={handleCreateCapsule}
                   disabled={loading}
-                  className="h-8 w-auto rounded-full contrast-110 cursor-pointer hover:bg-accent/90 bg-accent flex items-center justify-center active:scale-90 active:translate-y-1 ease-linear duration-300 transition-all  border border-primary/40"
-                  style={{  boxShadow: "0 5px 0 0px #BD2E2ECC" }}
+                  className="h-8 w-auto rounded-full contrast-110 cursor-pointer hover:bg-accent/90 bg-accent flex items-center justify-center active:scale-90 active:translate-y-1 ease-linear duration-300 transition-all border border-primary/40"
+                  style={{ boxShadow: "0 5px 0 0px #BD2E2ECC" }}
                 >
                   <span className="text-white text-sm font-medium">
                     Create & Seal
@@ -334,7 +347,7 @@ export default function Dashboard() {
                   <span>
                     ≈ {totalFee ? Number(totalFee).toFixed(6) : "..."} ETH{" "}
                     <span className="m-0 text-xs text-gray-600">
-                      (${(Number(totalFee) * ethPrice).toFixed(2)})
+                      (${(Number(totalFee) * (ethPrice ?? 0)).toFixed(2)})
                     </span>{" "}
                   </span>
                 </div>
@@ -405,10 +418,7 @@ export default function Dashboard() {
               className={`flex items-center ${capsules.length === 0 ? "justify-center" : "justify-between"} px-0 mx-2 md:px-2 md:mx-4`}
             >
               <Label htmlFor="SearchCapsules">
-                <h2
-                  className="text-xl shrink-0 font-bold pr-5"
-                  style={{ fontFamily: "Raleway", fontWeight: "600" }}
-                >
+                <h2 className="text-xl shrink-0 font-semibold pr-5 font-raleway">
                   Your Capsules{" "}
                   <span
                     className="font-normal text-xs text-gray-500 align-bottom"
@@ -429,16 +439,18 @@ export default function Dashboard() {
                   </span>
                 </h2>
               </Label>
-              <div className={`flex grow-2 ${capsules.length === 0 ? "hidden" : ""}`}>
-              {capsules.length >= 5 && (
-                <input
-                  id="SearchCapsules"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search..."
-                  className="outline-0 resize-none h-8 w-full rounded-xl bg-white/80 text-sm px-3 py-2 border focus:border-2 border-gray-300 shadow-sm focus:scale-102"
-                />
-              )}
+              <div
+                className={`flex grow-2 ${capsules.length === 0 ? "hidden" : ""}`}
+              >
+                {capsules.length >= 5 && (
+                  <input
+                    id="SearchCapsules"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search..."
+                    className="outline-0 resize-none h-8 w-full rounded-xl bg-white/80 text-sm px-3 py-2 border focus:border-2 border-gray-300 shadow-sm focus:scale-102"
+                  />
+                )}
               </div>
             </div>
             <Cards
@@ -447,17 +459,20 @@ export default function Dashboard() {
               containerRef={cardsContainerRef}
             />
             {showScrollTop && (
-  <Button
-    onClick={() => {
-      cardsContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-      window.scrollTo({ top: 600, behavior: "smooth" });
-    }}
-    className="glass-ios fixed bottom-8 border-0.5 right-8 z-50 inline-flex items-center gap-2 rounded-2xl cursor-pointer bg-black/30 backdrop-blur-md px-4 py-2 text-sm font-medium text-white/80 hover:bg-black/40 transition-all duration-300 ease-in-out shadow-lg active:scale-90"
-  >
-    <ArrowUp className="h-4 w-4" />
-    Back to top
-  </Button>
-)}
+              <Button
+                onClick={() => {
+                  cardsContainerRef.current?.scrollTo({
+                    top: 0,
+                    behavior: "smooth",
+                  });
+                  window.scrollTo({ top: 600, behavior: "smooth" });
+                }}
+                className="glass-ios fixed bottom-8 border-0.5 right-8 z-50 inline-flex items-center gap-2 rounded-2xl cursor-pointer bg-black/30 backdrop-blur-md px-4 py-2 text-sm font-medium text-white/80 hover:bg-black/40 transition-all duration-300 ease-in-out shadow-lg active:scale-90"
+              >
+                <ArrowUp className="h-4 w-4" />
+                Back to top
+              </Button>
+            )}
           </div>
         </div>
 

@@ -26,5 +26,5 @@
     "src",
     "vite.config.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "src/lib/deploy.ts", "src/lib/deploy-test.ts", "src/lib/encryptIpfs-test.ts", "src/components/ui/emptyPage.tsx"]
 }

@@ -24,7 +24,7 @@ export async function setSignatureSigner(
     return signer;
   }
   // fallback to existing logic
-  const wc = await getWalletClient(config);
+  const wc = await getWalletClient(config as Parameters<typeof getWalletClient>[0]);
   if (!wc) throw new Error("No wallet connected");
   const provider = new ethers.BrowserProvider(wc.transport);
   signer = await provider.getSigner();

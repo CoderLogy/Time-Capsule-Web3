@@ -1,6 +1,6 @@
 import { CustomConnectButton } from "./ui/customConnectButton";
 import { Pill } from "lucide-react";
-import {useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 function Navbar() {
   const [now, setNow] = useState(new Date());
   useEffect(() => {
@@ -30,19 +30,27 @@ function Navbar() {
           </div>
           <div className="hidden sm:flex flex-col items-start px-2.5 py-1.5 rounded-xl bg-slate-400/15 text-muted-foreground font-mono text-xs gap-0.5 tabular-nums leading-none">
             <span>
-              {now.toLocaleTimeString('en-US',{hour: '2-digit', minute: '2-digit', second: '2-digit'})}
+              {now.toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+              })}
             </span>
             <span className="text-[10px] opacity-50">
-              {now.toLocaleDateString('en-US',{month: 'short', day: 'numeric', year: 'numeric'})}
+              {now.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
             </span>
           </div>
         </div>
-          <h1
-            className="flex justify-center text-xl md:text-2xl tracking-wide antialiased absolute left-1/2 -translate-x-1/2"
-            style={{ fontFamily: "Raleway", fontWeight: "500" }}
-          >
-            Time Capsule
-          </h1>
+        <h1
+          className="flex justify-center text-xl md:text-2xl tracking-wide antialiased absolute left-1/2 -translate-x-1/2"
+          style={{ fontFamily: "Raleway Variable", fontWeight: "500" }}
+        >
+          Time Capsule
+        </h1>
         <div className="shrink-0 md:mx-2 ml-auto">
           <CustomConnectButton />
         </div>

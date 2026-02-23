@@ -32,7 +32,7 @@ export async function createEncryptedCapsule({
   unlockDate,
   title,
 }: CreateEncryptedCapsuleArgs): Promise<TransactionResponse> {
-  const walletClient = await getWalletClient(config);
+  const walletClient = await getWalletClient(config as Parameters<typeof getWalletClient>[0]);
   if (!walletClient) throw new Error("No wallet connected");
 
   const provider = new ethers.BrowserProvider(walletClient.transport);
@@ -58,7 +58,8 @@ export async function createEncryptedCapsule({
     return tx;
   } catch (err) {
     console.error("Capsule creation failed:", err);
-    if (err.data) console.error("Revert data:", err.data);
+    if ((err as Error & { data?: unknown }).data) 
+    console.error("Revert data:", (err as Error & { data?: unknown }).data);
     toast.error("Capsule creation failed — check console");
     throw err;
   }
