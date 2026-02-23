@@ -1,6 +1,6 @@
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import TextType from './TextType';
+import TextType from './ui/TextType';
 
 function EmptyPage() {
   return (

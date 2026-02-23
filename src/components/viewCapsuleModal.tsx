@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { openCapsule } from "@/lib/contract-api";
 
@@ -10,7 +16,12 @@ type ViewCapsuleModalProps = {
   children: React.ReactNode;
 };
 
-export default function ViewCapsuleModal({ title, date, dataURI, children }: ViewCapsuleModalProps) {
+export default function ViewCapsuleModal({
+  title,
+  date,
+  dataURI,
+  children,
+}: ViewCapsuleModalProps) {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -27,7 +38,9 @@ export default function ViewCapsuleModal({ title, date, dataURI, children }: Vie
       setMessage(plaintext);
     } catch (err) {
       console.error("Decryption failed:", err);
-      setError("Failed to decrypt capsule. Make sure you're using the original wallet.");
+      setError(
+        "Failed to decrypt capsule. Make sure you're using the original wallet.",
+      );
     } finally {
       setLoading(false);
     }
@@ -49,11 +62,11 @@ export default function ViewCapsuleModal({ title, date, dataURI, children }: Vie
               <span className="text-sm">Decrypting...</span>
             </div>
           )}
-          {error && (
-            <p className="text-sm text-red-500 text-center">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-500 text-center">{error}</p>}
           {message && !loading && (
-            <p className="text-sm text-gray-700 whitespace-pre-wrap w-full">{message}</p>
+            <p className="text-sm text-gray-700 whitespace-pre-wrap w-full">
+              {message}
+            </p>
           )}
         </div>
       </DialogContent>

@@ -1,15 +1,15 @@
-import Dashboard from "@/components/Dashboard"
-import Beams from "@/components/Beams"
-import CountUp from '@/components/CountUp'
-import Wallet from "@/components/Wallet"
-import { Toaster } from "@/components/ui/sonner"
-import './index.css';
+import Dashboard from "@/components/Dashboard";
+import Beams from "@/components/ui/Beams";
+import CountUp from "@/components/ui/CountUp";
+import Wallet from "@/components/Wallet";
+import { Toaster } from "@/components/ui/sonner";
+import "./index.css";
 
 export function App() {
-    return (
-        <Wallet>
-        <div className="min-h-screen bg-background w-full relative text-foreground antialiased">
-            {/*
+  return (
+    <Wallet>
+      <div className="min-h-screen bg-background w-full relative text-foreground antialiased">
+        {/*
             <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
                 <Beams
                     beamWidth={2}
@@ -23,20 +23,24 @@ export function App() {
                 />
             </div>
         */}
-                <div className="pointer-events-none fixed inset-0 z-0" style={{
-                  background: "radial-gradient(ellipse at center, transparent 50%, rgba(60,80,95,0.5) 100%)"
-                }} />
-                <Dashboard />
-                <Toaster toastOptions={
-                    {
-                        classNames: {
-                          toast: '!glass-ios !bg-transparent'
-                        }
-                    }
-                }/>
-            </div>
-        </Wallet>
-    )
+        <div
+          className="pointer-events-none fixed inset-0 z-0"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, transparent 50%, rgba(60,80,95,0.5) 100%)",
+          }}
+        />
+        <Dashboard />
+        <Toaster
+          toastOptions={{
+            classNames: {
+              toast: "!glass-ios !bg-transparent",
+            },
+          }}
+        />
+      </div>
+    </Wallet>
+  );
 }
 
 export default App;
