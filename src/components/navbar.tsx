@@ -28,7 +28,7 @@ function Navbar() {
             {/* Spacer */}
             <Pill className="h-5 w-5 opacity-0 group-active:scale-90" />
           </div>
-          <div className="hidden sm:flex flex-col items-start px-2.5 py-1.5 rounded-xl bg-slate-400/15 text-muted-foreground font-mono text-xs gap-0.5 tabular-nums leading-none">
+          <div className="hidden sm:flex flex-col items-start px-2.5 py-1.5 rounded-xl bg-slate-400/30 text-muted-foreground font-mono text-xs gap-0.5 tabular-nums leading-none">
             <span>
               {now.toLocaleTimeString("en-US", {
                 hour: "2-digit",

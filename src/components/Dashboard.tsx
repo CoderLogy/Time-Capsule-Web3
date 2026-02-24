@@ -20,7 +20,50 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ArrowUp } from "lucide-react";
 import type { Capsule } from "@/lib/capsule-query";
+import { motion ,AnimatePresence} from "motion/react";
 
+const ScrollUpButton = memo(function ScrollUp({cardsContainerRef }: {cardsContainerRef: React.RefObject<HTMLDivElement | null>}) {
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  useEffect(() => {
+    const container = cardsContainerRef.current;
+    if (!container) return;
+    const handleScroll = () => setShowScrollTop(container.scrollTop > 300);
+    const handleWindowScroll = () => setShowScrollTop(window.scrollY > 1200);
+    window.addEventListener("scroll", handleWindowScroll);
+    container.addEventListener("scroll", handleScroll);
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("scroll", handleWindowScroll);
+    };
+  }, []);
+
+  return (
+    <AnimatePresence>
+      {showScrollTop && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+          className="fixed bottom-8 right-8 z-50">
+          <Button
+            onClick={() => {
+              cardsContainerRef.current?.scrollTo({
+                top: 0,
+                behavior: "smooth",
+              });
+              window.scrollTo({ top: 600, behavior: "smooth" });
+            }}
+            className="glass-ios border-0.5 inline-flex items-center gap-2 rounded-2xl cursor-pointer bg-black/30 backdrop-blur-md px-4 py-2 text-sm font-medium text-white/80 hover:bg-black/40 transition-all duration-300 ease-in-out shadow-lg active:scale-90"
+          >
+            <ArrowUp className="h-4 w-4" />
+            Back to top
+          </Button>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+});
 const HeroText = memo(function HeroText() {
   return (
     <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mt-2">
@@ -63,20 +106,6 @@ export default function Dashboard() {
   const [pendingTitles, setPendingTitles] = useState<string[]>([]); // ← optimistic pending cards
   const [search, setSearch] = useState("");
   const cardsContainerRef = useRef<HTMLDivElement>(null);
-  const [showScrollTop, setShowScrollTop] = useState(false);
-
-  useEffect(() => {
-    const container = cardsContainerRef.current;
-    if (!container) return;
-    const handleScroll = () => setShowScrollTop(container.scrollTop > 300);
-    const handleWindowScroll = () => setShowScrollTop(window.scrollY > 1200);
-    window.addEventListener("scroll", handleWindowScroll);
-    container.addEventListener("scroll", handleScroll);
-    return () => {
-      container.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("scroll", handleWindowScroll);
-    };
-  }, []);
 
   const { data: capsules = [], refetch: refetchCapsules } = useQuery<Capsule[]>(
     {
@@ -458,21 +487,7 @@ export default function Dashboard() {
               pendingTitles={pendingTitles}
               containerRef={cardsContainerRef}
             />
-            {showScrollTop && (
-              <Button
-                onClick={() => {
-                  cardsContainerRef.current?.scrollTo({
-                    top: 0,
-                    behavior: "smooth",
-                  });
-                  window.scrollTo({ top: 600, behavior: "smooth" });
-                }}
-                className="glass-ios fixed bottom-8 border-0.5 right-8 z-50 inline-flex items-center gap-2 rounded-2xl cursor-pointer bg-black/30 backdrop-blur-md px-4 py-2 text-sm font-medium text-white/80 hover:bg-black/40 transition-all duration-300 ease-in-out shadow-lg active:scale-90"
-              >
-                <ArrowUp className="h-4 w-4" />
-                Back to top
-              </Button>
-            )}
+            <ScrollUpButton cardsContainerRef={cardsContainerRef} />
           </div>
         </div>
 

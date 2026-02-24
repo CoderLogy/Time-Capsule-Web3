@@ -40,6 +40,24 @@ export default function DatePicker({
     d.setHours(0, 0, 0, 0); // normalize to midnight
     return d;
   }, []);
+
+  // Start of current month — earliest the calendar can navigate to
+  const startMonth = React.useMemo(() => {
+    const d = new Date();
+    d.setDate(1);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
+
+  // 10 years out — upper bound for the year dropdown
+  const endMonth = React.useMemo(() => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() + 100);
+    d.setMonth(11);
+    d.setDate(31);
+    return d;
+  }, []);
+
   return (
     <div className={cn("flex flex-col gap-3", className)}>
       <Popover open={open} onOpenChange={setOpen}>
@@ -64,12 +82,18 @@ export default function DatePicker({
             mode="single"
             selected={date}
             captionLayout="dropdown"
+            showOutsideDays={true}
+            fixedWeeks
             onSelect={handleSelect}
+            startMonth={startMonth}
+            endMonth={endMonth}
             classNames={{
               day_selected:
                 "bg-primary text-primary-foreground hover:bg-primary focus:bg-primary",
               day_today: "bg-secondary/20 text-secondary font-semibold",
-              ...calendarClassNames, // ✅ user overrides
+              outside: "text-muted/90",
+              weeks: "max-h-[9rem] block",
+              ...calendarClassNames,
             }}
             disabled={[(date: Date) => date < today]}
           />

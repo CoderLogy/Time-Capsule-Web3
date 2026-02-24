@@ -130,7 +130,7 @@ function PendingCard({ title }: { title: string }) {
 
 function CapsuleCardWrapper({ capsule }: { capsule: Capsule }) {
   const ref = React.useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { margin: "-20px", amount: 0.2, once: true });
+  const inView = useInView(ref, { margin: "-20px", amount: 0.3, once: true });
 
   return (
     <motion.div
