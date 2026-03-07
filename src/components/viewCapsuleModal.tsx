@@ -55,7 +55,7 @@ export default function ViewCapsuleModal({
           <p className="text-xs text-gray-400">Unlocked {date}</p>
         </DialogHeader>
 
-        <div className="mt-4 min-h-25 flex items-center justify-center">
+        <div className="mt-4 min-h-24 flex items-center justify-center">
           {loading && (
             <div className="flex flex-col items-center gap-2 text-gray-400">
               <Spinner className="w-6 h-6" />

@@ -15,20 +15,20 @@ function Navbar() {
           <div className="shrink-0 ml-auto px-2 py-2 rounded-xl text-primary bg-slate-400/30 flex items-center justify-center active:scale-95 hover:bg-primary group-active:scale-90 group-hover:text-white transition-all cursor-pointer ease-linear duration-200 relative group ">
             {/* Top-right half */}
             <Pill
-              className="h-5 w-5 absolute transition-all duration-250 ease-in-out group-active:-translate-y-1 group-active:translate-x-1 group-active:-rotate-6 group-hover:text-white group-active:scale-90"
+              className="h-5 w-5 absolute transition-all duration-200 ease-in-out group-active:-translate-y-1 group-active:translate-x-1 group-active:-rotate-6 group-hover:text-white group-active:scale-90"
               style={{ clipPath: "polygon(100% 0, 100% 100%, 0 0)" }}
             />
 
             {/* Bottom-left half */}
             <Pill
-              className="h-5 w-5 absolute transition-all duration-250 ease-in-out group-active:translate-y-1 group-active:-translate-x-1 group-active:rotate-6 group-hover:text-white group-active:scale-90 "
+              className="h-5 w-5 absolute transition-all duration-200 ease-in-out group-active:translate-y-1 group-active:-translate-x-1 group-active:rotate-6 group-hover:text-white group-active:scale-90 "
               style={{ clipPath: "polygon(0 0, 100% 100%, 0 100%)" }}
             />
 
             {/* Spacer */}
             <Pill className="h-5 w-5 opacity-0 group-active:scale-90" />
           </div>
-          <div className="hidden sm:flex flex-col items-start px-2.5 py-1.5 rounded-xl bg-slate-400/30 text-muted-foreground font-mono text-xs gap-0.5 tabular-nums leading-none">
+          <div className="hidden sm:flex flex-col items-start px-2.5 py-1 rounded-xl bg-slate-400/30 text-foreground font-mono text-xs gap-1 tabular-nums leading-none">
             <span>
               {now.toLocaleTimeString("en-US", {
                 hour: "2-digit",
@@ -36,7 +36,7 @@ function Navbar() {
                 second: "2-digit",
               })}
             </span>
-            <span className="text-[10px] opacity-50">
+            <span className="text-[10px] opacity-80">
               {now.toLocaleDateString("en-US", {
                 month: "short",
                 day: "numeric",

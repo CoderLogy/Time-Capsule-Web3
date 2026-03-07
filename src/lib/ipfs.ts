@@ -1,8 +1,9 @@
 import { PinataSDK } from "pinata";
+import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 const pinata = new PinataSDK({
-    pinataJwt: import.meta.env.VITE_PINATA_JWT!,
-    pinataGateway: import.meta.env.VITE_PINATA_GATEWAY!,
+    pinataJwt: process.env.PINATA_JWT!,
+    pinataGateway: process.env.PINATA_GATEWAY!,
 });
 
 // -------------------------------------------------------------------

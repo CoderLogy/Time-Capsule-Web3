@@ -29,10 +29,13 @@ function LockedCard({ capsule }: { capsule: Capsule }) {
   const unlockDateFormatted = new Date(unlockTs).toLocaleDateString("en-GB");
 
   return (
-    <div data-capsule-title={capsule.title} className="bg-white/80 rounded-3xl p-5 hover:shadow-lg border border-gray-200 cursor-pointer transition-all duration-200 will-change-transform hover:-translate-y-1 hover:-translate-x-1 relative overflow-hidden group/card shrink-0">
+    <div
+      data-capsule-title={capsule.title}
+      className="bg-white/80 rounded-2xl p-5 hover:shadow-lg border border-gray-200 cursor-pointer transition-all duration-200 will-change-transform hover:-translate-y-1 hover:-translate-x-1 relative overflow-hidden group/card shrink-0"
+    >
       <div className="flex items-start justify-between mb-4 relative z-10">
         <div className="flex flex-1 min-w-0 max-w-[55%] items-center gap-3">
-          <div className="shrink-0 w-12 h-12 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 group-hover/card:text-muted group-hover/card:border-accent/50 transition-colors duration-350 ease-linear">
+          <div className="shrink-0 w-12 h-12 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 group-hover/card:text-muted group-hover/card:border-accent/50 transition-colors duration-200 ease-linear">
             <Lock />
           </div>
           <h3
@@ -47,7 +50,7 @@ function LockedCard({ capsule }: { capsule: Capsule }) {
         </span>
       </div>
       <div className="bg-gray-50 rounded-2xl p-3 border border-gray-100 group-hover/card:bg-white group-hover/card:border-accent/20 transition-colors">
-        <div className="flex justify-between items-center text-xs mb-1.5">
+        <div className="flex justify-between items-center text-xs mb-2">
           <span className="font-semibold">Unlocks</span>
           <span className="font-bold">{unlockDateFormatted}</span>
         </div>
@@ -70,10 +73,10 @@ function ReadyCard({ capsule }: { capsule: Capsule }) {
   );
 
   return (
-    <div className="bg-white/80 rounded-3xl p-5 hover:shadow-lg border border-gray-200 cursor-pointer transition-all duration-200 transform hover:-translate-y-1 hover:-translate-x-1 relative overflow-hidden group/card shrink-0">
-      <div className="flex items-start justify-between mb-4 relative z-10 transition-all duration-500">
+    <div className="bg-white/80 rounded-2xl p-5 hover:shadow-lg border border-gray-200 cursor-pointer transition-all duration-200 transform hover:-translate-y-1 hover:-translate-x-1 relative overflow-hidden group/card shrink-0">
+      <div className="flex items-start justify-between mb-4 relative z-10 transition-all duration-200">
         <div className="flex flex-1 min-w-0 max-w-[55%] items-center gap-3">
-          <div className="w-12 h-12 shrink-0 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 group-hover/card:text-muted group-hover/card:border-accent/50 transition-colors duration-350 ease-linear">
+          <div className="w-12 h-12 shrink-0 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 group-hover/card:text-muted group-hover/card:border-accent/50 transition-colors duration-200 ease-linear">
             <Pill />
           </div>
           <h3
@@ -87,7 +90,7 @@ function ReadyCard({ capsule }: { capsule: Capsule }) {
           Ready
         </span>
       </div>
-      <div className="px-4 py-2.5 mt-2 flex justify-end">
+      <div className="px-4 py-2 mt-2 flex justify-end">
         <ViewCapsuleModal
           title={capsule.title}
           date={unlockDateFormatted}
@@ -104,7 +107,7 @@ function ReadyCard({ capsule }: { capsule: Capsule }) {
 
 function PendingCard({ title }: { title: string }) {
   return (
-    <div className="bg-white/80 rounded-3xl p-5 border-gray-100 transition-all duration-200 relative overflow-hidden group/card shrink-0">
+    <div className="bg-white/80 rounded-2xl p-5 border-gray-100 transition-all duration-200 relative overflow-hidden group/card shrink-0">
       <div className="flex items-start justify-between mb-4 relative z-10">
         <div className="flex flex-1 min-w-0 max-w-[55%] items-center gap-3">
           <div className="w-12 h-12 shrink-0 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400">
@@ -121,7 +124,7 @@ function PendingCard({ title }: { title: string }) {
           Pending
         </span>
       </div>
-      <div className="px-4 py-4.5 mt-2 flex justify-center text-sm text-gray-400">
+      <div className="px-4 py-4 mt-2 flex justify-center text-sm text-gray-400">
         <span>Waiting for block confirmation...</span>
       </div>
     </div>
@@ -130,7 +133,7 @@ function PendingCard({ title }: { title: string }) {
 
 function CapsuleCardWrapper({ capsule }: { capsule: Capsule }) {
   const ref = React.useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { margin: "-20px", amount: 0.3, once: true });
+  const inView = useInView(ref, { margin: "-20px", amount: 0.2, once: true });
 
   return (
     <motion.div
@@ -159,7 +162,7 @@ function Cards({ capsules, pendingTitles = [], containerRef }: CardsProps) {
   return (
     <div
       ref={containerRef}
-      className="flex flex-col gap-6 lg:h-[65vh] overflow-y-hidden lg:overflow-y-auto overflow-x-hidden min-h-0 lg:pr-2 px-8 lg:px-4 md:px-20 pb-2 py-2 m-0"
+      className="flex flex-col gap-4 lg:h-[65vh] overflow-y-hidden lg:overflow-y-auto overflow-x-hidden min-h-0 lg:pr-2 px-8 lg:px-4 md:px-16 pb-2 py-2 m-0"
     >
       <AnimatePresence>
         {/* Pending cards */}

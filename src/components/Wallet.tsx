@@ -13,7 +13,7 @@ import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 export const config = getDefaultConfig({
   appName: "myproject",
   projectId: "d6d73254b873a6c64d325465fa9c4a2c",
-  chains: [arbitrum, sepolia],
+  chains: [sepolia],
   ssr: false, // If your dApp uses server side rendering (SSR)
 });
 

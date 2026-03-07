@@ -13,7 +13,7 @@ export default defineConfig({
   },
   define: { "process.env": {} },
   optimizeDeps: {
-    include: ["viem", "ox", "@noble/hashes"],
+    include: ["viem"],
   },
   build: {
     cssMinify: "esbuild",
