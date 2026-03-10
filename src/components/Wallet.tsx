@@ -1,6 +1,6 @@
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
-import { WagmiProvider } from "wagmi";
+import { WagmiProvider, createStorage } from "wagmi";
 import {
   RainbowKitProvider,
   DisclaimerComponent,
@@ -14,10 +14,21 @@ export const config = getDefaultConfig({
   appName: "myproject",
   projectId: "d6d73254b873a6c64d325465fa9c4a2c",
   chains: [sepolia],
-  ssr: false, // If your dApp uses server side rendering (SSR)
+  ssr: false,
+  storage: createStorage({
+    storage: localStorage,
+  }),
 });
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 const Disclaimer: DisclaimerComponent = ({ Text, Link }) => (
   <Text>
     By connecting your wallet, you agree to the{" "}

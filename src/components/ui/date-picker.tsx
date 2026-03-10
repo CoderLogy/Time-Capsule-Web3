@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 type DatePickerProps = {
     value?: Date;
     onChange?: (date: Date | undefined) => void;
+    disabled?: boolean;
 
     className?: string;
     buttonClassName?: string;
@@ -19,6 +20,7 @@ type DatePickerProps = {
 
 export default function DatePicker({
     onChange,
+    disabled,
     className,
     buttonClassName,
     calendarClassNames
@@ -61,6 +63,7 @@ export default function DatePicker({
                     <Button
                         variant="outline"
                         id="CapsuleDatePicker"
+                        disabled={disabled}
                         className={cn(
                             "w-full justify-between font-normal rounded-lg border-input text-sm! shadow-sm",
                             "data-[state=open]:bg-white",

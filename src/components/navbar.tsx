@@ -9,7 +9,7 @@ function Navbar() {
   }, []);
 
   return (
-    <nav className="fixed top-6 z-50 left-1/2 -translate-x-1/2 w-[90vw] md:w-[65vw] max-w-3xl">
+    <nav className="fixed top-6 z-50 left-1/2 -translate-x-1/2 w-100 md:w-[65vw] max-w-3xl">
       <div className="glass-ios px-2 sm:p-2 md:px-6 py-2 md:py-3 rounded-2xl flex justify-between items-center relative mx-4">
         <div className="flex mx-2 md:mx-0 items-center gap-6 shrink-0">
           <div className="shrink-0 ml-auto px-2 py-2 rounded-xl text-primary bg-slate-400/30 flex items-center justify-center active:scale-95 hover:bg-primary group-active:scale-90 group-hover:text-white transition-all cursor-pointer ease-linear duration-200 relative group ">
@@ -46,7 +46,7 @@ function Navbar() {
           </div>
         </div>
         <h1
-          className="flex justify-center text-xl md:text-2xl tracking-wide antialiased absolute left-1/2 -translate-x-1/2"
+          className="flex justify-center text-xl md:text-2xl tracking-wide antialiased absolute left-1/2 -translate-x-5/6 md:-translate-x-1/2"
           style={{ fontFamily: "Raleway Variable", fontWeight: "500" }}
         >
           Time Capsule

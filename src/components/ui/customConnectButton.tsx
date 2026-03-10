@@ -55,7 +55,7 @@ export function CustomConnectButton() {
         return (
           <Button
             onClick={openAccountModal}
-            className="border-primary/80 bg-slate-400/15 text-primary text-xs rounded-xl px-1 sm:px-3 md:px-4 py-4 hover:bg-primary/80 active:scale-95 hover:text-white transition-all cursor-pointer ease-linear duration-200"
+            className="border-primary/80 bg-slate-400/15 text-primary text-xs rounded-xl px-4 sm:py-1 md:px-4 py-4 hover:bg-primary/80 active:scale-95 hover:text-white transition-all cursor-pointer ease-linear duration-200"
           >
             <div className="flex items-center gap-3">
               <span className="hidden md:block">{account.displayName}</span>

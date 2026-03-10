@@ -6,7 +6,7 @@ import { useRef, useMemo, useState } from "react";
 import { useAccount } from "wagmi";
 import Cards from "./Cards";
 import { getCapsules } from "@/lib/contract-api";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Capsule } from "@/lib/capsule-query";
 import CapsuleForm from "./CapsuleForm";
 import ScrollUpButton from "./ScrollUpButton";
@@ -14,6 +14,7 @@ import Footer from "./Footer";
 import HeroText from "./HeroText";
 
 export default function Dashboard() {
+    //const queryClient = useQueryClient();
     const ref = useRef(null);
     const inView = useInView(ref);
     const { address, isConnected } = useAccount();
@@ -52,6 +53,10 @@ export default function Dashboard() {
                 return titleA.localeCompare(titleB);
             });
     }, [capsules, search]);
+
+    const refreshCapsules = async () => {
+        await queryClient.invalidateQueries({ queryKey: ["capsules"] });
+    };
 
     return (
         <div>

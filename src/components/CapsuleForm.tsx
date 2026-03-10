@@ -1,4 +1,4 @@
-import { memo, useState, useCallback, useMemo, useEffect } from "react";
+import { memo, useState, useMemo, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -52,16 +52,16 @@ const CapsuleForm = memo(function CapsuleForm({
     }, []);
 
     const tx = useMemo(() => {
-    if (!isConnected || !address) return undefined;
-    return {
-        account: address as `0x${string}`,
-        to: "0x19FF5dc69033523f1C5b1B5589f95D49b5EF7926" as `0x${string}`,
-        value: parseEther("0.00005"),
-        chainId: 11155111,
-        data: "0x" as `0x${string}`,  // ← add this
-    };
+        if (!isConnected || !address) return undefined;
+        return {
+            account: address as `0x${string}`,
+            to: "0x19FF5dc69033523f1C5b1B5589f95D49b5EF7926" as `0x${string}`,
+            value: parseEther("0.00005"),
+            chainId: 11155111,
+            data: "0x" as `0x${string}` // ← add this
+        };
     }, [isConnected, address]);
-    
+
     const { data: gas } = useEstimateGas({
         ...tx,
         query: {
@@ -83,7 +83,7 @@ const CapsuleForm = memo(function CapsuleForm({
 
     // Temporarily add after your hooks:
     console.log("gas:", gas, "fees:", fees, "ethPrice:", ethPrice, "totalFee:", totalFee);
-    
+
     const handleCreateCapsule = async () => {
         if (!title) return toast.warning("Provide title to your capsule!");
         if (!unlockDate) return toast.warning("Select unlock date");
@@ -131,7 +131,7 @@ const CapsuleForm = memo(function CapsuleForm({
     return (
         <div className="bg-white/80 my-4 rounded-2xl p-5 lg:my-8 md:p-8 relative z-10">
             {/* Header */}
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center whitespace-nowrap justify-between mb-8">
                 <div>
                     <h2
                         className="text-xl md:text-2xl font-bold mb-1 flex items-center gap-2"
@@ -144,10 +144,10 @@ const CapsuleForm = memo(function CapsuleForm({
                 <Button
                     onClick={handleCreateCapsule}
                     disabled={loading}
-                    className="h-8 w-auto rounded-full contrast-110 cursor-pointer hover:bg-accent/90 bg-accent flex items-center justify-center active:scale-90 active:translate-y-1 ease-linear duration-200 transition-all border border-primary/40"
+                    className="h-8 w-auto mb-4 mx-2 rounded-full contrast-110 cursor-pointer hover:bg-accent/90 bg-accent flex items-center justify-center active:scale-90 active:translate-y-1 ease-linear duration-200 transition-all border border-primary/40"
                     style={{ boxShadow: "0 5px 0 0px #BD2E2ECC" }}
                 >
-                    <span className="text-white text-sm font-medium">Create & Seal</span>
+                    <span className="text-white text-sm">Create & Seal</span>
                 </Button>
             </div>
 
@@ -206,6 +206,7 @@ const CapsuleForm = memo(function CapsuleForm({
                             placeholder="Eleanor Rigby"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
+                            disabled={loading}
                             className="text-sm h-12 rounded-xl border focus:border-2 border-gray-300 shadow-sm w-full focus:scale-102 placeholder:text-gray-400"
                         />
                     </div>
@@ -220,6 +221,7 @@ const CapsuleForm = memo(function CapsuleForm({
                             value={unlockDate}
                             key={dateResetKey}
                             onChange={(date) => setUnlockDate(date)}
+                            disabled={loading}
                             buttonClassName="hover:bg-transparent bg-transparent border-gray-300! shadow-md rounded-xl h-12 focus:scale-102 active:scale-102"
                         />
                     </div>
@@ -235,6 +237,7 @@ const CapsuleForm = memo(function CapsuleForm({
                             placeholder="Create a message for future self..."
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
+                            disabled={loading}
                             className="h-32 text-sm rounded-xl border focus:border-2 border-gray-300 shadow-sm w-full px-4 py-3 overflow-auto resize-none focus:scale-102 placeholder:text-gray-400"
                         />
                     </div>

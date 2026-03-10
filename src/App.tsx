@@ -27,7 +27,7 @@ export function App() {
           className="pointer-events-none fixed inset-0 z-0"
           style={{
             background:
-              "radial-gradient(ellipse at center, transparent 50%, rgba(60,80,95,0.5) 100%)",
+              "radial-gradient(ellipse at center, transparent 60%, rgba(60,80,95,0.5) 100%)",
           }}
         />
         <Dashboard />

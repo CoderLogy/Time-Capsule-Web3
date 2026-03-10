@@ -4,7 +4,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import ViewCapsuleModal from "@/components/ViewCapsuleModal";
 import type { Capsule } from "@/lib/capsule-query";
-import { motion, AnimatePresence, useInView } from "motion/react";
+import { motion, AnimatePresence, useInView } from "framer-motion";
 
 type CardsProps = {
   capsules: Capsule[];
@@ -20,14 +20,22 @@ function LockedCard({ capsule }: { capsule: Capsule }) {
     const id = setInterval(() => setNow(Date.now()), 10_000);
     return () => clearInterval(id);
   }, []);
-
+  const [animatedWidth, setAnimatedWidth] = React.useState(0);
   const unlockTs = Number(capsule.unlockDate) * 1000;
   const createdTs = Number(capsule.blockTimestamp) * 1000;
   const total = unlockTs - createdTs;
   const elapsed = now - createdTs;
   const progress = Math.min(100, Math.max(2, (elapsed / total) * 100));
-  const unlockDateFormatted = new Date(unlockTs).toLocaleDateString("en-GB");
-
+  const unlockDateFormatted = new Date(unlockTs).toLocaleDateString("en-US");
+  const cardRef = React.useRef<HTMLDivElement>(null);
+  const inView = useInView(cardRef, { once: true, margin: "-20px" });
+  
+  React.useEffect(() => {
+    if (inView) {
+      const timeout = setTimeout(() => setAnimatedWidth(progress), 200);
+      return () => clearTimeout(timeout);
+    }
+}, [inView, progress]);
   return (
     <div
       data-capsule-title={capsule.title}
@@ -55,9 +63,16 @@ function LockedCard({ capsule }: { capsule: Capsule }) {
           <span className="font-bold">{unlockDateFormatted}</span>
         </div>
         <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden p-[1px]">
-          <div
-            className="h-full bg-secondary rounded-full transition-all duration-100 ease-out"
-            style={{ width: `${progress}%` }}
+          <motion.div
+            ref={cardRef}
+            initial={{ width: 0 }}
+            animate={{ width: `${animatedWidth}%` }}
+            className="h-full bg-secondary rounded-full"
+            transition={{
+          type: "spring",
+          stiffness: 80, // how stiff the spring is
+          damping: 20,    // how much it slows down
+        }}
           />
         </div>
       </div>
