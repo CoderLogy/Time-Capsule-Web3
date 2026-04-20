@@ -21,7 +21,7 @@ interface GraphQLResponse {
 
 export default async function handler(
   req: VercelRequest,
-  res: VercelResponse<GraphQLResponse | { error: string }>
+  res: VercelResponse
 ) {
   // Only allow POST requests
   if (req.method !== 'POST') {
