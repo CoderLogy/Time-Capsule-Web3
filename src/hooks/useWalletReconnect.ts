@@ -27,7 +27,7 @@ export function useWalletReconnect(options: ReconnectOptions = {}) {
   const { connectors } = useConnect();
 
   const reconnectAttemptsRef = useRef(0);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>();
   const isReconnectingRef = useRef(false);
 
   const attemptReconnect = useCallback(async () => {

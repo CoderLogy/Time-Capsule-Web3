@@ -2,7 +2,7 @@ import React, { useMemo, memo } from "react";
 import { Pill, Lock } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
-import ViewCapsuleModal from "@/components/ViewCapsuleModal";
+import ViewCapsuleModal from "./ViewCapsuleModal";
 import type { Capsule } from "@/lib/capsule-query";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 
