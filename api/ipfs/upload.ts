@@ -8,19 +8,21 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { uploadJson } from 'pinata';
+import { PinataSDK } from 'pinata';
 
-// Initialize Pinata SDK config with server-side secrets
-function getPinataConfig() {
+// Initialize Pinata SDK with server-side secrets
+function getPinataClient() {
   const jwt = process.env.PINATA_JWT;
+  const gateway = process.env.VITE_PINATA_GATEWAY;
 
-  if (!jwt) {
+  if (!jwt || !gateway) {
     throw new Error('Missing Pinata configuration in environment variables');
   }
 
-  return {
+  return new PinataSDK({
     pinataJwt: jwt,
-  };
+    pinataGateway: gateway,
+  });
 }
 
 interface UploadRequest {
@@ -58,24 +60,31 @@ export default async function handler(
       });
     }
 
-    const config = getPinataConfig();
-    const gateway = process.env.VITE_PINATA_GATEWAY;
+    const pinata = getPinataClient();
 
-    // Upload to Pinata
+    // Create JSON file from encrypted data
     const jsonData = {
       title,
       data: encryptedData,
       uploadedAt: new Date().toISOString(),
     };
 
-    const result = await uploadJson(config, jsonData, 'public');
+    const jsonFile = new File(
+      [JSON.stringify(jsonData)],
+      `${title}.json`,
+      { type: 'application/json' }
+    );
 
-    // Construct gateway URL
-    const gatewayUrl = `https://${gateway}/ipfs/${result.cid}`;
+    // Upload to Pinata using the public network
+    const upload = await pinata.upload.public.file(jsonFile);
+
+    // Construct gateway URL using the CID
+    const gateway = process.env.VITE_PINATA_GATEWAY;
+    const gatewayUrl = `https://${gateway}/ipfs/${upload.cid}`;
 
     return res.status(200).json({
       success: true,
-      cid: result.cid,
+      cid: upload.cid,
       gateway_url: gatewayUrl,
     });
   } catch (error) {
