@@ -40,7 +40,7 @@ interface UploadResponse {
 
 export default async function handler(
   req: VercelRequest,
-  res: VercelResponse<UploadResponse>
+  res: VercelResponse
 ) {
   // Only allow POST requests
   if (req.method !== 'POST') {

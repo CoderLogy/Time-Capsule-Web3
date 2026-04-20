@@ -17,7 +17,7 @@ interface ErrorResponse {
 
 export default async function handler(
   req: VercelRequest,
-  res: VercelResponse<PriceResponse | ErrorResponse>
+  res: VercelResponse
 ) {
   // Only allow GET requests
   if (req.method !== 'GET') {
