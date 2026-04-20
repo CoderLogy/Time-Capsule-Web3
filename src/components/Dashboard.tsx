@@ -1,10 +1,10 @@
-import Navbar from "./Navbar";
+import Navbar from "./navbar";
 import { Label } from "@/components/ui/label";
 import CountUp from "./ui/CountUp";
 import { useInView } from "motion/react";
 import { useRef, useMemo, useState } from "react";
 import { useAccount } from "wagmi";
-import Cards from "./Cards";
+import Cards from "./cards";
 import { getCapsules } from "@/lib/contract-api";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Capsule } from "@/lib/capsule-query";
@@ -24,7 +24,7 @@ export default function Dashboard() {
     const cardsContainerRef = useRef<HTMLDivElement>(null);
 
     // Setup wallet reconnection and recovery on app resume (mobile context switch)
-    useWalletReconnect();
+    useWalletReconnect({});
 
     const { data: capsules = [], refetch: refetchCapsules } = useQuery<Capsule[]>({
         queryKey: ["capsules", address],
