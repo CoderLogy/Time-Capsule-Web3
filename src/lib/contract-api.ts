@@ -5,13 +5,14 @@ import { ethers } from "ethers";
 import { GetUserCapsules, type Capsule } from "./capsule-query";
 import { decryptForWallet } from "./encrypt-decrypt";
 import { BLOCKCHAIN_CONFIG } from "./config";
+import { WalletClient } from "viem";
 
 let contract: ethers.Contract | null = null;
 
-export async function getContract(): Promise<ethers.Contract> {
+export async function getContract(walletClient?: WalletClient): Promise<ethers.Contract> {
   // Always create fresh contract to ensure signer is current
   // This is important for mobile wallet recovery scenarios
-  const signer = await setSignatureSigner();
+  const signer = await setSignatureSigner(walletClient);
   contract = new ethers.Contract(BLOCKCHAIN_CONFIG.contractAddress, TimeCapsuleAbi.abi, signer);
   console.log("[Contract] Created fresh contract instance with current signer");
   return contract;
@@ -29,8 +30,9 @@ export async function createCapsule(
   title: string,
   unlockDate: number,
   dataURI: string,
+  walletClient?: WalletClient,
 ): Promise<TransactionResponse> {
-  const c = await getContract();
+  const c = await getContract(walletClient);
   const fee: ethers.BigNumberish = await c.capsuleFee();
 
   const tx: TransactionResponse = await c.createCapsule(

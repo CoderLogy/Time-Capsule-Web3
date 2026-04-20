@@ -90,6 +90,7 @@ export async function createEncryptedCapsule({
       title,
       unlockDate,
       dataURI,
+      walletClient,
     );
 
     const timeoutPromise = new Promise<never>((_, reject) =>
