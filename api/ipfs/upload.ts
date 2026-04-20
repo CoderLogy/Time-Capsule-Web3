@@ -69,12 +69,9 @@ export default async function handler(
       uploadedAt: new Date().toISOString(),
     };
 
-    const blob = new Blob([JSON.stringify(jsonData)], { type: 'application/json' });
-    const file = new File([blob], `${title}.json`, { type: 'application/json' });
-
-    const result = await pinata.upload.file(file).addMetadata({
-      name: title,
-      keyvalues: {
+    const result = await pinata.files.uploadJson(jsonData, {
+      customMetadata: {
+        name: title,
         timestamp: Date.now().toString(),
       },
     });
