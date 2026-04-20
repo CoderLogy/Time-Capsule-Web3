@@ -1,12 +1,16 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-    readonly VITE_PINATA_JWT: string;
-    readonly VITE_PINATA_GATEWAY: string;
-    readonly VITE_SUBGRAPH_API: string;
-    // add more VITE_ env vars here
+  readonly VITE_CONTRACT_ADDRESS: string;
+  readonly VITE_CHAIN_ID: string;
+  readonly VITE_WALLETCONNECT_ID: string;
+  readonly VITE_SUBGRAPH_URL: string;
+  readonly VITE_SUBGRAPH_API: string;
+  readonly VITE_PINATA_JWT: string;
+  readonly VITE_PINATA_GATEWAY: string;
+  readonly CRYPTOPRICE_API_URL?: string;
 }
 
 interface ImportMeta {
-    readonly env: ImportMetaEnv;
+  readonly env: ImportMetaEnv;
 }

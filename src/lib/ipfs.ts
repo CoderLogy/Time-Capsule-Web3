@@ -1,9 +1,4 @@
-import { PinataSDK } from "pinata";
-
-const pinata = new PinataSDK({
-    pinataJwt: import.meta.env.VITE_PINATA_JWT!,
-    pinataGateway: import.meta.env.VITE_PINATA_GATEWAY!,
-});
+import { uploadToPinata } from "@/lib/api-client";
 
 // -------------------------------------------------------------------
 // Payload type (matches encryptForWallet)
@@ -23,16 +18,17 @@ export interface CapsulePayload {
 }
 
 // -------------------------------------------------------------------
-// Upload to IPFS
+// Upload to IPFS via Vercel Function
 // -------------------------------------------------------------------
-export async function uploadCapsule(payload: CapsulePayload,titleString:string) {
-    const gateway = "aquamarine-kind-gull-833.mypinata.cloud";
-    const res = await pinata.upload.public.json({
+export async function uploadCapsule(payload: CapsulePayload, titleString: string) {
+    // Serialize the payload as JSON and send to backend for secure upload
+    const encryptedData = JSON.stringify({
         title: titleString,
         ...payload,
-        createdAt: payload.createdAt ?? Date.now()
+        createdAt: payload.createdAt ?? Date.now(),
     });
-    if (!gateway) throw new Error("VITE_PINATA_GATEWAY is not set");
-    return `https://${gateway}/ipfs/${res.cid}`
+
+    const { gateway_url } = await uploadToPinata(encryptedData, titleString);
+    return gateway_url;
 }
 

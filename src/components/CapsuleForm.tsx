@@ -10,6 +10,8 @@ import { formatEther, parseEther } from "viem";
 import { createEncryptedCapsule } from "@/lib/createEncryptedCapsule";
 import { toast } from "sonner";
 import React from "react";
+import { getEthPrice } from "@/lib/api-client";
+import { BLOCKCHAIN_CONFIG } from "@/lib/config";
 
 interface CapsuleFormProps {
     onPendingAdd: (title: string) => void;
@@ -35,14 +37,8 @@ const CapsuleForm = memo(function CapsuleForm({
     useEffect(() => {
         const fetchPrice = async () => {
             try {
-                const res = await fetch(
-                    "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD"
-                );
-                const data = await res.json();
-
-                if (data?.USD) {
-                    setEthPrice(data.USD);
-                }
+                const priceData = await getEthPrice();
+                setEthPrice(priceData.price);
             } catch (err) {
                 console.error("Failed to fetch ETH price", err);
             }
@@ -55,9 +51,9 @@ const CapsuleForm = memo(function CapsuleForm({
         if (!isConnected || !address) return undefined;
         return {
             account: address as `0x${string}`,
-            to: "0x19FF5dc69033523f1C5b1B5589f95D49b5EF7926" as `0x${string}`,
+            to: BLOCKCHAIN_CONFIG.contractAddress as `0x${string}`,
             value: parseEther("0.00005"),
-            chainId: 11155111,
+            chainId: BLOCKCHAIN_CONFIG.chainId,
             data: "0x" as `0x${string}` // ← add this
         };
     }, [isConnected, address]);
@@ -69,7 +65,7 @@ const CapsuleForm = memo(function CapsuleForm({
         }
     });
     const { data: fees } = useEstimateFeesPerGas({
-        chainId: 11155111,
+        chainId: BLOCKCHAIN_CONFIG.chainId,
         query: {
             enabled: !!tx
         }
@@ -88,13 +84,23 @@ const CapsuleForm = memo(function CapsuleForm({
         if (!title) return toast.warning("Provide title to your capsule!");
         if (!unlockDate) return toast.warning("Select unlock date");
         if (!message) return toast.warning("Enter a new message!");
-        if (!isConnected) return (toast.error("Wallet not connected"), window.location.reload());
+        if (!isConnected) {
+            toast.error("Wallet not connected - please reconnect");
+            return;
+        }
 
         const currentTitle = title;
         setLoading(true);
         onPendingAdd(currentTitle);
 
         try {
+            console.log("[CapsuleForm] Starting capsule creation with:", {
+                title,
+                address,
+                messageLength: message.length,
+                unlockDate: unlockDate?.toISOString(),
+            });
+
             const timestamp = Math.floor(unlockDate.getTime() / 1000);
             await createEncryptedCapsule({
                 address: address!,
@@ -102,8 +108,19 @@ const CapsuleForm = memo(function CapsuleForm({
                 unlockDate: timestamp,
                 title
             });
+
+            console.log("[CapsuleForm] Capsule created, waiting for onCreated callback...");
             await onCreated();
+            console.log("[CapsuleForm] onCreated callback completed");
+
             toast.success("Capsule created successfully");
+
+            // Only clear form on success
+            console.log("[CapsuleForm] Clearing form after successful creation");
+            setTitle("");
+            setMessage("");
+            setUnlockDate(undefined);
+            setDateResetKey((k) => k + 1);
 
             setTimeout(() => {
                 const container = cardsContainerRef.current;
@@ -116,15 +133,17 @@ const CapsuleForm = memo(function CapsuleForm({
                 });
             }, 500);
         } catch (err) {
-            console.error("Failed to create capsule:", err);
-            toast.error("Failed to create capsule");
+            console.error("[CapsuleForm] Failed to create capsule:", err);
+            console.error("[CapsuleForm] Error details:", {
+                message: err instanceof Error ? err.message : String(err),
+                stack: err instanceof Error ? err.stack : undefined,
+            });
+            toast.error("Failed to create capsule - your data is preserved");
+            // Do NOT clear form on error - user can retry
+            console.log("[CapsuleForm] Form data preserved, user can retry");
         } finally {
             setLoading(false);
             onPendingRemove(currentTitle);
-            setTitle("");
-            setMessage("");
-            setUnlockDate(undefined);
-            setDateResetKey((k) => k + 1);
         }
     };
 
@@ -162,7 +181,7 @@ const CapsuleForm = memo(function CapsuleForm({
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
                     </span>
-                    Sepolia Connected
+                    {BLOCKCHAIN_CONFIG.chainName} Connected
                 </div>
                 <div className="h-8 w-full max-w-48 flex gap-2 items-center justify-center bg-gray-200/70 shadow-inner rounded-full">
                     <Fuel className="text-gray-500 h-5" />

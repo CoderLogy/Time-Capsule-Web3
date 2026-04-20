@@ -1,10 +1,5 @@
-import { gql, request } from "graphql-request";
-
-const SUBGRAPH_URL =
-  "https://api.studio.thegraph.com/query/1742250/time-capsule/version/latest";
-const SUBGRAPH_HEADERS = {
-  Authorization: `Bearer ${import.meta.env.VITE_SUBGRAPH_API}`,
-};
+import { gql } from "graphql-request";
+import { querySubgraph } from "@/lib/api-client";
 
 const GET_USER_CAPSULES = gql`
   query GetUserCapsules($owner: Bytes!) {
@@ -40,11 +35,10 @@ export type Capsule = CapsuleCreated & {
 };
 
 export async function GetUserCapsules(owner: string): Promise<Capsule[]> {
-  const data: { capsuleCreateds: CapsuleCreated[] } = await request(
-    SUBGRAPH_URL,
+  // Query via backend API function (authentication handled server-side)
+  const data: { capsuleCreateds: CapsuleCreated[] } = await querySubgraph(
     GET_USER_CAPSULES,
-    { owner: owner.toLowerCase() },
-    SUBGRAPH_HEADERS,
+    { owner: owner.toLowerCase() }
   );
 
   const now = Math.floor(Date.now() / 1000);

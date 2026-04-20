@@ -12,15 +12,19 @@ import CapsuleForm from "./CapsuleForm";
 import ScrollUpButton from "./ScrollUpButton";
 import Footer from "./Footer";
 import HeroText from "./HeroText";
+import { useWalletReconnect } from "@/hooks/useWalletReconnect";
 
 export default function Dashboard() {
-    //const queryClient = useQueryClient();
+    const queryClient = useQueryClient();
     const ref = useRef(null);
     const inView = useInView(ref);
     const { address, isConnected } = useAccount();
     const [pendingTitles, setPendingTitles] = useState<string[]>([]);
     const [search, setSearch] = useState("");
     const cardsContainerRef = useRef<HTMLDivElement>(null);
+
+    // Setup wallet reconnection and recovery on app resume (mobile context switch)
+    useWalletReconnect();
 
     const { data: capsules = [], refetch: refetchCapsules } = useQuery<Capsule[]>({
         queryKey: ["capsules", address],
@@ -92,7 +96,7 @@ export default function Dashboard() {
                                 >
                                     Your Capsules
                                     <span
-                                        className="font-normal text-xs text-gray-500 ml-2 inline-block align-middle"
+                                        className="font-normal text-xs pr-4 text-gray-500 ml-2 inline-block align-middle"
                                         ref={ref}
                                     >
                                         (

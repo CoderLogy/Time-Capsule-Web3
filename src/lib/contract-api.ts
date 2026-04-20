@@ -4,15 +4,25 @@ import type { TransactionResponse } from "ethers";
 import { ethers } from "ethers";
 import { GetUserCapsules, type Capsule } from "./capsule-query";
 import { decryptForWallet } from "./encrypt-decrypt";
+import { BLOCKCHAIN_CONFIG } from "./config";
 
-const CONTRACT_ADDRESS = "0x19FF5dc69033523f1C5b1B5589f95D49b5EF7926";
-let contract: ethers.Contract | null;
+let contract: ethers.Contract | null = null;
 
 export async function getContract(): Promise<ethers.Contract> {
-  if (contract) return contract;
+  // Always create fresh contract to ensure signer is current
+  // This is important for mobile wallet recovery scenarios
   const signer = await setSignatureSigner();
-  contract = new ethers.Contract(CONTRACT_ADDRESS, TimeCapsuleAbi.abi, signer);
+  contract = new ethers.Contract(BLOCKCHAIN_CONFIG.contractAddress, TimeCapsuleAbi.abi, signer);
+  console.log("[Contract] Created fresh contract instance with current signer");
   return contract;
+}
+
+/**
+ * Clear cached contract instance - call this when wallet state changes
+ */
+export function clearContract() {
+  console.log("[Contract] Clearing cached contract");
+  contract = null;
 }
 
 export async function createCapsule(
@@ -53,5 +63,10 @@ export async function openCapsule(dataURI: string): Promise<string> {
   const signer = await setSignatureSigner();
   const payload = await fetchCapsulePayload(dataURI);
   console.log("Payload from Pinata:", payload);
-  return decryptForWallet(signer, payload);
+  try {
+    return await decryptForWallet(signer, payload);
+  } finally {
+    // Clear cache after use to ensure fresh state
+    clearContract();
+  }
 }

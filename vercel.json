@@ -1,0 +1,20 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "nodejs": "20.x",
+  "functions": {
+    "api/**/*.ts": {
+      "memory": 1024,
+      "maxDuration": 60
+    }
+  },
+  "env": [
+    "VITE_CONTRACT_ADDRESS",
+    "VITE_CHAIN_ID",
+    "VITE_WALLETCONNECT_ID",
+    "VITE_SUBGRAPH_URL",
+    "VITE_PINATA_GATEWAY",
+    "CRYPTOPRICE_API_URL"
+  ]
+}

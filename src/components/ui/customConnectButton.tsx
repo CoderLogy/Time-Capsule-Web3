@@ -1,8 +1,11 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { LogIn } from "lucide-react"; // or wherever your icon comes from
-import { Button } from "@/components/ui/button"; // adjust path
+import { LogIn } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useWalletReconnect } from "@/hooks/useWalletReconnect";
 
 export function CustomConnectButton() {
+  const { isReconnecting } = useWalletReconnect();
+
   return (
     <ConnectButton.Custom>
       {({
@@ -20,6 +23,18 @@ export function CustomConnectButton() {
           return (
             <Button disabled className="opacity-50">
               Loading...
+            </Button>
+          );
+        }
+
+        // 🔄 Reconnecting after background app switch
+        if (isReconnecting) {
+          return (
+            <Button disabled className="opacity-70">
+              <div className="flex items-center gap-2">
+                <span className="animate-spin">⟳</span>
+                <h2>Reconnecting...</h2>
+              </div>
             </Button>
           );
         }
@@ -69,3 +84,4 @@ export function CustomConnectButton() {
     </ConnectButton.Custom>
   );
 }
+

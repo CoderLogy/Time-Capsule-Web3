@@ -6,13 +6,14 @@ import {
   DisclaimerComponent,
   lightTheme,
 } from "@rainbow-me/rainbowkit";
-import { arbitrum, sepolia } from "wagmi/chains";
+import { sepolia } from "wagmi/chains";
 import { ReactNode } from "react";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import { WALLET_CONFIG, BLOCKCHAIN_CONFIG } from "@/lib/config";
 
 export const config = getDefaultConfig({
   appName: "myproject",
-  projectId: "d6d73254b873a6c64d325465fa9c4a2c",
+  projectId: WALLET_CONFIG.walletConnectId,
   chains: [sepolia],
   ssr: false,
   storage: createStorage({

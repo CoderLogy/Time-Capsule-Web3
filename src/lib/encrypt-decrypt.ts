@@ -2,14 +2,17 @@ import { BrowserProvider, ethers } from "ethers";
 import { getWalletClient } from "@wagmi/core";
 import { config } from "@/components/Wallet";
 import { WalletClient } from "viem";
+import { BLOCKCHAIN_CONFIG } from "@/lib/config";
+
 /* ------------------------------------------------------------------ */
 /* Config                                                             */
 /* ------------------------------------------------------------------ */
 
-const SEPOLIA_CHAIN_ID = 11155111n;
-const CONTRACT_ADDRESS = "0x19FF5dc69033523f1C5b1B5589f95D49b5EF7926";
+const SEPOLIA_CHAIN_ID = BigInt(BLOCKCHAIN_CONFIG.chainId);
+const CONTRACT_ADDRESS = BLOCKCHAIN_CONFIG.contractAddress;
 
 let signer: ethers.Signer | null = null;
+let lastSignerAddressRef: string | null = null;
 
 /* ------------------------------------------------------------------ */
 /* Wallet signer                                                      */
@@ -21,23 +24,61 @@ export async function setSignatureSigner(
   if (walletClient) {
     const provider = new ethers.BrowserProvider(walletClient.transport);
     signer = await provider.getSigner();
+    lastSignerAddressRef = await signer.getAddress();
+    console.log(`[Signer] Set signer for address: ${lastSignerAddressRef}`);
     return signer;
   }
   // fallback to existing logic
   const wc = await getWalletClient(config as Parameters<typeof getWalletClient>[0]);
-  if (!wc) throw new Error("No wallet connected");
+  if (!wc) {
+    console.warn('[Signer] No wallet client available');
+    signer = null;
+    lastSignerAddressRef = null;
+    throw new Error("No wallet connected");
+  }
   const provider = new ethers.BrowserProvider(wc.transport);
   signer = await provider.getSigner();
+  lastSignerAddressRef = await signer.getAddress();
+  console.log(`[Signer] Set signer for address: ${lastSignerAddressRef}`);
   return signer;
 }
 
 export function getSigner(): ethers.Signer {
-  if (!signer) throw new Error("Signer not initialized");
+  if (!signer) {
+    console.warn('[Signer] Attempted to use signer that was not initialized');
+    throw new Error("Signer not initialized");
+  }
   return signer;
 }
 
+/**
+ * Validate if the current signer is still valid and usable
+ * Returns true if valid, false if stale or invalid
+ */
+export async function isSignerValid(): Promise<boolean> {
+  if (!signer) {
+    console.log('[Signer] Signer is null');
+    return false;
+  }
+
+  try {
+    const currentAddress = await signer.getAddress();
+    if (currentAddress !== lastSignerAddressRef) {
+      console.warn('[Signer] Signer address mismatch - wallet may have changed');
+      return false;
+    }
+    console.log('[Signer] Signer validation passed');
+    return true;
+  } catch (error) {
+    console.warn('[Signer] Signer validation failed:', error);
+    return false;
+  }
+}
+
 export function clearSignatureSigner() {
+  console.log('[Signer] Clearing cached signer');
   signer = null;
+  lastSignerAddressRef = null;
 }
 
 /* ------------------------------------------------------------------ */
