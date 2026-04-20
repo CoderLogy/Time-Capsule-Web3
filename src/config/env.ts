@@ -30,11 +30,11 @@ export const serverEnv = {
   subgraphApiKey: process.env.VITE_SUBGRAPH_API_KEY || '',
 
   // IPFS / Pinata
-  pinataJwt: process.env.PINATA_JWT || '',
-  pinataApiSecret: process.env.PINATA_API_SECRET || '',
+  pinataJwt: process.env.VITE_PINATA_JWT || '',
+  pinataApiSecret: process.env.VITE_PINATA_API_SECRET || '',
 
   // Ethereum RPC (for deployment/testing)
-  sepoliaRpcUrl: process.env.SEPOLIA_RPC_URL || 'https://1rpc.io/sepolia',
+  sepoliaRpcUrl: process.env.SEPOLIA_URL || 'https://1rpc.io/sepolia',
   privateKey: process.env.PRIVATE_KEY || '',
   etherscanApiKey: process.env.ETHERSCAN_API_KEY || '',
 } as const;

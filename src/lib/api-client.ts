@@ -53,6 +53,8 @@ export async function uploadToPinata(
 // GraphQL Queries
 // ============================================================================
 
+import { publicEnv } from '@/config/env';
+
 export interface GraphQLQueryOptions {
   query: string;
   variables?: Record<string, any>;
@@ -67,7 +69,7 @@ export async function querySubgraph<T = any>(
   query: string,
   variables?: Record<string, any>
 ): Promise<T> {
-  const response = await fetch('/api/graphql/query', {
+  const response = await fetch(publicEnv.subgraphUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
