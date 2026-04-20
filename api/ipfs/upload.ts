@@ -13,16 +13,14 @@ import { PinataSDK } from 'pinata';
 // Initialize Pinata SDK with server-side secrets
 function getPinataClient() {
   const jwt = process.env.PINATA_JWT;
-  const apiSecret = process.env.PINATA_API_SECRET;
   const gateway = process.env.VITE_PINATA_GATEWAY;
 
-  if (!jwt || !apiSecret || !gateway) {
+  if (!jwt || !gateway) {
     throw new Error('Missing Pinata configuration in environment variables');
   }
 
   return new PinataSDK({
     pinataJwt: jwt,
-    pinataApiSecret: apiSecret,
   });
 }
 
@@ -65,18 +63,21 @@ export default async function handler(
     const gateway = process.env.VITE_PINATA_GATEWAY;
 
     // Upload to Pinata
-    const result = await pinata.upload
-      .json({
-        title,
-        data: encryptedData,
-        uploadedAt: new Date().toISOString(),
-      })
-      .addMetadata({
-        name: title,
-        keyvalues: {
-          timestamp: Date.now().toString(),
-        },
-      });
+    const jsonData = {
+      title,
+      data: encryptedData,
+      uploadedAt: new Date().toISOString(),
+    };
+
+    const blob = new Blob([JSON.stringify(jsonData)], { type: 'application/json' });
+    const file = new File([blob], `${title}.json`, { type: 'application/json' });
+
+    const result = await pinata.upload.file(file).addMetadata({
+      name: title,
+      keyvalues: {
+        timestamp: Date.now().toString(),
+      },
+    });
 
     // Construct gateway URL
     const gatewayUrl = `https://${gateway}/ipfs/${result.IpfsHash}`;
