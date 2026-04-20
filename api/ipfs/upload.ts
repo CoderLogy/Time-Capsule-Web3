@@ -8,20 +8,19 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { PinataSDK } from 'pinata';
+import { uploadJson } from 'pinata';
 
-// Initialize Pinata SDK with server-side secrets
-function getPinataClient() {
+// Initialize Pinata SDK config with server-side secrets
+function getPinataConfig() {
   const jwt = process.env.PINATA_JWT;
-  const gateway = process.env.VITE_PINATA_GATEWAY;
 
-  if (!jwt || !gateway) {
+  if (!jwt) {
     throw new Error('Missing Pinata configuration in environment variables');
   }
 
-  return new PinataSDK({
+  return {
     pinataJwt: jwt,
-  });
+  };
 }
 
 interface UploadRequest {
@@ -59,7 +58,7 @@ export default async function handler(
       });
     }
 
-    const pinata = getPinataClient();
+    const config = getPinataConfig();
     const gateway = process.env.VITE_PINATA_GATEWAY;
 
     // Upload to Pinata
@@ -69,7 +68,7 @@ export default async function handler(
       uploadedAt: new Date().toISOString(),
     };
 
-    const result = await pinata.files.uploadJson(jsonData, {
+    const result = await uploadJson(config, jsonData, 'public', {
       customMetadata: {
         name: title,
         timestamp: Date.now().toString(),
