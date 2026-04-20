@@ -68,19 +68,14 @@ export default async function handler(
       uploadedAt: new Date().toISOString(),
     };
 
-    const result = await uploadJson(config, jsonData, 'public', {
-      customMetadata: {
-        name: title,
-        timestamp: Date.now().toString(),
-      },
-    });
+    const result = await uploadJson(config, jsonData, 'public');
 
     // Construct gateway URL
-    const gatewayUrl = `https://${gateway}/ipfs/${result.IpfsHash}`;
+    const gatewayUrl = `https://${gateway}/ipfs/${result.cid}`;
 
     return res.status(200).json({
       success: true,
-      cid: result.IpfsHash,
+      cid: result.cid,
       gateway_url: gatewayUrl,
     });
   } catch (error) {
