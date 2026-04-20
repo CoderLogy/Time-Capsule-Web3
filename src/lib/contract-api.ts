@@ -1,9 +1,8 @@
-import { CapsulePayload, setSignatureSigner } from "./encrypt-decrypt";
+import { CapsulePayload, setSignatureSigner, decryptForWallet, unwrapDrandTimelock } from "./encrypt-decrypt";
 import TimeCapsuleAbi from "../../contracts/TimeCapsule.json";
 import type { TransactionResponse } from "ethers";
 import { ethers } from "ethers";
 import { GetUserCapsules, type Capsule } from "./capsule-query";
-import { decryptForWallet } from "./encrypt-decrypt";
 import { BLOCKCHAIN_CONFIG } from "./config";
 import { WalletClient } from "viem";
 
@@ -66,7 +65,14 @@ export async function openCapsule(dataURI: string): Promise<string> {
   const payload = await fetchCapsulePayload(dataURI);
   console.log("Payload from Pinata:", payload);
   try {
-    return await decryptForWallet(signer, payload);
+    // Unwrap drand time-lock if present
+    let decryptPayload = payload;
+    if (payload.isDrandLocked && payload.drandCiphertext) {
+      console.log("[OpenCapsule] Unwrapping drand time-locked payload...");
+      decryptPayload = await unwrapDrandTimelock(payload);
+    }
+
+    return await decryptForWallet(signer, decryptPayload);
   } finally {
     // Clear cache after use to ensure fresh state
     clearContract();

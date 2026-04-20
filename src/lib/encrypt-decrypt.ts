@@ -3,6 +3,7 @@ import { getWalletClient } from "@wagmi/core";
 import { config } from "@/components/Wallet";
 import { WalletClient } from "viem";
 import { BLOCKCHAIN_CONFIG } from "@/lib/config";
+import { quicknet, encrypt as drandEncrypt, decrypt as drandDecrypt } from "@/lib/drand";
 
 /* ------------------------------------------------------------------ */
 /* Config                                                               */
@@ -231,6 +232,11 @@ export interface CapsulePayload {
   issuedAt: number;   // stored as rounded timestamp
   expiresAt: number;
   version: number;
+
+  // Drand time-lock fields (optional, for backward compatibility)
+  drandCiphertext?: string;      // Base64-encoded drand-encrypted payload
+  drandRound?: number;           // Drand round when payload became decryptable
+  isDrandLocked?: boolean;       // Flag: is payload wrapped with drand timelock?
 }
 
 /* ------------------------------------------------------------------ */
@@ -424,5 +430,133 @@ export async function decryptForWallet(
   } finally {
     // FIX [Low]: Zero decrypted key bytes immediately after import.
     zeroize(dataKeyRaw);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Drand Time-Lock Integration                                         */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Feature flag: enables drand time-lock encryption wrapper
+ * Can be controlled via environment or config
+ */
+export function shouldApplyDrandTimelock(): boolean {
+  // Check for environment variable or feature flag
+  // For now, default to false for backward compatibility
+  return import.meta.env.VITE_ENABLE_DRAND_TIMELOCK === "true";
+}
+
+/**
+ * Wrap a capsule payload with drand time-lock encryption
+ *
+ * Encrypts the entire CapsulePayload with drand so that it can only be decrypted
+ * after a specific time is reached (when the drand round is revealed).
+ *
+ * @param payload - The encrypted capsule payload (from encryptForWallet)
+ * @param unlockDate - Unix timestamp when the capsule should become decryptable
+ * @returns - New payload with drand-encrypted data
+ */
+export async function wrapWithDrandTimelock(
+  payload: CapsulePayload,
+  unlockDate: number,
+): Promise<CapsulePayload> {
+  try {
+    console.log("[Drand] Wrapping payload with time-lock encryption...");
+
+    // Serialize the original payload to JSON string
+    const payloadJson = JSON.stringify(payload);
+
+    // Get drand client and encrypt the payload
+    const client = quicknet();
+    const encrypted = await drandEncrypt(client, payloadJson, unlockDate * 1000);
+
+    console.log(`[Drand] Payload wrapped successfully. Round: ${encrypted.drandRound}`);
+
+    // Return wrapped payload with drand fields set
+    return {
+      encryptedMessage: "",    // Clear original encryption
+      encryptedDataKey: "",
+      dataIv: "",
+      keyIv: "",
+      capsuleNonce: payload.capsuleNonce,  // Keep for reference
+      issuedAt: payload.issuedAt,
+      expiresAt: unlockDate,
+      version: payload.version,
+      isDrandLocked: true,
+      drandCiphertext: encrypted.ciphertext,
+      drandRound: encrypted.drandRound,
+    };
+  } catch (error) {
+    console.error("[Drand] Failed to wrap with timelock:", error);
+    throw new Error(
+      `Failed to apply drand time-lock encryption: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+  }
+}
+
+/**
+ * Unwrap a drand time-locked payload to recover the original capsule
+ *
+ * Decrypts the drand-encrypted payload back to the original CapsulePayload.
+ * This is only possible after the drand round has been revealed.
+ *
+ * @param payload - The drand-wrapped payload (from IPFS)
+ * @returns - Original CapsulePayload ready for encryptForWallet decryption
+ */
+export async function unwrapDrandTimelock(
+  payload: CapsulePayload,
+): Promise<CapsulePayload> {
+  try {
+    if (!payload.isDrandLocked || !payload.drandCiphertext) {
+      throw new Error("Payload is not drand-locked or missing ciphertext");
+    }
+
+    console.log(`[Drand] Unwrapping drand-locked payload (round: ${payload.drandRound})...`);
+
+    // Get drand client and decrypt
+    const client = quicknet();
+    const decrypted = await drandDecrypt(
+      client,
+      payload.drandCiphertext,
+      payload.expiresAt * 1000,
+    );
+
+    // Parse recovered payload
+    const recoveredPayload = JSON.parse(decrypted.plaintext) as CapsulePayload;
+
+    console.log("[Drand] Payload unwrapped successfully");
+
+    // Validate that we got a proper CapsulePayload back
+    if (
+      !recoveredPayload.encryptedMessage ||
+      !recoveredPayload.encryptedDataKey ||
+      !recoveredPayload.capsuleNonce
+    ) {
+      throw new Error("Recovered payload is malformed");
+    }
+
+    // Return the recovered original payload (without drand fields)
+    return recoveredPayload;
+  } catch (error) {
+    console.error("[Drand] Failed to unwrap timelock:", error);
+
+    // Provide helpful error messages for common issues
+    if (
+      error instanceof Error &&
+      error.message.includes("round not available")
+    ) {
+      throw new Error(
+        "Capsule is still time-locked. Please wait for the unlock time to arrive.",
+      );
+    }
+
+    throw new Error(
+      `Failed to decrypt drand time-locked capsule: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
   }
 }

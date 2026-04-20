@@ -1,5 +1,5 @@
 import { ethers, TransactionResponse } from "ethers";
-import { encryptForWallet, CapsulePayload, clearSignatureSigner } from "./encrypt-decrypt";
+import { encryptForWallet, CapsulePayload, clearSignatureSigner, wrapWithDrandTimelock, shouldApplyDrandTimelock } from "./encrypt-decrypt";
 import { uploadCapsule } from "@/lib/ipfs";
 import { createCapsule, getCapsules, clearContract } from "@/lib/contract-api";
 import { toast } from "sonner";
@@ -80,8 +80,15 @@ export async function createEncryptedCapsule({
       unlockDate,
     );
 
+    // Apply drand time-lock encryption if enabled
+    let finalPayload = payload;
+    if (shouldApplyDrandTimelock()) {
+      console.log("[CreateCapsule] Applying drand time-lock encryption...");
+      finalPayload = await wrapWithDrandTimelock(payload, unlockDate);
+    }
+
     console.log("[CreateCapsule] Uploading encrypted payload to IPFS...");
-    const dataURI = await uploadCapsule(payload, title);
+    const dataURI = await uploadCapsule(finalPayload, title);
 
     console.log("[CreateCapsule] Creating transaction...");
 

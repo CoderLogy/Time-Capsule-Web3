@@ -42,6 +42,7 @@ export async function encrypt(
     plaintext,
     decryptionTime,
     ciphertext,
+    drandRound: roundNumber,
   };
 }
 
@@ -57,11 +58,3 @@ export async function decrypt(
     ciphertext,
   };
 }
-const encryptedMessage = await encrypt(
-  quicknet(),
-  "Hello Worlds",
-  Date.now() + 2 * 1000,
-);
-//const decryptedText = await decrypt(quicknet(),encryptedMessage.ciphertext,encryptedMessage.decryptionTime)
-console.log("encryption started", encryptedMessage);
-//console.log("decryption started",decryptedText)
