@@ -5,7 +5,6 @@ import "dotenv/config";
 import {
     encryptForWallet,
     decryptForWallet,
-    deriveMasterKeyFromAddress,
 } from "./encrypt-decrypt.ts";
 
 import { uploadCapsule } from "./ipfs.ts";
@@ -40,26 +39,15 @@ async function test() {
     const signer = new ethers.Wallet(PRIVATE_KEY, provider);
     console.log("Wallet address:", await signer.getAddress());
 
-    // 2️⃣ Derive a session key (simulate Case 2)
-    const capsuleNonce = ethers.hexlify(ethers.randomBytes(16)).slice(2); // 16 bytes hex
+    // 2️⃣ Setup encryption parameters
     const issuedAt = Math.floor(Date.now() / 1000);
     const expiresAt = issuedAt + 3600; // 1 hour validity
 
-    const sessionKey = await deriveMasterKeyFromAddress(
-        signer,
-        capsuleNonce,
-        issuedAt,
-        expiresAt
-    );
-
-    console.log("Session key derived ✅");
-
-    // 3️⃣ Encrypt first capsule using session key
+    // 3️⃣ Encrypt first capsule
     const encrypted1: CapsulePayload = await encryptForWallet(
         signer,
         PLAINTEXT,
-        undefined, // validForSeconds defaults
-        sessionKey
+        expiresAt
     );
 
     console.log("Encrypted capsule 1:", encrypted1);
@@ -80,8 +68,7 @@ async function test() {
     const encrypted2: CapsulePayload = await encryptForWallet(
         signer,
         "This is the second capsule using the same session key",
-        undefined,
-        sessionKey
+        expiresAt
     );
 
     console.log("Encrypted capsule 2:", encrypted2);
