@@ -185,7 +185,7 @@ const CapsuleForm = memo(function CapsuleForm({
                     </span>
                     {BLOCKCHAIN_CONFIG.chainName} Connected
                 </div>
-                <div className="h-8 w-full max-w-48 flex gap-2 items-center justify-center bg-gray-200/70 shadow-inner rounded-full">
+                <div className="h-8 w-full max-w-48 flex gap-2 items-center justify-center bg-gray-200/70 shadow-inner rounded-full group relative">
                     <Fuel className="text-gray-500 h-5" />
                     <span>
                         ≈ {totalFeeInEth ? Number(totalFeeInEth).toFixed(6) : "..."} ETH{" "}
@@ -195,6 +195,14 @@ const CapsuleForm = memo(function CapsuleForm({
                                 : "($...)"}
                         </span>
                     </span>
+
+                    {/* Fee Breakdown Tooltip */}
+                    {costData && (
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white text-xs rounded px-2 py-1 whitespace-nowrap pointer-events-none">
+                            <div>Capsule: {formatEther(costData.capsuleFee?.toString() || "0")} ETH</div>
+                            <div>Gas: {formatEther(costData.gasCost?.toString() || "0")} ETH</div>
+                        </div>
+                    )}
                 </div>
             </div>
 
