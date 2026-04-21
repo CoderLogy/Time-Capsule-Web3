@@ -10,7 +10,7 @@ dataSources:
     source:
       address: "0x19FF5dc69033523f1C5b1B5589f95D49b5EF7926"
       abi: TimeCapsule
-      startBlock: 10284165
+      startBlock: 10284151
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9

@@ -1,13 +1,13 @@
 {
-  "name": "time-capsule-api",
+  "name": "time-capsule",
   "license": "UNLICENSED",
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ time-capsule-api",
-    "create-local": "graph create --node http://localhost:8020/ time-capsule-api",
-    "remove-local": "graph remove --node http://localhost:8020/ time-capsule-api",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 time-capsule-api",
+    "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ time-capsule",
+    "create-local": "graph create --node http://localhost:8020/ time-capsule",
+    "remove-local": "graph remove --node http://localhost:8020/ time-capsule",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 time-capsule",
     "test": "graph test"
   },
   "dependencies": {
