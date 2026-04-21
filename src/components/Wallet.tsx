@@ -1,6 +1,6 @@
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
-import { WagmiProvider, createStorage } from "wagmi";
+import { WagmiProvider, createStorage, http } from "wagmi";
 import {
   RainbowKitProvider,
   DisclaimerComponent,
@@ -11,11 +11,17 @@ import { ReactNode } from "react";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { WALLET_CONFIG, BLOCKCHAIN_CONFIG } from "@/lib/config";
 
+// Use Infura RPC for Sepolia - proper public endpoint
+const SEPOLIA_RPC_URL = "https://1rpc.io/sepolia";
+
 export const config = getDefaultConfig({
   appName: "myproject",
   projectId: WALLET_CONFIG.walletConnectId,
   chains: [sepolia],
   ssr: false,
+  transports: {
+    [sepolia.id]: http(SEPOLIA_RPC_URL),
+  },
   storage: createStorage({
     storage: localStorage,
   }),
