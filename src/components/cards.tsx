@@ -22,10 +22,9 @@ function LockedCard({ capsule }: { capsule: Capsule }) {
     }, []);
     const [animatedWidth, setAnimatedWidth] = React.useState(0);
     const unlockTs = Number(capsule.unlockDate) * 1000;
-    const createdTs = Number(capsule.blockTimestamp) * 1000;
-    const total = unlockTs - createdTs;
-    const elapsed = now - createdTs;
-    const progress = Math.min(100, Math.max(2, (elapsed / total) * 100));
+    // Direct calculation: INVERTED - less time remaining = fuller bar
+    const daysRemaining = (unlockTs - now) / (1000 * 60 * 60 * 24);
+    const progress = Math.min(100, Math.max(2, 100 - daysRemaining));
     const unlockDateFormatted = new Date(unlockTs).toLocaleDateString("en-US");
     const cardRef = React.useRef<HTMLDivElement>(null);
     const inView = useInView(cardRef, { once: true, margin: "-20px" });
