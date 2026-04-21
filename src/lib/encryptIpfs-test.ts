@@ -2,10 +2,7 @@ import { ethers } from "ethers";
 import fetch from "node-fetch";
 import "dotenv/config";
 
-import {
-    encryptForWallet,
-    decryptForWallet,
-} from "./encrypt-decrypt.ts";
+import { encryptForWallet, decryptForWallet } from "./encrypt-decrypt.ts";
 
 import { uploadCapsule } from "./ipfs.ts";
 
@@ -44,11 +41,7 @@ async function test() {
     const expiresAt = issuedAt + 3600; // 1 hour validity
 
     // 3️⃣ Encrypt first capsule
-    const encrypted1: CapsulePayload = await encryptForWallet(
-        signer,
-        PLAINTEXT,
-        expiresAt
-    );
+    const encrypted1: CapsulePayload = await encryptForWallet(signer, PLAINTEXT, expiresAt);
 
     console.log("Encrypted capsule 1:", encrypted1);
 
@@ -57,7 +50,7 @@ async function test() {
     console.log("Stored capsule 1 at CID:", cidUrl1);
 
     // 5️⃣ Fetch from IPFS
-    const ipfsPayload1 = (await fetch(cidUrl1).then(r => r.json())) as CapsulePayload;
+    const ipfsPayload1 = (await fetch(cidUrl1).then((r) => r.json())) as CapsulePayload;
     console.log("Fetched capsule 1 payload:", ipfsPayload1);
 
     // 6️⃣ Decrypt first capsule
@@ -76,12 +69,15 @@ async function test() {
     const cidUrl2 = await uploadCapsule(encrypted2, "Test Capsule 2");
     console.log("Stored capsule 2 at CID:", cidUrl2);
 
-    const ipfsPayload2 = (await fetch(cidUrl2).then(r => r.json())) as CapsulePayload;
+    const ipfsPayload2 = (await fetch(cidUrl2).then((r) => r.json())) as CapsulePayload;
     const decrypted2 = await decryptForWallet(signer, ipfsPayload2);
     console.log("Decrypted capsule 2:", decrypted2);
 
     // 8️⃣ Assert results
-    if (decrypted1 === PLAINTEXT && decrypted2 === "This is the second capsule using the same session key") {
+    if (
+        decrypted1 === PLAINTEXT &&
+        decrypted2 === "This is the second capsule using the same session key"
+    ) {
         console.log("✅ TEST PASSED: Both capsules decrypted successfully");
     } else {
         console.log("❌ TEST FAILED: Decryption mismatch");
@@ -91,7 +87,7 @@ async function test() {
 // -------------------------------------------------------------------
 // Run test
 // -------------------------------------------------------------------
-test().catch(err => {
+test().catch((err) => {
     console.error("❌ Test error:", err);
     process.exit(1);
 });

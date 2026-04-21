@@ -28,10 +28,9 @@ export async function uploadCapsule(payload: CapsulePayload, titleString: string
     const encryptedData = JSON.stringify({
         title: titleString,
         ...payload,
-        createdAt: payload.createdAt ?? Date.now(),
+        createdAt: payload.createdAt ?? Date.now()
     });
 
     const { gateway_url } = await uploadToPinata(encryptedData, titleString);
     return gateway_url;
 }
-
