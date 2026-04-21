@@ -13,6 +13,7 @@ import ScrollUpButton from "./ScrollUpButton";
 import Footer from "./Footer";
 import HeroText from "./HeroText";
 import { useWalletReconnect } from "@/hooks/useWalletReconnect";
+import { useMobileWalletDetection } from "@/hooks/useMobileWalletDetection";
 
 export default function Dashboard() {
     const queryClient = useQueryClient();
@@ -25,6 +26,9 @@ export default function Dashboard() {
 
     // Setup wallet reconnection and recovery on app resume (mobile context switch)
     useWalletReconnect({});
+
+    // Detect mobile and prompt to open in wallet browser
+    useMobileWalletDetection();
 
     const { data: capsules = [], refetch: refetchCapsules } = useQuery<Capsule[]>({
         queryKey: ["capsules", address],
