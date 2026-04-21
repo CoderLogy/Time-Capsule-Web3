@@ -14,17 +14,36 @@ interface CreateEncryptedCapsuleArgs {
 }
 
 async function waitForIndexing(address: string, title: string): Promise<void> {
-  for (let i = 0; i < 3; i++) {
-    await new Promise((r) => setTimeout(r, 3000));
+  // Exponential backoff: poll frequently at first, then slower
+  // Sepolia subgraph typically needs 12-30+ seconds to index events
+  // Delays: 0ms, 1s, 2s, 5s, 10s, 15s, 20s, 25s, 30s = ~110 seconds total
+  const delays = [0, 1000, 2000, 5000, 10000, 15000, 20000, 25000, 30000];
+
+  for (let i = 0; i < delays.length; i++) {
+    await new Promise((r) => setTimeout(r, delays[i]));
     try {
+      console.log(`[Indexing] Polling for capsule '${title}' (attempt ${i + 1}/${delays.length})...`);
       const capsules = await getCapsules(address);
-      if (capsules.some((c) => c.title === title)) return;
+      if (capsules.some((c) => c.title === title)) {
+        console.log(`[Indexing] ✅ Capsule found after ${i} poll attempts (~${delays[i] / 1000}s)`);
+        return;
+      }
     } catch (err) {
-      console.log(err);
-      toast.error("Error polling new results!");
+      console.warn(
+        `[Indexing] ⚠️  Query failed on attempt ${i + 1}:`,
+        err instanceof Error ? err.message : String(err)
+      );
+      // Continue to next attempt - subgraph may be temporarily unavailable
     }
   }
+
+  // After exhausting all retries, don't throw - capsule may still appear later
+  // User will see it on next dashboard refresh (5-second interval)
+  console.warn(
+    `[Indexing] ⚠️  Capsule not found after ${delays.length} attempts (~${Math.floor(delays.reduce((a, b) => a + b) / 1000)}s total). Indexing may be delayed. Dashboard will auto-refresh shortly.`
+  );
 }
+
 
 export async function createEncryptedCapsule({
   address,

@@ -26,6 +26,28 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 30000,
       refetchOnWindowFocus: false,
+      // Retry on transient network errors but not permanent failures
+      retry: (failureCount, error) => {
+        // Max 3 retries for transient errors
+        if (failureCount >= 3) return false;
+
+        // Don't retry on 4xx client errors (bad request, not found, etc.)
+        if (error instanceof Error) {
+          const msg = error.message;
+          if (msg.includes("4") || msg.includes("401") || msg.includes("403")) {
+            return false;
+          }
+          // Retry on network timeouts and 5xx server errors
+          if (msg.includes("timeout") || msg.includes("5")) {
+            return true;
+          }
+        }
+
+        return failureCount < 3;
+      },
+      // Exponential backoff: 1s, 2s, 4s max
+      retryDelay: (attemptIndex) =>
+        Math.min(1000 * Math.pow(2, attemptIndex), 4000),
     },
   },
 });

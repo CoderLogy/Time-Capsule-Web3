@@ -17,8 +17,8 @@ interface ReconnectOptions {
 export function useWalletReconnect(options: ReconnectOptions = {}) {
   const {
     maxRetries = 3,
-    backoffMultiplier = 1.5,
-    initialDelayMs = 500,
+    backoffMultiplier = 1.3,  // Reduced from 1.5 for gentler backoff
+    initialDelayMs = 2000,    // Increased from 500 to account for mobile wallet latency
   } = options;
 
   const queryClient = useQueryClient();
@@ -49,12 +49,13 @@ export function useWalletReconnect(options: ReconnectOptions = {}) {
         // Clear signer cache to force re-establishment
         clearSignatureSigner();
 
-        // Check if wallet is still responsive by attempting to get account info
-        // Wagmi will attempt auto-reconnect from localStorage if available
-        // If this fails, the account will show as disconnected
+        // Wait for mobile wallet to restore connection (3-5 seconds on mobile)
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
-        // Wait a bit for Wagmi to process
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Check stability: wait another 500ms to ensure connection isn't a flicker
+        if (isConnected && address) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
 
         // If still connected, we're good
         if (isConnected && address) {
@@ -67,6 +68,8 @@ export function useWalletReconnect(options: ReconnectOptions = {}) {
 
           isReconnectingRef.current = false;
           return;
+        } else {
+          console.log('[WalletReconnect] Connection still not ready after stability check');
         }
       }
 
