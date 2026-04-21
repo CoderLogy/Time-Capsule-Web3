@@ -14,19 +14,15 @@ const ScrollUpButton = function ScrollUp({
         const container = cardsContainerRef.current;
         if (!container) return;
 
-        const handleScroll = () => {
-            // Show button if either window or container is scrolled
-            const containerScrolled = container.scrollTop > 300;
-            const windowScrolled = window.scrollY > 500;
-            setShowScrollTop(containerScrolled || windowScrolled);
-        };
+        const handleScroll = () => setShowScrollTop(container.scrollTop > 300);
+        const handleWindowScroll = () => setShowScrollTop(window.scrollY > 1200);
 
-        window.addEventListener("scroll", handleScroll);
+        window.addEventListener("scroll", handleWindowScroll);
         container.addEventListener("scroll", handleScroll);
 
         return () => {
             container.removeEventListener("scroll", handleScroll);
-            window.removeEventListener("scroll", handleScroll);
+            window.removeEventListener("scroll", handleWindowScroll);
         };
     }, [cardsContainerRef]);
 
@@ -42,8 +38,6 @@ const ScrollUpButton = function ScrollUp({
                 >
                     <Button
                         onClick={() => {
-                            // Scroll both window and container to top
-                            window.scrollTo({ top: 0, behavior: "smooth" });
                             cardsContainerRef.current?.scrollTo({
                                 top: 0,
                                 behavior: "smooth"
