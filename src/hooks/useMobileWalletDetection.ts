@@ -13,12 +13,9 @@ const WALLET_CONFIGS: WalletInfo[] = [
         scheme: "https://metamask.app.link",
         uriScheme: "metamask",
         buildDeepLink: (_, fullUrl) => {
-            // iOS prefers the URI scheme, Android prefers the universal link
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-            if (isIOS) {
-                return `metamask://dapp/${encodeURIComponent(fullUrl)}`;
-            }
-            return `https://metamask.app.link/dapp/?url=${encodeURIComponent(fullUrl)}`;
+            // MetaMask uses the same Universal Link format for both iOS and Android
+            const encodedUrl = encodeURIComponent(fullUrl);
+            return `https://metamask.app.link/dapp?url=${encodedUrl}`;
         }
     },
     {
@@ -26,11 +23,8 @@ const WALLET_CONFIGS: WalletInfo[] = [
         scheme: "https://link.trustwallet.com",
         uriScheme: "trust",
         buildDeepLink: (_, fullUrl) => {
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-            if (isIOS) {
-                return `trust://open_dapp?url=${encodeURIComponent(fullUrl)}`;
-            }
-            return `https://link.trustwallet.com/open_dapp?url=${encodeURIComponent(fullUrl)}`;
+            const encodedUrl = encodeURIComponent(fullUrl);
+            return `https://link.trustwallet.com/open_dapp?url=${encodedUrl}`;
         }
     },
     {
@@ -38,11 +32,8 @@ const WALLET_CONFIGS: WalletInfo[] = [
         scheme: "https://go.cb-w.com",
         uriScheme: "coinbase",
         buildDeepLink: (_, fullUrl) => {
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-            if (isIOS) {
-                return `cbwallet://dapp/${encodeURIComponent(fullUrl)}`;
-            }
-            return `https://go.cb-w.com/dapp?url=${encodeURIComponent(fullUrl)}`;
+            const encodedUrl = encodeURIComponent(fullUrl);
+            return `https://go.cb-w.com/dapp?url=${encodedUrl}`;
         }
     },
     {
@@ -50,11 +41,8 @@ const WALLET_CONFIGS: WalletInfo[] = [
         scheme: "https://rnbw.to",
         uriScheme: "rainbow",
         buildDeepLink: (_, fullUrl) => {
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-            if (isIOS) {
-                return `rainbow://open?url=${encodeURIComponent(fullUrl)}`;
-            }
-            return `https://rnbw.to/dapp?url=${encodeURIComponent(fullUrl)}`;
+            const encodedUrl = encodeURIComponent(fullUrl);
+            return `https://rnbw.to/dapp?url=${encodedUrl}`;
         }
     }
 ];
