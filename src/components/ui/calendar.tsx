@@ -9,6 +9,41 @@ import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from "lucide-react"
 
+// Hook to hide unused weekday columns
+function useHideUnusedColumns() {
+  React.useEffect(() => {
+    // Get the calendar container
+    const calendar = document.querySelector('[data-slot="calendar"]')
+    if (!calendar) return
+
+    // Find the first day cell to determine which day the month starts on
+    const firstDayCell = calendar.querySelector('.rdp-week:first-child .rdp-cell:has(.rdp-day:not([data-outside])):first-child')
+
+    if (!firstDayCell) return
+
+    // Find all head cells (weekday headers)
+    const headCells = calendar.querySelectorAll('.rdp-head_cell')
+    const firstDayIndex = Array.from(calendar.querySelectorAll('.rdp-week:first-child .rdp-cell')).findIndex(
+      cell => cell.querySelector('.rdp-day:not([data-outside])')
+    )
+
+    // Hide unused weekday headers and first week cells before the month starts
+    headCells.forEach((cell, index) => {
+      if (index < firstDayIndex) {
+        (cell as HTMLElement).style.display = 'none'
+      }
+    })
+
+    // Hide cells in first week before month starts
+    const firstWeekCells = calendar.querySelectorAll('.rdp-week:first-child .rdp-cell')
+    firstWeekCells.forEach((cell, index) => {
+      if (index < firstDayIndex) {
+        (cell as HTMLElement).style.display = 'none'
+      }
+    })
+  }, [])
+}
+
 function Calendar({
   className,
   classNames,
@@ -22,12 +57,13 @@ function Calendar({
   buttonVariant?: React.ComponentProps<typeof Button>["variant"]
 }) {
   const defaultClassNames = getDefaultClassNames()
+  useHideUnusedColumns()
 
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn(
-         "p-3 [--cell-radius:var(--radius-md)] [--cell-size:--spacing(8)] bg-background group/calendar [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
+         "p-3 [--cell-radius:var(--radius-md)] [--cell-size:1.9rem] bg-background group/calendar [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
         String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
         String.raw`rtl:**:[.rdp-button\_previous>svg]:rotate-180`,
         className
@@ -44,7 +80,7 @@ function Calendar({
           "flex gap-4 flex-col md:flex-row relative",
           defaultClassNames.months
         ),
-        month: cn("flex flex-col w-full gap-4", defaultClassNames.month),
+        month: cn("flex flex-col w-full gap-4 min-h-auto", defaultClassNames.month),
         nav: cn(
           "flex items-center gap-1 w-full absolute top-0 inset-x-0 justify-between",
           defaultClassNames.nav
@@ -82,13 +118,14 @@ function Calendar({
             : "cn-calendar-caption-label rounded-(--cell-radius) flex items-center gap-1 text-sm  [&>svg]:text-muted-foreground [&>svg]:size-3.5",
           defaultClassNames.caption_label
         ),
-        table: "w-full border-collapse",
+        table: cn("w-full border-collapse space-y-2", defaultClassNames.table),
         weekdays: cn("flex", defaultClassNames.weekdays),
         weekday: cn(
           "text-muted-foreground rounded-(--cell-radius) flex-1 font-normal text-[0.8rem] select-none",
           defaultClassNames.weekday
         ),
         week: cn("flex w-full mt-2", defaultClassNames.week),
+        weeks: cn("flex flex-col", defaultClassNames.weeks),
         week_number_header: cn(
           "select-none w-(--cell-size)",
           defaultClassNames.week_number_header
@@ -125,7 +162,7 @@ function Calendar({
           "text-muted-foreground opacity-50",
           defaultClassNames.disabled
         ),
-        hidden: cn("invisible", defaultClassNames.hidden),
+        hidden: cn("invisible h-0", defaultClassNames.hidden),
         ...classNames,
       }}
       components={{

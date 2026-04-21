@@ -83,7 +83,6 @@ export default function DatePicker({
                         selected={date}
                         captionLayout="dropdown"
                         showOutsideDays={true}
-                        fixedWeeks
                         onSelect={handleSelect}
                         startMonth={startMonth}
                         endMonth={endMonth}
@@ -92,7 +91,7 @@ export default function DatePicker({
                                 "bg-primary text-primary-foreground hover:bg-primary focus:bg-primary",
                             day_today: "bg-secondary/20 text-secondary font-semibold",
                             outside: "text-muted/90",
-                            weeks: "max-h-[9rem] block",
+                            weeks: "max-h-[11rem] block",
                             ...calendarClassNames
                         }}
                         disabled={[(date: Date) => date < today]}

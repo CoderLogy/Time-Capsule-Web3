@@ -22,9 +22,10 @@ function LockedCard({ capsule }: { capsule: Capsule }) {
     }, []);
     const [animatedWidth, setAnimatedWidth] = React.useState(0);
     const unlockTs = Number(capsule.unlockDate) * 1000;
-    // Direct calculation: INVERTED - less time remaining = fuller bar
+    // Hybrid scale: 30-day for near-term, 100-day for long-term
     const daysRemaining = (unlockTs - now) / (1000 * 60 * 60 * 24);
-    const progress = Math.min(100, Math.max(2, 100 - daysRemaining));
+    const maxDays = daysRemaining <= 30 ? 30 : 100;
+    const progress = Math.min(100, Math.max(2, 100 - (daysRemaining / maxDays) * 100));
     const unlockDateFormatted = new Date(unlockTs).toLocaleDateString("en-US");
     const cardRef = React.useRef<HTMLDivElement>(null);
     const inView = useInView(cardRef, { once: true, margin: "-20px" });
