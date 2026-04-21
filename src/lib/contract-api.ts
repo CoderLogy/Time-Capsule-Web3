@@ -16,6 +16,22 @@ import { WalletClient } from "viem";
 let contract: ethers.Contract | null = null;
 
 /**
+ * Get the capsule creation fee from the contract
+ */
+export async function getCapsuleFee(): Promise<ethers.BigNumberish | null> {
+  try {
+    const provider = new ethers.JsonRpcProvider('https://1rpc.io/sepolia');
+    const c = new ethers.Contract(BLOCKCHAIN_CONFIG.contractAddress, TimeCapsuleAbi.abi, provider);
+    const fee = await c.capsuleFee();
+    console.log('[CapsuleFee] Fee fetched from contract:', fee.toString());
+    return fee;
+  } catch (error) {
+    console.error('[CapsuleFee] Failed to fetch capsule fee:', error);
+    return null;
+  }
+}
+
+/**
  * Fetch current gas prices from the RPC
  */
 export async function getGasPrices(): Promise<{
@@ -24,8 +40,6 @@ export async function getGasPrices(): Promise<{
   baseFee: ethers.BigNumberish;
 } | null> {
   try {
-    // Create a fresh provider directly on Sepolia RPC instead of using wallet provider
-    // This avoids chain mismatch errors when user's wallet is on a different chain
     const provider = new ethers.JsonRpcProvider('https://1rpc.io/sepolia');
     const feeData = await provider.getFeeData();
 
@@ -41,6 +55,39 @@ export async function getGasPrices(): Promise<{
     };
   } catch (error) {
     console.error('[GasPrices] Failed to fetch gas prices:', error);
+    return null;
+  }
+}
+
+/**
+ * Calculate total cost: capsule fee + gas costs
+ */
+export async function getTotalCapsuleCost(): Promise<{
+  capsuleFee: ethers.BigNumberish | null;
+  gasCost: ethers.BigNumberish | null;
+  totalCost: ethers.BigNumberish | null;
+} | null> {
+  try {
+    const capsuleFee = await getCapsuleFee();
+    const gasData = await getGasPrices();
+
+    if (!capsuleFee || !gasData?.maxFeePerGas) {
+      console.warn('[TotalCost] Missing fee or gas data');
+      return null;
+    }
+
+    // Estimated gas for createCapsule transaction: ~150k gas
+    const estimatedGas = BigInt(150000);
+    const gasCost = estimatedGas * BigInt(gasData.maxFeePerGas.toString());
+    const totalCost = BigInt(capsuleFee.toString()) + gasCost;
+
+    return {
+      capsuleFee,
+      gasCost,
+      totalCost,
+    };
+  } catch (error) {
+    console.error('[TotalCost] Failed to calculate total cost:', error);
     return null;
   }
 }

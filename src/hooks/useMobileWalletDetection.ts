@@ -152,10 +152,49 @@ export function useMobileWalletDetection(): void {
                 if (selectedIndex >= 0 && selectedIndex < WALLET_CONFIGS.length) {
                     const selectedWallet = WALLET_CONFIGS[selectedIndex];
                     const deepLinkUrl = buildRedirectUrl(selectedWallet, currentUrl);
-                    console.log(
-                        `[MobileWalletDetection] User selected ${selectedWallet.name}, redirecting...`
-                    );
-                    window.location.href = deepLinkUrl;
+
+                    // On iOS, use a different strategy - try to open, and if it fails, show manual option
+                    if (isIOS) {
+                        console.log(`[MobileWalletDetection] iOS: Attempting to open ${selectedWallet.name}...`);
+
+                        // Try to open the deep link
+                        window.location.href = deepLinkUrl;
+
+                        // Set a timeout to detect if nothing happened and show manual option
+                        setTimeout(() => {
+                            if (document.hidden === false) {
+                                console.log(
+                                    "[MobileWalletDetection] App may not be installed, showing manual option"
+                                );
+                                const manualOpen = window.confirm(
+                                    `${selectedWallet.name} may not be installed.\n\nCopy the URL to open manually in ${selectedWallet.name}?\n\nYou can paste it in ${selectedWallet.name}'s address bar.`
+                                );
+
+                                if (manualOpen) {
+                                    navigator.clipboard
+                                        .writeText(currentUrl)
+                                        .then(() => {
+                                            window.alert(
+                                                "URL copied to clipboard!\n\nNow open it in " +
+                                                    selectedWallet.name
+                                            );
+                                        })
+                                        .catch(() => {
+                                            window.prompt(
+                                                `Copy this URL and open in ${selectedWallet.name}:`,
+                                                currentUrl
+                                            );
+                                        });
+                                }
+                            }
+                        }, 2000);
+                    } else {
+                        // Android - direct redirect
+                        console.log(
+                            `[MobileWalletDetection] Android: Redirecting to ${selectedWallet.name}...`
+                        );
+                        window.location.href = deepLinkUrl;
+                    }
                 } else {
                     console.log("[MobileWalletDetection] Invalid selection, continuing in browser");
                 }

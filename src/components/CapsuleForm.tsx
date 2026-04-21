@@ -6,13 +6,13 @@ import { Button } from "@/components/ui/button";
 import DatePicker from "@/components/ui/date-picker";
 import { Fuel } from "lucide-react";
 import { useAccount } from "wagmi";
-import { formatEther, parseEther } from "viem";
+import { formatEther } from "viem";
 import { createEncryptedCapsule } from "@/lib/createEncryptedCapsule";
 import { toast } from "sonner";
 import React from "react";
 import { getEthPrice } from "@/lib/api-client";
 import { BLOCKCHAIN_CONFIG } from "@/lib/config";
-import { getGasPrices } from "@/lib/contract-api";
+import { getTotalCapsuleCost } from "@/lib/contract-api";
 
 interface CapsuleFormProps {
     onPendingAdd: (title: string) => void;
@@ -34,7 +34,7 @@ const CapsuleForm = memo(function CapsuleForm({
     const [loading, setLoading] = useState(false);
     const [dateResetKey, setDateResetKey] = useState(0);
     const [ethPrice, setEthPrice] = useState<number | null>(null);
-    const [gasPrice, setGasPrice] = useState<any>(null);
+    const [costData, setCostData] = useState<any>(null);
 
     // Fetch ETH price
     useEffect(() => {
@@ -50,40 +50,37 @@ const CapsuleForm = memo(function CapsuleForm({
         fetchPrice();
     }, []);
 
-    // Fetch gas prices
+    // Fetch total cost (capsule fee + gas)
     useEffect(() => {
         if (!isConnected) return;
 
-        const fetchGasPrices = async () => {
+        const fetchCost = async () => {
             try {
-                const prices = await getGasPrices();
-                setGasPrice(prices);
-                console.log("[CapsuleForm] Gas prices fetched:", prices);
+                const cost = await getTotalCapsuleCost();
+                setCostData(cost);
+                console.log("[CapsuleForm] Total cost data:", cost);
             } catch (err) {
-                console.error("Failed to fetch gas prices", err);
+                console.error("Failed to fetch total cost", err);
             }
         };
 
-        fetchGasPrices();
+        fetchCost();
 
-        // Refresh gas prices every 10 seconds
-        const interval = setInterval(fetchGasPrices, 10000);
+        // Refresh cost every 15 seconds
+        const interval = setInterval(fetchCost, 15000);
         return () => clearInterval(interval);
     }, [isConnected]);
 
-    const totalFee = useMemo(() => {
-        if (!gasPrice?.maxFeePerGas) return undefined;
+    const totalFeeInEth = useMemo(() => {
+        if (!costData?.totalCost) return undefined;
 
         try {
-            // Estimate gas for capsule creation (typical value)
-            const estimatedGas = BigInt(150000); // ~150k gas for capsule creation
-            const totalGasCost = estimatedGas * BigInt(gasPrice.maxFeePerGas.toString());
-            return Number(formatEther(totalGasCost));
+            return Number(formatEther(costData.totalCost.toString()));
         } catch (err) {
-            console.error("Error calculating total fee:", err);
+            console.error("Error formatting total fee:", err);
             return undefined;
         }
-    }, [gasPrice]);
+    }, [costData]);
 
     const handleCreateCapsule = async () => {
         if (!title) return toast.warning("Provide title to your capsule!");
@@ -191,10 +188,10 @@ const CapsuleForm = memo(function CapsuleForm({
                 <div className="h-8 w-full max-w-48 flex gap-2 items-center justify-center bg-gray-200/70 shadow-inner rounded-full">
                     <Fuel className="text-gray-500 h-5" />
                     <span>
-                        ≈ {totalFee ? Number(totalFee).toFixed(6) : "..."} ETH{" "}
+                        ≈ {totalFeeInEth ? Number(totalFeeInEth).toFixed(6) : "..."} ETH{" "}
                         <span className="m-0 text-xs text-gray-600">
-                            {totalFee && ethPrice
-                                ? `($${(Number(totalFee) * ethPrice).toFixed(2)})`
+                            {totalFeeInEth && ethPrice
+                                ? `($${(Number(totalFeeInEth) * ethPrice).toFixed(2)})`
                                 : "($...)"}
                         </span>
                     </span>
