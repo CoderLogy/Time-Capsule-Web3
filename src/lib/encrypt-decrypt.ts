@@ -42,22 +42,7 @@ let _lastSignerAddress: string | null = null;
 export async function setSignatureSigner(
   walletClient?: WalletClient,
 ): Promise<ethers.Signer> {
-  if (walletClient) {
-    const provider = new ethers.BrowserProvider(walletClient.transport);
-    const s = await provider.getSigner();
-    _signer = s;
-    _lastSignerAddress = await s.getAddress();
-    console.log(`[Signer] Set signer for address: ${_lastSignerAddress}`);
-    return s;
-  }
-  const wc = await getWalletClient(config as Parameters<typeof getWalletClient>[0]);
-  if (!wc) {
-    console.warn("[Signer] No wallet client available");
-    _signer = null;
-    _lastSignerAddress = null;
-    throw new Error("No wallet connected");
-  }
-  const provider = new ethers.BrowserProvider(wc.transport);
+  const provider = await getProvider(walletClient);
   const s = await provider.getSigner();
   _signer = s;
   _lastSignerAddress = await s.getAddress();
@@ -84,6 +69,60 @@ export async function isSignerValid(): Promise<boolean> {
 export function clearSignatureSigner() {
   _signer = null;
   _lastSignerAddress = null;
+}
+
+/* ------------------------------------------------------------------ */
+/* Provider pooling - FIX for multiple BrowserProvider instances     */
+/* ------------------------------------------------------------------ */
+// FIX [Critical]: Create ONE BrowserProvider from walletClient and reuse it
+// throughout the capsule creation flow. Multiple BrowserProvider instances
+// from the same transport cause "Failed to fetch" -32603 RPC errors on
+// eth_sendTransaction because MetaMask gets confused about which provider
+// is "active".
+
+let _provider: ethers.BrowserProvider | null = null;
+let _providerWalletClient: WalletClient | null = null;
+
+export async function getProvider(walletClient?: WalletClient): Promise<ethers.BrowserProvider> {
+  // If walletClient is provided and different from cached one, create new provider
+  if (walletClient && walletClient !== _providerWalletClient) {
+    _provider = new ethers.BrowserProvider(walletClient.transport);
+    _providerWalletClient = walletClient;
+    console.log("[Provider] Created new BrowserProvider instance");
+    return _provider;
+  }
+
+  // If we have a cached provider from the same walletClient, reuse it
+  if (_provider && walletClient === _providerWalletClient) {
+    console.log("[Provider] Reusing cached BrowserProvider instance");
+    return _provider;
+  }
+
+  // No walletClient provided but we have a cached provider, reuse it
+  if (_provider && !walletClient) {
+    console.log("[Provider] Reusing cached BrowserProvider instance (no wallet specified)");
+    return _provider;
+  }
+
+  // No walletClient provided and no cache - create from current wallet
+  if (!walletClient && !_provider) {
+    const wc = await getWalletClient(config as Parameters<typeof getWalletClient>[0]);
+    if (!wc) {
+      throw new Error("[Provider] No wallet client available");
+    }
+    _provider = new ethers.BrowserProvider(wc.transport);
+    _providerWalletClient = wc;
+    console.log("[Provider] Created BrowserProvider from default wallet");
+    return _provider;
+  }
+
+  throw new Error("[Provider] No provider available");
+}
+
+export function clearProvider() {
+  _provider = null;
+  _providerWalletClient = null;
+  console.log("[Provider] Cleared cached provider");
 }
 
 /* ------------------------------------------------------------------ */

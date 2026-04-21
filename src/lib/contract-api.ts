@@ -1,4 +1,4 @@
-import { CapsulePayload, setSignatureSigner, decryptForWallet, unwrapDrandTimelock } from "./encrypt-decrypt";
+import { CapsulePayload, setSignatureSigner, decryptForWallet, unwrapDrandTimelock, getProvider, clearProvider } from "./encrypt-decrypt";
 import TimeCapsuleAbi from "../../contracts/TimeCapsule.json";
 import type { TransactionResponse } from "ethers";
 import { ethers } from "ethers";
@@ -9,11 +9,12 @@ import { WalletClient } from "viem";
 let contract: ethers.Contract | null = null;
 
 export async function getContract(walletClient?: WalletClient): Promise<ethers.Contract> {
-  // Always create fresh contract to ensure signer is current
-  // This is important for mobile wallet recovery scenarios
+  // Use getProvider to ensure we have a single provider instance
+  const provider = await getProvider(walletClient);
+  // Use setSignatureSigner which will also use the same provider
   const signer = await setSignatureSigner(walletClient);
   contract = new ethers.Contract(BLOCKCHAIN_CONFIG.contractAddress, TimeCapsuleAbi.abi, signer);
-  console.log("[Contract] Created fresh contract instance with current signer");
+  console.log("[Contract] Created contract with shared provider instance");
   return contract;
 }
 
@@ -75,6 +76,7 @@ export async function openCapsule(dataURI: string): Promise<string> {
     return await decryptForWallet(signer, decryptPayload);
   } finally {
     // Clear cache after use to ensure fresh state
+    clearProvider();
     clearContract();
   }
 }

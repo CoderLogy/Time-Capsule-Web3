@@ -1,5 +1,5 @@
 import { ethers, TransactionResponse } from "ethers";
-import { encryptForWallet, CapsulePayload, clearSignatureSigner, wrapWithDrandTimelock, shouldApplyDrandTimelock } from "./encrypt-decrypt";
+import { encryptForWallet, CapsulePayload, clearSignatureSigner, wrapWithDrandTimelock, shouldApplyDrandTimelock, getProvider, clearProvider } from "./encrypt-decrypt";
 import { uploadCapsule } from "@/lib/ipfs";
 import { createCapsule, getCapsules, clearContract } from "@/lib/contract-api";
 import { toast } from "sonner";
@@ -80,7 +80,7 @@ export async function createEncryptedCapsule({
 
     console.log("[CreateCapsule] Got wallet client");
 
-    const provider = new ethers.BrowserProvider(walletClient.transport);
+    const provider = await getProvider(walletClient);
     const walletSigner = await provider.getSigner();
 
     // Validate signer is usable
@@ -135,6 +135,7 @@ export async function createEncryptedCapsule({
     console.log("[CreateCapsule] Capsule created ✅");
     // Clear cached signer and contract to force re-creation on next use
     clearSignatureSigner();
+    clearProvider();
     clearContract();
 
     return tx;
@@ -143,6 +144,7 @@ export async function createEncryptedCapsule({
 
     // Clear cached signer and contract on any error
     clearSignatureSigner();
+    clearProvider();
     clearContract();
 
     const errorMessage = err instanceof Error ? err.message : String(err);
