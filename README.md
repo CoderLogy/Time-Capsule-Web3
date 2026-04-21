@@ -4,7 +4,7 @@
 
 [![](https://img.shields.io/github/stars/CoderLogy/Time-Capsule-Web3?style=social)](https://github.com/CoderLogy/Time-Capsule-Web3)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Sepolia Network](https://img.shields.io/badge/Network-Sepolia-purple)](https://sepolia.etherscan.io/address/0x...)
+[![Sepolia Network](https://img.shields.io/badge/Network-Sepolia-purple)](https://sepolia.etherscan.io/address/0x19FF5dc69033523f1C5b1B5589f95D49b5EF7926)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Solidity](https://img.shields.io/badge/Solidity-0.8%2B-363636?logo=solidity&logoColor=white)](https://docs.soliditylang.org)
@@ -412,7 +412,7 @@ if (currentDrandRound >= embeddedDrandRound) {
 | Optimism | 🔜 Coming Soon | 10 |
 | Arbitrum | 🔜 Coming Soon | 42161 |
 
-**View Our Sepolia Contract:** [`Sepolia Etherscan Link`](https://sepolia.etherscan.io/address/0x...)
+**View Our Sepolia Contract:** [`Sepolia Etherscan Link`](https://sepolia.etherscan.io/address/0x19FF5dc69033523f1C5b1B5589f95D49b5EF7926)
 
 ---
 
@@ -445,7 +445,7 @@ VITE_PINATA_API_KEY=your_pinata_api_key
 VITE_PINATA_API_SECRET=your_pinata_secret
 
 # The Graph
-VITE_SUBGRAPH_URL=https://api.thegraph.com/subgraphs/name/.../timecapsule
+VITE_SUBGRAPH_URL=https://api.studio.thegraph.com/query/1748520/timecapsule/version/latest
 
 # API
 VITE_API_BASE_URL=http://localhost:3000/api
@@ -592,7 +592,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### 🔗 Important Links
 
-**Smart Contract (Sepolia):** [`View on Etherscan`](https://sepolia.etherscan.io/address/0x...)
+**Smart Contract (Sepolia):** [`View on Etherscan`](https://sepolia.etherscan.io/address/0x19FF5dc69033523f1C5b1B5589f95D49b5EF7926)
 
 **Live Dapp:** [`time-capsule-web3.vercel.app`](https://time-capsule-web3.vercel.app)
 
