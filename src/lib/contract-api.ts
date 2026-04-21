@@ -24,7 +24,9 @@ export async function getGasPrices(): Promise<{
   baseFee: ethers.BigNumberish;
 } | null> {
   try {
-    const provider = await getProvider();
+    // Create a fresh provider directly on Sepolia RPC instead of using wallet provider
+    // This avoids chain mismatch errors when user's wallet is on a different chain
+    const provider = new ethers.JsonRpcProvider('https://1rpc.io/sepolia');
     const feeData = await provider.getFeeData();
 
     if (!feeData.maxFeePerGas || !feeData.maxPriorityFeePerGas) {
@@ -35,7 +37,7 @@ export async function getGasPrices(): Promise<{
     return {
       maxFeePerGas: feeData.maxFeePerGas,
       maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
-      baseFee: feeData.gasPrice || feeData.maxFeePerGas, // fallback to maxFeePerGas if gasPrice unavailable
+      baseFee: feeData.gasPrice || feeData.maxFeePerGas,
     };
   } catch (error) {
     console.error('[GasPrices] Failed to fetch gas prices:', error);
