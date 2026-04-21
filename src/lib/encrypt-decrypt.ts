@@ -438,6 +438,26 @@ export async function decryptForWallet(
 /* ------------------------------------------------------------------ */
 
 /**
+ * Timeout wrapper for async operations
+ * Prevents indefinite hangs from network issues
+ */
+function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  label: string,
+): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(
+        () => reject(new Error(`${label} timed out after ${timeoutMs}ms`)),
+        timeoutMs,
+      ),
+    ),
+  ]);
+}
+
+/**
  * Feature flag: enables drand time-lock encryption wrapper
  * Can be controlled via environment or config
  */
@@ -467,9 +487,13 @@ export async function wrapWithDrandTimelock(
     // Serialize the original payload to JSON string
     const payloadJson = JSON.stringify(payload);
 
-    // Get drand client and encrypt the payload
+    // Get drand client and encrypt the payload with 10-second timeout
     const client = quicknet();
-    const encrypted = await drandEncrypt(client, payloadJson, unlockDate * 1000);
+    const encrypted = await withTimeout(
+      drandEncrypt(client, payloadJson, unlockDate * 1000),
+      10000,
+      "[Drand] Encryption",
+    );
 
     console.log(`[Drand] Payload wrapped successfully. Round: ${encrypted.drandRound}`);
 
@@ -488,12 +512,22 @@ export async function wrapWithDrandTimelock(
       drandRound: encrypted.drandRound,
     };
   } catch (error) {
-    console.error("[Drand] Failed to wrap with timelock:", error);
-    throw new Error(
-      `Failed to apply drand time-lock encryption: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
-    );
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error("[Drand] Failed to wrap with timelock:", errorMsg);
+
+    // Provide helpful error message to user
+    let userMessage = "Failed to apply time-lock encryption";
+    if (errorMsg.includes("timed out")) {
+      userMessage = "Time-lock service is slow - please try again in a moment";
+    } else if (errorMsg.includes("CORS")) {
+      userMessage = "Network error connecting to time-lock service - please check your connection";
+    } else if (errorMsg.includes("round")) {
+      userMessage = "Invalid unlock time - please choose a future date";
+    } else if (errorMsg.includes("NETWORK") || errorMsg.includes("fetch")) {
+      userMessage = "Network error - please check your internet connection";
+    }
+
+    throw new Error(userMessage);
   }
 }
 
@@ -516,12 +550,12 @@ export async function unwrapDrandTimelock(
 
     console.log(`[Drand] Unwrapping drand-locked payload (round: ${payload.drandRound})...`);
 
-    // Get drand client and decrypt
+    // Get drand client and decrypt with 10-second timeout
     const client = quicknet();
-    const decrypted = await drandDecrypt(
-      client,
-      payload.drandCiphertext,
-      payload.expiresAt * 1000,
+    const decrypted = await withTimeout(
+      drandDecrypt(client, payload.drandCiphertext, payload.expiresAt * 1000),
+      10000,
+      "[Drand] Decryption",
     );
 
     // Parse recovered payload
@@ -541,22 +575,27 @@ export async function unwrapDrandTimelock(
     // Return the recovered original payload (without drand fields)
     return recoveredPayload;
   } catch (error) {
-    console.error("[Drand] Failed to unwrap timelock:", error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error("[Drand] Failed to unwrap timelock:", errorMsg);
 
     // Provide helpful error messages for common issues
     if (
-      error instanceof Error &&
-      error.message.includes("round not available")
+      errorMsg.includes("round not available") ||
+      errorMsg.includes("UNAVAILABLE")
     ) {
       throw new Error(
         "Capsule is still time-locked. Please wait for the unlock time to arrive.",
       );
     }
 
+    if (errorMsg.includes("timed out")) {
+      throw new Error(
+        "Time-lock service is slow. Please try again in a moment.",
+      );
+    }
+
     throw new Error(
-      `Failed to decrypt drand time-locked capsule: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
+      `Failed to decrypt time-locked capsule: ${errorMsg}`,
     );
   }
 }

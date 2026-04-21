@@ -31,13 +31,47 @@ export async function encrypt(
   plaintext: string,
   decryptionTime: number,
 ) {
+  // Validate inputs
+  if (!plaintext || plaintext.length === 0) {
+    throw new Error("Cannot encrypt empty plaintext");
+  }
+  if (decryptionTime < Date.now()) {
+    throw new Error("Decryption time must be in the future");
+  }
+
+  // Get chain info
   const chainInfo = await client.chain().info();
+
+  // Validate chain info
+  if (!chainInfo || typeof chainInfo.period !== "number") {
+    throw new Error(
+      "Invalid chain info from drand service - cannot calculate round",
+    );
+  }
+
+  // Calculate round number
   const roundNumber = roundAt(decryptionTime, chainInfo);
+
+  // Validate round number
+  if (!roundNumber || typeof roundNumber !== "number" || roundNumber < 1) {
+    throw new Error(
+      `Invalid drand round calculated: ${roundNumber}. Please verify unlock time.`,
+    );
+  }
+
+  console.log(`[Drand] Encrypting for round ${roundNumber}`);
+
+  // Encrypt
   const ciphertext = await timelockEncrypt(
     roundNumber,
     Buffer.from(plaintext),
     client,
   );
+
+  if (!ciphertext || ciphertext.length === 0) {
+    throw new Error("Drand encryption produced empty ciphertext");
+  }
+
   return {
     plaintext,
     decryptionTime,
