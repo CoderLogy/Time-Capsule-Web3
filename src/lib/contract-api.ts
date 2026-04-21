@@ -15,6 +15,34 @@ import { WalletClient } from "viem";
 
 let contract: ethers.Contract | null = null;
 
+/**
+ * Fetch current gas prices from the RPC
+ */
+export async function getGasPrices(): Promise<{
+  maxFeePerGas: ethers.BigNumberish;
+  maxPriorityFeePerGas: ethers.BigNumberish;
+  baseFee: ethers.BigNumberish;
+} | null> {
+  try {
+    const provider = await getProvider();
+    const feeData = await provider.getFeeData();
+
+    if (!feeData.maxFeePerGas || !feeData.maxPriorityFeePerGas) {
+      console.warn('[GasPrices] FeeData incomplete:', feeData);
+      return null;
+    }
+
+    return {
+      maxFeePerGas: feeData.maxFeePerGas,
+      maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+      baseFee: feeData.gasPrice || feeData.maxFeePerGas, // fallback to maxFeePerGas if gasPrice unavailable
+    };
+  } catch (error) {
+    console.error('[GasPrices] Failed to fetch gas prices:', error);
+    return null;
+  }
+}
+
 export async function getContract(walletClient?: WalletClient): Promise<ethers.Contract> {
     // Use getProvider to ensure we have a single provider instance
     const provider = await getProvider(walletClient);

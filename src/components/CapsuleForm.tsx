@@ -5,13 +5,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import DatePicker from "@/components/ui/date-picker";
 import { Fuel } from "lucide-react";
-import { useEstimateGas, useEstimateFeesPerGas, useAccount } from "wagmi";
+import { useAccount } from "wagmi";
 import { formatEther, parseEther } from "viem";
 import { createEncryptedCapsule } from "@/lib/createEncryptedCapsule";
 import { toast } from "sonner";
 import React from "react";
 import { getEthPrice } from "@/lib/api-client";
 import { BLOCKCHAIN_CONFIG } from "@/lib/config";
+import { getGasPrices } from "@/lib/contract-api";
 
 interface CapsuleFormProps {
     onPendingAdd: (title: string) => void;
@@ -33,7 +34,9 @@ const CapsuleForm = memo(function CapsuleForm({
     const [loading, setLoading] = useState(false);
     const [dateResetKey, setDateResetKey] = useState(0);
     const [ethPrice, setEthPrice] = useState<number | null>(null);
+    const [gasPrice, setGasPrice] = useState<any>(null);
 
+    // Fetch ETH price
     useEffect(() => {
         const fetchPrice = async () => {
             try {
@@ -47,38 +50,40 @@ const CapsuleForm = memo(function CapsuleForm({
         fetchPrice();
     }, []);
 
-    const tx = useMemo(() => {
-        if (!isConnected || !address) return undefined;
-        return {
-            account: address as `0x${string}`,
-            to: BLOCKCHAIN_CONFIG.contractAddress as `0x${string}`,
-            value: parseEther("0.00005"),
-            chainId: BLOCKCHAIN_CONFIG.chainId,
-            data: "0x" as `0x${string}` // ← add this
-        };
-    }, [isConnected, address]);
+    // Fetch gas prices
+    useEffect(() => {
+        if (!isConnected) return;
 
-    const { data: gas } = useEstimateGas({
-        ...tx,
-        query: {
-            enabled: !!tx
-        }
-    });
-    const { data: fees } = useEstimateFeesPerGas({
-        chainId: BLOCKCHAIN_CONFIG.chainId,
-        query: {
-            enabled: !!tx
-        }
-    });
+        const fetchGasPrices = async () => {
+            try {
+                const prices = await getGasPrices();
+                setGasPrice(prices);
+                console.log("[CapsuleForm] Gas prices fetched:", prices);
+            } catch (err) {
+                console.error("Failed to fetch gas prices", err);
+            }
+        };
+
+        fetchGasPrices();
+
+        // Refresh gas prices every 10 seconds
+        const interval = setInterval(fetchGasPrices, 10000);
+        return () => clearInterval(interval);
+    }, [isConnected]);
 
     const totalFee = useMemo(() => {
-        if (!gas || !fees?.maxFeePerGas) return undefined;
-        const buffer = parseEther("0.00005");
-        return Number(formatEther(gas * fees.maxFeePerGas + buffer));
-    }, [gas, fees]);
+        if (!gasPrice?.maxFeePerGas) return undefined;
 
-    // Temporarily add after your hooks:
-    console.log("gas:", gas, "fees:", fees, "ethPrice:", ethPrice, "totalFee:", totalFee);
+        try {
+            // Estimate gas for capsule creation (typical value)
+            const estimatedGas = BigInt(150000); // ~150k gas for capsule creation
+            const totalGasCost = estimatedGas * BigInt(gasPrice.maxFeePerGas.toString());
+            return Number(formatEther(totalGasCost));
+        } catch (err) {
+            console.error("Error calculating total fee:", err);
+            return undefined;
+        }
+    }, [gasPrice]);
 
     const handleCreateCapsule = async () => {
         if (!title) return toast.warning("Provide title to your capsule!");
