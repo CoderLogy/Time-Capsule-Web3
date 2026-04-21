@@ -14,15 +14,19 @@ const ScrollUpButton = function ScrollUp({
         const container = cardsContainerRef.current;
         if (!container) return;
 
-        const handleScroll = () => setShowScrollTop(container.scrollTop > 300);
-        const handleWindowScroll = () => setShowScrollTop(window.scrollY > 1200);
+        const handleScroll = () => {
+            // Show button if either window or container is scrolled
+            const containerScrolled = container.scrollTop > 300;
+            const windowScrolled = window.scrollY > 500;
+            setShowScrollTop(containerScrolled || windowScrolled);
+        };
 
-        window.addEventListener("scroll", handleWindowScroll);
+        window.addEventListener("scroll", handleScroll);
         container.addEventListener("scroll", handleScroll);
 
         return () => {
             container.removeEventListener("scroll", handleScroll);
-            window.removeEventListener("scroll", handleWindowScroll);
+            window.removeEventListener("scroll", handleScroll);
         };
     }, [cardsContainerRef]);
 
@@ -38,10 +42,17 @@ const ScrollUpButton = function ScrollUp({
                 >
                     <Button
                         onClick={() => {
-                            cardsContainerRef.current?.scrollTo({
-                                top: 0,
-                                behavior: "smooth"
-                            });
+                            const container = cardsContainerRef.current;
+                            if (!container) return;
+
+                            // Scroll whichever one is actually scrolled
+                            if (container.scrollTop > 300) {
+                                // Container is scrolled, scroll container
+                                container.scrollTo({ top: 0, behavior: "smooth" });
+                            } else {
+                                // Window is scrolled, scroll window
+                                window.scrollTo({ top: 0, behavior: "smooth" });
+                            }
                         }}
                         className="glass-ios border-0.5 inline-flex items-center gap-2 rounded-2xl cursor-pointer bg-black/30 backdrop-blur-md px-4 py-2 text-sm font-medium text-white/80 hover:bg-black/40 transition-all duration-300 ease-in-out shadow-lg active:scale-90"
                     >
