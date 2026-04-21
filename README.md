@@ -2,7 +2,7 @@
 
 > **Cryptographically seal your memories on-chain. Trustless time-based encryption that guarantees unlock at the exact moment you choose—powered by drand randomness verification, threshold cryptography, and distributed IPFS storage.**
 
-[![](https://img.shields.io/github/stars/yourusername/time-capsule-web3?style=social)](https://github.com/yourusername/time-capsule-web3)
+[![](https://img.shields.io/github/stars/CoderLogy/Time-Capsule-Web3?style=social)](https://github.com/CoderLogy/Time-Capsule-Web3)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Sepolia Network](https://img.shields.io/badge/Network-Sepolia-purple)](https://sepolia.etherscan.io/address/0x...)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev)
@@ -213,7 +213,7 @@ const drandBeacon = await fetchDrandBeacon(roundNumber)
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/time-capsule-web3.git
+git clone https://github.com/CoderLogy/Time-Capsule-Web3.git
 cd time-capsule-web3
 
 # Install dependencies
@@ -572,9 +572,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Issues & Bugs** - [GitHub Issues](https://github.com/yourusername/time-capsule-web3/issues)
-- **Feature Requests** - [GitHub Discussions](https://github.com/yourusername/time-capsule-web3/discussions)
-- **Documentation** - [Wiki](https://github.com/yourusername/time-capsule-web3/wiki)
+- **Issues & Bugs** - [GitHub Issues](https://github.com/CoderLogy/Time-Capsule-Web3/issues)
+- **Feature Requests** - [GitHub Discussions](https://github.com/CoderLogy/Time-Capsule-Web3/discussions)
+- **Documentation** - [Wiki](https://github.com/CoderLogy/Time-Capsule-Web3/wiki)
 - **Security** - [Security Policy](SECURITY.md)
 
 ---
@@ -583,10 +583,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### 📊 Project Statistics
 
-[![GitHub stars](https://img.shields.io/github/stars/yourusername/time-capsule-web3?style=for-the-badge)](https://github.com/yourusername/time-capsule-web3/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/yourusername/time-capsule-web3?style=for-the-badge)](https://github.com/yourusername/time-capsule-web3/network)
-[![GitHub issues](https://img.shields.io/github/issues/yourusername/time-capsule-web3?style=for-the-badge)](https://github.com/yourusername/time-capsule-web3/issues)
-[![GitHub pull requests](https://img.shields.io/github/issues-pr/yourusername/time-capsule-web3?style=for-the-badge)](https://github.com/yourusername/time-capsule-web3/pulls)
+[![GitHub stars](https://img.shields.io/github/stars/CoderLogy/Time-Capsule-Web3?style=for-the-badge)](https://github.com/CoderLogy/Time-Capsule-Web3/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/CoderLogy/Time-Capsule-Web3?style=for-the-badge)](https://github.com/CoderLogy/Time-Capsule-Web3/network)
+[![GitHub issues](https://img.shields.io/github/issues/CoderLogy/Time-Capsule-Web3?style=for-the-badge)](https://github.com/CoderLogy/Time-Capsule-Web3/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/CoderLogy/Time-Capsule-Web3?style=for-the-badge)](https://github.com/CoderLogy/Time-Capsule-Web3/pulls)
 
 ---
 
@@ -602,7 +602,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ![Status: Active Development](https://img.shields.io/badge/Status-Active%20Development-blue?style=flat-square)
 ![Version](https://img.shields.io/badge/Version-1.0.0--beta-orange?style=flat-square)
-![Last Updated](https://img.shields.io/github/last-commit/yourusername/time-capsule-web3?style=flat-square)
+![Last Updated](https://img.shields.io/github/last-commit/CoderLogy/Time-Capsule-Web3?style=flat-square)
 
 ---
 
@@ -618,10 +618,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Made with ❤️ for decentralized cryptography and trustless time-locks**
 
-[🌟 Star us on GitHub](https://github.com/yourusername/time-capsule-web3) 
+[🌟 Star us on GitHub](https://github.com/CoderLogy/Time-Capsule-Web3) 
 | 
-[🐛 Report Issues](https://github.com/yourusername/time-capsule-web3/issues)
+[🐛 Report Issues](https://github.com/CoderLogy/Time-Capsule-Web3/issues)
 | 
-[💡 Suggest Features](https://github.com/yourusername/time-capsule-web3/discussions)
+[💡 Suggest Features](https://github.com/CoderLogy/Time-Capsule-Web3/discussions)
 
 </div>
