@@ -3,6 +3,7 @@ import Beams from "@/components/ui/Beams";
 import CountUp from "@/components/ui/CountUp";
 import Wallet from "@/components/Wallet";
 import { Toaster } from "@/components/ui/sonner";
+import { Analytics } from "@vercel/analytics/react";
 import "./index.css";
 
 export function App() {
@@ -30,6 +31,7 @@ export function App() {
               "radial-gradient(ellipse at center, transparent 60%, rgba(60,80,95,0.5) 100%)",
           }}
         />
+         <Analytics />
         <Dashboard />
         <Toaster
           toastOptions={{
