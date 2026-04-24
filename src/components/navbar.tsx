@@ -1,4 +1,3 @@
-import { CustomConnectButton } from "./ui/customConnectButton";
 import { Pill } from "lucide-react";
 import { useState, useEffect } from "react";
 import { WalletGate } from "./WalletGate";
