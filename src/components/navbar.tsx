@@ -1,7 +1,7 @@
 import { CustomConnectButton } from "./ui/customConnectButton";
 import { Pill } from "lucide-react";
 import { useState, useEffect } from "react";
-import { WalletGate } from "./Walletgate";
+import { WalletGate } from "./WalletGate";
 function Navbar() {
   const [now, setNow] = useState(new Date());
   useEffect(() => {
