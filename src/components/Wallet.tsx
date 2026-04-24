@@ -1,6 +1,7 @@
+// Wallet.tsx
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
-import { WagmiProvider, createStorage, http } from "wagmi";
+import { WagmiProvider, createStorage, http, noopStorage } from "wagmi";
 import {
   RainbowKitProvider,
   DisclaimerComponent,
@@ -9,13 +10,15 @@ import {
 import { sepolia } from "wagmi/chains";
 import { ReactNode } from "react";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
-import { WALLET_CONFIG, BLOCKCHAIN_CONFIG } from "@/lib/config";
+import { WALLET_CONFIG } from "@/lib/config";
 
-// Use Infura RPC for Sepolia - proper public endpoint
 const SEPOLIA_RPC_URL = "https://1rpc.io/sepolia";
 
+// ✅ Use wagmi's built-in noopStorage as SSR fallback — this is the
+//    officially recommended pattern from wagmi docs.
+//    localStorage is only accessed after confirming window exists.
 export const config = getDefaultConfig({
-  appName: "myproject",
+  appName: "Time Capsule",
   projectId: WALLET_CONFIG.walletConnectId,
   chains: [sepolia],
   ssr: false,
@@ -23,7 +26,10 @@ export const config = getDefaultConfig({
     [sepolia.id]: http(SEPOLIA_RPC_URL),
   },
   storage: createStorage({
-    storage: localStorage,
+    storage:
+      typeof window !== "undefined" && window.localStorage
+        ? window.localStorage
+        : noopStorage,
   }),
 });
 
@@ -32,26 +38,15 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 30000,
       refetchOnWindowFocus: false,
-      // Retry on transient network errors but not permanent failures
       retry: (failureCount, error) => {
-        // Max 3 retries for transient errors
         if (failureCount >= 3) return false;
-
-        // Don't retry on 4xx client errors (bad request, not found, etc.)
         if (error instanceof Error) {
           const msg = error.message;
-          if (msg.includes("4") || msg.includes("401") || msg.includes("403")) {
-            return false;
-          }
-          // Retry on network timeouts and 5xx server errors
-          if (msg.includes("timeout") || msg.includes("5")) {
-            return true;
-          }
+          if (msg.includes("401") || msg.includes("403")) return false;
+          if (msg.includes("timeout") || msg.includes("500")) return true;
         }
-
         return failureCount < 3;
       },
-      // Exponential backoff: 1s, 2s, 4s max
       retryDelay: (attemptIndex) =>
         Math.min(1000 * Math.pow(2, attemptIndex), 4000),
     },
@@ -79,10 +74,10 @@ export default function Wallet({ children }: { children: ReactNode }) {
             fontStack: "system",
             overlayBlur: "small",
           })}
-          modalSize={"compact"}
+          modalSize="compact"
           initialChain={sepolia}
           appInfo={{
-            appName: "Rainbowkit Demo",
+            appName: "Time Capsule",
             learnMoreUrl: "https://learnaboutcryptowallets.example",
             disclaimer: Disclaimer,
           }}
