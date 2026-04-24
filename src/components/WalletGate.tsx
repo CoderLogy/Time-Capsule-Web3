@@ -1,5 +1,5 @@
 // WalletGate.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { ExternalLink, X } from "lucide-react";
 import { CustomConnectButton } from "./ui/customConnectButton";
@@ -11,7 +11,7 @@ import {
   openInWallet,
 } from "@/hooks/useMobileWalletDetection";
 
-// ─── Official wallet SVG logos (self-contained, no img/CDN needed) ────────────
+// ─── Official wallet SVG logos ────────────────────────────────────────────────
 
 const MetaMaskIcon = () => (
   <svg viewBox="0 0 318 318" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
@@ -63,7 +63,21 @@ const WALLET_ICON_MAP: Record<string, React.ReactNode> = {
   rainbow: <RainbowIcon />,
 };
 
-// ─── Sheet rendered via portal so it escapes navbar stacking context ──────────
+// ─── Portal wrapper — only renders after DOM is confirmed ready ───────────────
+// This prevents the "vt is not a function" crash during SSR / Vercel prerender.
+
+function ClientPortal({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+  return createPortal(children, document.body);
+}
+
+// ─── Bottom sheet ─────────────────────────────────────────────────────────────
 
 function WalletSheet({
   onClose,
@@ -72,72 +86,73 @@ function WalletSheet({
   onClose: () => void;
   onContinueInBrowser: () => void;
 }) {
-  return createPortal(
-    <div
-      className="fixed inset-0 flex items-end justify-center"
-      style={{
-        zIndex: 9999,
-        background: "rgba(0,0,0,0.6)",
-        backdropFilter: "blur(6px)",
-        WebkitBackdropFilter: "blur(6px)",
-      }}
-      onClick={onClose}
-    >
+  return (
+    <ClientPortal>
       <div
-        className="w-full max-w-sm mx-4 mb-8 rounded-2xl p-5 flex flex-col gap-2"
+        className="fixed inset-0 flex items-end justify-center"
         style={{
-          background: "rgba(22,22,28,0.97)",
-          border: "1px solid rgba(255,255,255,0.09)",
-          boxShadow: "0 -8px 48px rgba(0,0,0,0.5)",
+          zIndex: 9999,
+          background: "rgba(0,0,0,0.6)",
+          backdropFilter: "blur(6px)",
+          WebkitBackdropFilter: "blur(6px)",
         }}
-        onClick={(e) => e.stopPropagation()}
+        onClick={onClose}
       >
-        {/* Header */}
-        <div className="flex items-start justify-between mb-1">
-          <div>
-            <p className="text-base font-semibold text-white">Open in Wallet</p>
-            <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Use your wallet's browser to connect
-            </p>
+        <div
+          className="w-full max-w-sm mx-4 mb-8 rounded-2xl p-5 flex flex-col gap-2"
+          style={{
+            background: "rgba(22,22,28,0.97)",
+            border: "1px solid rgba(255,255,255,0.09)",
+            boxShadow: "0 -8px 48px rgba(0,0,0,0.5)",
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-start justify-between mb-1">
+            <div>
+              <p className="text-base font-semibold text-white">Open in Wallet</p>
+              <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+                Use your wallet's browser to connect
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="w-7 h-7 rounded-full flex items-center justify-center"
+              style={{ background: "rgba(255,255,255,0.08)" }}
+            >
+              <X className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.6)" }} />
+            </button>
           </div>
+
+          {/* Wallet rows */}
+          {WALLET_CONFIGS.map((wallet) => (
+            <button
+              key={wallet.uaKey}
+              onClick={() => openInWallet(wallet)}
+              className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-all active:scale-[0.97]"
+              style={{ background: "rgba(255,255,255,0.05)" }}
+            >
+              <div className="rounded-xl overflow-hidden shrink-0">
+                {WALLET_ICON_MAP[wallet.uaKey]}
+              </div>
+              <span className="flex-1 text-sm font-medium text-white">
+                {wallet.name}
+              </span>
+              <ExternalLink className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.25)" }} />
+            </button>
+          ))}
+
+          {/* Continue in browser → swaps to CustomConnectButton */}
           <button
-            onClick={onClose}
-            className="w-7 h-7 rounded-full flex items-center justify-center"
-            style={{ background: "rgba(255,255,255,0.08)" }}
+            onClick={onContinueInBrowser}
+            className="mt-1 w-full py-2.5 text-xs rounded-xl transition-colors"
+            style={{ color: "rgba(255,255,255,0.3)" }}
           >
-            <X className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.6)" }} />
+            Continue in browser anyway
           </button>
         </div>
-
-        {/* Wallet rows */}
-        {WALLET_CONFIGS.map((wallet) => (
-          <button
-            key={wallet.uaKey}
-            onClick={() => openInWallet(wallet)}
-            className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-all active:scale-[0.97]"
-            style={{ background: "rgba(255,255,255,0.05)" }}
-          >
-            <div className="rounded-xl overflow-hidden shrink-0">
-              {WALLET_ICON_MAP[wallet.uaKey]}
-            </div>
-            <span className="flex-1 text-sm font-medium text-white">
-              {wallet.name}
-            </span>
-            <ExternalLink className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.25)" }} />
-          </button>
-        ))}
-
-        {/* Continue in browser — swaps to CustomConnectButton */}
-        <button
-          onClick={onContinueInBrowser}
-          className="mt-1 w-full py-2.5 text-xs transition-colors rounded-xl"
-          style={{ color: "rgba(255,255,255,0.3)" }}
-        >
-          Continue in browser anyway
-        </button>
       </div>
-    </div>,
-    document.body
+    </ClientPortal>
   );
 }
 
@@ -147,6 +162,14 @@ type Mode = "gate" | "sheet" | "connect";
 
 export function WalletGate() {
   const [mode, setMode] = useState<Mode>("gate");
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Don't render anything until client-side — avoids SSR mismatch
+  if (!isMounted) return null;
 
   // Inside wallet browser or desktop → straight to connect button
   if (isInsideWalletBrowser() || !isMobileDevice() || mode === "connect") {
@@ -155,7 +178,6 @@ export function WalletGate() {
 
   return (
     <>
-      {/* "Connect Now" trigger button — styled to match your existing navbar pills */}
       <button
         onClick={() => setMode("sheet")}
         className="
