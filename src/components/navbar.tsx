@@ -1,6 +1,7 @@
 import { CustomConnectButton } from "./ui/customConnectButton";
 import { Pill } from "lucide-react";
 import { useState, useEffect } from "react";
+import { WalletGate } from "./Walletgate";
 function Navbar() {
   const [now, setNow] = useState(new Date());
   useEffect(() => {
@@ -54,7 +55,7 @@ function Navbar() {
           Time Capsule
         </h1>
         <div className="shrink-0 md:mx-2 ml-auto">
-          <CustomConnectButton />
+          <WalletGate />
         </div>
       </div>
     </nav>

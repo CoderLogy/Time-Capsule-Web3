@@ -1,208 +1,123 @@
 import { useEffect, useRef } from "react";
 
-interface WalletInfo {
-    name: string;
-    scheme: string;
-    uriScheme: string;
-    buildDeepLink: (domain: string, fullUrl: string) => string;
+export interface WalletInfo {
+  name: string;
+  uaKey: string;
+  buildDeepLink: (fullUrl: string) => string;
+  iosInstallUrl: string;
+  androidInstallUrl: string;
 }
 
-const WALLET_CONFIGS: WalletInfo[] = [
-    {
-        name: "MetaMask",
-        scheme: "https://metamask.app.link",
-        uriScheme: "metamask",
-        buildDeepLink: (_, fullUrl) => {
-            // MetaMask uses the same Universal Link format for both iOS and Android
-            const encodedUrl = encodeURIComponent(fullUrl);
-            return `https://metamask.app.link/dapp?url=${encodedUrl}`;
-        }
+export const WALLET_CONFIGS: WalletInfo[] = [
+  {
+    name: "MetaMask",
+    uaKey: "metamask",
+    buildDeepLink: (fullUrl) => {
+      // MetaMask universal link correct format:
+      // Strip the protocol, pass host+path as the dapp path segment
+      // e.g. https://metamask.app.link/dapp/myapp.xyz/page
+      const stripped = fullUrl.replace(/^https?:\/\//, "");
+      return `https://metamask.app.link/dapp/${stripped}`;
     },
-    {
-        name: "Trust Wallet",
-        scheme: "https://link.trustwallet.com",
-        uriScheme: "trust",
-        buildDeepLink: (_, fullUrl) => {
-            const encodedUrl = encodeURIComponent(fullUrl);
-            return `https://link.trustwallet.com/open_dapp?url=${encodedUrl}`;
-        }
+    iosInstallUrl: "https://apps.apple.com/app/metamask/id1438144202",
+    androidInstallUrl: "https://play.google.com/store/apps/details?id=io.metamask",
+  },
+  {
+    name: "Trust Wallet",
+    uaKey: "trust",
+    buildDeepLink: (fullUrl) => {
+      const encoded = encodeURIComponent(fullUrl);
+      return `https://link.trustwallet.com/open_dapp?url=${encoded}`;
     },
-    {
-        name: "Coinbase Wallet",
-        scheme: "https://go.cb-w.com",
-        uriScheme: "coinbase",
-        buildDeepLink: (_, fullUrl) => {
-            const encodedUrl = encodeURIComponent(fullUrl);
-            return `https://go.cb-w.com/dapp?url=${encodedUrl}`;
-        }
+    iosInstallUrl: "https://apps.apple.com/app/trust-crypto-bitcoin-wallet/id1288339409",
+    androidInstallUrl: "https://play.google.com/store/apps/details?id=com.wallet.crypto.trustapp",
+  },
+  {
+    name: "Coinbase Wallet",
+    uaKey: "coinbasebrowser",
+    buildDeepLink: (fullUrl) => {
+      const encoded = encodeURIComponent(fullUrl);
+      return `https://go.cb-w.com/dapp?url=${encoded}`;
     },
-    {
-        name: "Rainbow",
-        scheme: "https://rnbw.to",
-        uriScheme: "rainbow",
-        buildDeepLink: (_, fullUrl) => {
-            const encodedUrl = encodeURIComponent(fullUrl);
-            return `https://rnbw.to/dapp?url=${encodedUrl}`;
-        }
-    }
+    iosInstallUrl: "https://apps.apple.com/app/coinbase-wallet/id1278383455",
+    androidInstallUrl: "https://play.google.com/store/apps/details?id=org.toshi",
+  },
+  {
+    name: "Rainbow",
+    uaKey: "rainbow",
+    buildDeepLink: (fullUrl) => {
+      const encoded = encodeURIComponent(fullUrl);
+      return `https://rnbw.to/dapp?url=${encoded}`;
+    },
+    iosInstallUrl: "https://apps.apple.com/app/rainbow-ethereum-wallet/id1457119021",
+    androidInstallUrl: "https://play.google.com/store/apps/details?id=me.rainbow",
+  },
 ];
 
-function isMobileDevice(userAgent: string): boolean {
-    const mobilePattern = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
-    return mobilePattern.test(userAgent);
+export function isInsideWalletBrowser(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent.toLowerCase();
+  return WALLET_CONFIGS.some((w) => ua.includes(w.uaKey));
 }
 
-function isAlreadyInWallet(userAgent: string): boolean {
-    return WALLET_CONFIGS.some((wallet) => userAgent.toLowerCase().includes(wallet.uriScheme));
+export function isMobileDevice(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
+    navigator.userAgent
+  );
 }
 
-function detectBestWallet(userAgent: string): WalletInfo | null {
-    const lowerUA = userAgent.toLowerCase();
+/**
+ * The key fix: use window.location.href directly — this is the most
+ * reliable way to trigger deep links on both iOS and Android.
+ * Hidden anchor clicks are often blocked by mobile browsers.
+ * We only do the store fallback if document is still visible after 2s.
+ */
+export function openInWallet(wallet: WalletInfo): void {
+  const currentUrl = window.location.href;
+  const deepLink = wallet.buildDeepLink(currentUrl);
 
-    for (const wallet of WALLET_CONFIGS) {
-        if (lowerUA.includes(wallet.uriScheme)) {
-            return wallet;
-        }
+  console.log(`[WalletGate] Opening ${wallet.name} with:`, deepLink);
+
+  // Direct assignment — most reliable way to trigger universal links / deep links
+  window.location.href = deepLink;
+
+  // Fallback to app store if app didn't open (page still visible after 2s)
+  const timer = setTimeout(() => {
+    if (!document.hidden) {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      window.location.href = isIOS ? wallet.iosInstallUrl : wallet.androidInstallUrl;
     }
+  }, 2000);
 
-    // Default to MetaMask if no specific wallet detected but we're on mobile
-    return WALLET_CONFIGS[0];
+  document.addEventListener(
+    "visibilitychange",
+    () => {
+      if (document.hidden) clearTimeout(timer);
+    },
+    { once: true }
+  );
 }
 
-function buildRedirectUrl(wallet: WalletInfo, currentUrl: string): string {
-    const domain = currentUrl.replace(/^https?:\/\//, "").split("/")[0];
-    return wallet.buildDeepLink(domain, currentUrl);
-}
+/**
+ * Hook kept for backward compatibility with existing imports.
+ * Returns wallet/mobile state — redirect logic lives in <WalletGate />.
+ */
+export function useMobileWalletDetection(): {
+  isInsideWallet: boolean;
+  isMobile: boolean;
+} {
+  const hasRunRef = useRef(false);
 
-function getSessionKey(domain: string): string {
-    return `timecapsule_wallet_redirect_${domain}`;
-}
+  useEffect(() => {
+    if (hasRunRef.current) return;
+    hasRunRef.current = true;
+    // Side-effect logic is intentionally handled by <WalletGate />.
+    // This hook just exposes state for other consumers.
+  }, []);
 
-function hasShownPromptRecently(domain: string, hourWindow: number = 24): boolean {
-    const key = getSessionKey(domain);
-    const lastPromptTime = sessionStorage.getItem(key);
-
-    if (!lastPromptTime) return false;
-
-    const lastTime = parseInt(lastPromptTime, 10);
-    const now = Date.now();
-    const hourWindowMs = hourWindow * 60 * 60 * 1000;
-
-    return now - lastTime < hourWindowMs;
-}
-
-function markPromptShown(domain: string): void {
-    const key = getSessionKey(domain);
-    sessionStorage.setItem(key, Date.now().toString());
-}
-
-export function useMobileWalletDetection(): void {
-    const hasRunRef = useRef(false);
-
-    useEffect(() => {
-        // Prevent multiple executions in strict mode
-        if (hasRunRef.current) return;
-        hasRunRef.current = true;
-
-        try {
-            const userAgent = navigator.userAgent;
-            const currentUrl = window.location.href;
-            const domain = currentUrl.replace(/^https?:\/\//, "").split("/")[0];
-
-            // Check conditions for showing prompt
-            if (!isMobileDevice(userAgent)) {
-                console.log("[MobileWalletDetection] Not a mobile device, skipping");
-                return;
-            }
-
-            if (isAlreadyInWallet(userAgent)) {
-                console.log("[MobileWalletDetection] Already in wallet browser, skipping");
-                return;
-            }
-
-            if (hasShownPromptRecently(domain)) {
-                console.log("[MobileWalletDetection] Prompt shown recently, skipping");
-                return;
-            }
-
-            // On iOS, always offer wallet options. On Android, detect if user agent hints at a wallet
-            const isIOS = /iPad|iPhone|iPod/.test(userAgent);
-            const detectedWallet = isIOS ? WALLET_CONFIGS[0] : detectBestWallet(userAgent);
-
-            if (!detectedWallet) {
-                console.log("[MobileWalletDetection] No wallet detected");
-                return;
-            }
-
-            console.log(
-                `[MobileWalletDetection] ${isIOS ? "iOS" : "Mobile"} device detected, showing prompt for ${detectedWallet.name}`
-            );
-
-            // Build wallet options message
-            const walletList = WALLET_CONFIGS.map((w, i) => `${i + 1}. ${w.name}`).join("\n");
-            const userChoice = window.prompt(
-                `Open this dApp in a wallet browser?\n\nSelect wallet number:\n${walletList}\n\n(Or cancel to continue in browser)`,
-                "1"
-            );
-
-            markPromptShown(domain);
-
-            if (userChoice) {
-                const selectedIndex = parseInt(userChoice, 10) - 1;
-                if (selectedIndex >= 0 && selectedIndex < WALLET_CONFIGS.length) {
-                    const selectedWallet = WALLET_CONFIGS[selectedIndex];
-                    const deepLinkUrl = buildRedirectUrl(selectedWallet, currentUrl);
-
-                    // On iOS, use a different strategy - try to open, and if it fails, show manual option
-                    if (isIOS) {
-                        console.log(`[MobileWalletDetection] iOS: Attempting to open ${selectedWallet.name}...`);
-
-                        // Try to open the deep link
-                        window.location.href = deepLinkUrl;
-
-                        // Set a timeout to detect if nothing happened and show manual option
-                        setTimeout(() => {
-                            if (document.hidden === false) {
-                                console.log(
-                                    "[MobileWalletDetection] App may not be installed, showing manual option"
-                                );
-                                const manualOpen = window.confirm(
-                                    `${selectedWallet.name} may not be installed.\n\nCopy the URL to open manually in ${selectedWallet.name}?\n\nYou can paste it in ${selectedWallet.name}'s address bar.`
-                                );
-
-                                if (manualOpen) {
-                                    navigator.clipboard
-                                        .writeText(currentUrl)
-                                        .then(() => {
-                                            window.alert(
-                                                "URL copied to clipboard!\n\nNow open it in " +
-                                                    selectedWallet.name
-                                            );
-                                        })
-                                        .catch(() => {
-                                            window.prompt(
-                                                `Copy this URL and open in ${selectedWallet.name}:`,
-                                                currentUrl
-                                            );
-                                        });
-                                }
-                            }
-                        }, 2000);
-                    } else {
-                        // Android - direct redirect
-                        console.log(
-                            `[MobileWalletDetection] Android: Redirecting to ${selectedWallet.name}...`
-                        );
-                        window.location.href = deepLinkUrl;
-                    }
-                } else {
-                    console.log("[MobileWalletDetection] Invalid selection, continuing in browser");
-                }
-            } else {
-                console.log("[MobileWalletDetection] User cancelled, continuing in browser");
-            }
-        } catch (error) {
-            console.error("[MobileWalletDetection] Error during detection:", error);
-        }
-    }, []);
+  return {
+    isInsideWallet: isInsideWalletBrowser(),
+    isMobile: isMobileDevice(),
+  };
 }
