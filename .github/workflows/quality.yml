@@ -1,0 +1,253 @@
+name: Code Quality & Maintenance
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  test-stability:
+    name: Test Stability Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests multiple times (flakiness check)
+        id: flake-check
+        run: |
+          echo "🔄 Running tests 3 times to check for flakiness..."
+
+          FAILED_RUNS=0
+          for i in {1..3}; do
+            echo ""
+            echo "--- Test Run $i ---"
+            if pnpm vitest --run > /tmp/test-run-$i.txt 2>&1; then
+              echo "✅ Run $i: PASSED"
+            else
+              echo "❌ Run $i: FAILED"
+              FAILED_RUNS=$((FAILED_RUNS + 1))
+              cat /tmp/test-run-$i.txt
+            fi
+          done
+
+          if [ $FAILED_RUNS -gt 0 ]; then
+            echo "flaky_tests=true" >> $GITHUB_OUTPUT
+            echo "❌ Tests failed in $FAILED_RUNS out of 3 runs"
+            exit 1
+          else
+            echo "flaky_tests=false" >> $GITHUB_OUTPUT
+            echo "✅ All 3 test runs passed - no flakiness detected"
+          fi
+
+      - name: Report flakiness
+        if: failure()
+        run: |
+          echo "## ⚠️ Test Flakiness Detected"
+          echo ""
+          echo "The test suite appears to have flaky tests that fail intermittently."
+          echo "Please investigate and fix the failing tests."
+
+  dependency-check:
+    name: Dependency Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Check for outdated dependencies
+        run: |
+          echo "📦 Checking dependencies..."
+
+          # Check if pnpm is available
+          npm install -g pnpm
+
+          # List outdated packages
+          OUTDATED=$(pnpm outdated 2>&1 || true)
+
+          if echo "$OUTDATED" | grep -q "up to date"; then
+            echo "✅ All dependencies are up to date"
+          else
+            echo "⚠️ Some dependencies may need updating:"
+            echo "$OUTDATED" | head -20
+          fi
+
+      - name: Verify lock file consistency
+        run: |
+          echo "🔒 Verifying pnpm-lock.yaml..."
+
+          if [ -f "pnpm-lock.yaml" ]; then
+            echo "✅ Lock file exists"
+          else
+            echo "❌ pnpm-lock.yaml not found!"
+            exit 1
+          fi
+
+  test-count-monitor:
+    name: Test Count Monitor
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Count tests
+        id: count-tests
+        run: |
+          echo "📊 Test Count Analysis"
+          echo "====================="
+
+          # Run tests and capture output
+          TEST_OUTPUT=$(pnpm vitest --run --reporter=verbose 2>&1 | tail -50)
+
+          # Extract test count
+          TEST_COUNT=$(echo "$TEST_OUTPUT" | grep "Tests" | grep -oE "[0-9]+ passed" | grep -oE "^[0-9]+")
+
+          echo "Total Tests: $TEST_COUNT"
+          echo "test_count=$TEST_COUNT" >> $GITHUB_OUTPUT
+
+          # Calculate by file
+          UNIT_TESTS=$(grep -c "describe\|it(" tests/unit/*.test.ts 2>/dev/null || echo "0")
+          INTEGRATION_TESTS=$(grep -c "describe\|it(" tests/integration/*.test.ts 2>/dev/null | grep -v manual || echo "0")
+
+          echo ""
+          echo "Breakdown:"
+          echo "- Unit tests: $UNIT_TESTS (approx)"
+          echo "- Integration tests: $INTEGRATION_TESTS (approx)"
+
+      - name: Verify test count threshold
+        run: |
+          TEST_COUNT="${{ steps.count-tests.outputs.test_count }}"
+          MIN_TESTS=30
+
+          if [ "$TEST_COUNT" -lt "$MIN_TESTS" ]; then
+            echo "❌ ALERT: Test count dropped below threshold!"
+            echo "   Expected: >= $MIN_TESTS"
+            echo "   Found: $TEST_COUNT"
+            exit 1
+          else
+            echo "✅ Test count is healthy: $TEST_COUNT (required: >= $MIN_TESTS)"
+          fi
+
+  critical-files-audit:
+    name: Critical Files Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Audit critical files
+        run: |
+          echo "🔐 Auditing Critical Files"
+          echo "=========================="
+
+          CRITICAL_FILES=(
+            "src/lib/errors.ts"
+            "src/lib/encrypt-decrypt.ts"
+            "tests/unit/error-handling.test.ts"
+            "tests/unit/errors.test.ts"
+            "tests/integration/capsule-encryption.test.ts"
+            "package.json"
+          )
+
+          MISSING=0
+          for FILE in "${CRITICAL_FILES[@]}"; do
+            if [ -f "$FILE" ]; then
+              SIZE=$(stat -f%z "$FILE" 2>/dev/null || stat -c%s "$FILE" 2>/dev/null || echo "?")
+              echo "✅ $FILE ($SIZE bytes)"
+            else
+              echo "❌ MISSING: $FILE"
+              MISSING=$((MISSING + 1))
+            fi
+          done
+
+          if [ $MISSING -gt 0 ]; then
+            echo ""
+            echo "❌ $MISSING critical files are missing!"
+            exit 1
+          else
+            echo ""
+            echo "✅ All critical files present"
+          fi
+
+      - name: Check file modifications
+        run: |
+          echo ""
+          echo "📝 Recent Modifications:"
+
+          for FILE in src/lib/errors.ts src/lib/encrypt-decrypt.ts; do
+            if [ -f "$FILE" ]; then
+              MODIFIED=$(git log -1 --format="%ai" "$FILE" 2>/dev/null || echo "unknown")
+              echo "  - $FILE: $MODIFIED"
+            fi
+          done
+
+  report-status:
+    name: Status Report
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [test-stability, dependency-check, test-count-monitor, critical-files-audit]
+
+    steps:
+      - name: Generate report
+        run: |
+          echo "## 📋 Daily Code Quality Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Results" >> $GITHUB_STEP_SUMMARY
+          echo "- Test Stability: ${{ needs.test-stability.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Dependencies: ${{ needs.dependency-check.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Test Count: ${{ needs.test-count-monitor.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Critical Files: ${{ needs.critical-files-audit.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Generated: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+
+      - name: Fail if any check failed
+        if: |
+          needs.test-stability.result == 'failure' ||
+          needs.critical-files-audit.result == 'failure'
+        run: exit 1

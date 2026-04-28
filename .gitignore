@@ -68,7 +68,7 @@ Desktop.ini
 # Configuration & Documentation
 # ==============================
 *.prettierrc
-/SETUP.md
+/.github/SETUP.md
 /DEPLOYMENT.md
 
 # ==============================

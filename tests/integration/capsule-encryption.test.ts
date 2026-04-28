@@ -1,5 +1,9 @@
 // Capsule encryption and decryption integration tests
 // Tests the full lifecycle of creating, encrypting, and decrypting capsules
+// IMPACT: Critical for security - validates end-to-end encryption, time-locking, and key derivation
+// WHO: Security team (encryption validation), DevOps (production readiness), Users (trusted encryption)
+// WHY: Ensures capsules are properly encrypted, time-locked, and only decryptable by authorized wallets
+// RUN: `pnpm vitest tests/integration/capsule-encryption.test.ts` - requires local Hardhat node
 
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { ethers } from "ethers";
@@ -9,7 +13,7 @@ import {
   deriveMasterKeyFromAddress,
 } from "@/lib/encrypt-decrypt";
 
-describe("Capsule Encryption Integration", () => {
+describe("Capsule Encryption Integration - End-to-end encryption and time-locking", () => {
   let signer: ethers.Signer;
   let signerAddress: string;
   const testMessages = [
@@ -29,11 +33,11 @@ describe("Capsule Encryption Integration", () => {
     console.log("Test signer address:", signerAddress);
   });
 
-  describe("Basic Encryption and Decryption", () => {
-    it("should encrypt and decrypt a message", async () => {
+  describe("Basic Encryption and Decryption - Core encryption functionality", () => {
+    it("should encrypt and decrypt a message with wallet signature", async () => {
       const message = testMessages[0];
       const now = Math.floor(Date.now() / 1000);
-      const expiresAt = now + 3600; // 1 hour
+      const expiresAt = now - 1; // Already expired so it can be decrypted
 
       const encrypted = await encryptForWallet(signer, message, expiresAt);
       const decrypted = await decryptForWallet(signer, encrypted);
@@ -41,10 +45,10 @@ describe("Capsule Encryption Integration", () => {
       expect(decrypted).toBe(message);
     });
 
-    it("should encrypt messages with special characters", async () => {
+    it("should encrypt messages with special characters and emoji", async () => {
       const message = testMessages[1];
       const now = Math.floor(Date.now() / 1000);
-      const expiresAt = now + 3600;
+      const expiresAt = now - 1; // Already expired so it can be decrypted
 
       const encrypted = await encryptForWallet(signer, message, expiresAt);
       const decrypted = await decryptForWallet(signer, encrypted);
@@ -52,10 +56,10 @@ describe("Capsule Encryption Integration", () => {
       expect(decrypted).toBe(message);
     });
 
-    it("should encrypt and decrypt long messages", async () => {
+    it("should encrypt and decrypt long messages (stress test)", async () => {
       const message = testMessages[2];
       const now = Math.floor(Date.now() / 1000);
-      const expiresAt = now + 3600;
+      const expiresAt = now - 1; // Already expired so it can be decrypted
 
       const encrypted = await encryptForWallet(signer, message, expiresAt);
       const decrypted = await decryptForWallet(signer, encrypted);
@@ -64,8 +68,8 @@ describe("Capsule Encryption Integration", () => {
     });
   });
 
-  describe("Encryption Payload Structure", () => {
-    it("should create valid encryption payload", async () => {
+  describe("Encryption Payload Structure - Validation of encrypted data format", () => {
+    it("should create valid encryption payload with all required fields", async () => {
       const now = Math.floor(Date.now() / 1000);
       const expiresAt = now + 3600;
 
@@ -82,7 +86,7 @@ describe("Capsule Encryption Integration", () => {
       expect(encrypted.version).toBe(3);
     });
 
-    it("should generate unique nonce for each encryption", async () => {
+    it("should generate unique nonce for each encryption (CSPRNG randomness)", async () => {
       const now = Math.floor(Date.now() / 1000);
       const expiresAt = now + 3600;
 
@@ -101,7 +105,7 @@ describe("Capsule Encryption Integration", () => {
       expect(encrypted1.encryptedMessage).not.toBe(encrypted2.encryptedMessage);
     });
 
-    it("should round timestamp to 15-minute granularity", async () => {
+    it("should round timestamp to 15-minute granularity (drand compatibility)", async () => {
       const now = Math.floor(Date.now() / 1000);
       const expiresAt = now + 3600;
 
@@ -112,8 +116,8 @@ describe("Capsule Encryption Integration", () => {
     });
   });
 
-  describe("Time Lock Validation", () => {
-    it("should reject decryption of future-locked capsules", async () => {
+  describe("Time Lock Validation - Verify time-locking prevents early access", () => {
+    it("should reject decryption of future-locked capsules (security gate)", async () => {
       const now = Math.floor(Date.now() / 1000);
       const futureExpiresAt = now + 7200; // 2 hours in future
 
@@ -129,7 +133,7 @@ describe("Capsule Encryption Integration", () => {
       ).rejects.toThrow("time-locked");
     });
 
-    it("should allow decryption of expired capsules", async () => {
+    it("should allow decryption of expired capsules (time passed)", async () => {
       const now = Math.floor(Date.now() / 1000);
       const pastExpiresAt = now - 3600; // 1 hour in past
 
@@ -144,10 +148,10 @@ describe("Capsule Encryption Integration", () => {
     });
   });
 
-  describe("Version Support", () => {
-    it("should support version 3 capsules", async () => {
+  describe("Version Support - Ensure backward/forward compatibility", () => {
+    it("should support version 3 capsules (current encryption format)", async () => {
       const now = Math.floor(Date.now() / 1000);
-      const expiresAt = now + 3600;
+      const expiresAt = now - 1; // Already expired so it can be decrypted
 
       const encrypted = await encryptForWallet(signer, "test", expiresAt);
       expect(encrypted.version).toBe(3);
@@ -156,7 +160,7 @@ describe("Capsule Encryption Integration", () => {
       expect(decrypted).toBe("test");
     });
 
-    it("should reject unsupported versions", async () => {
+    it("should reject unsupported versions (version check guard)", async () => {
       const now = Math.floor(Date.now() / 1000);
       const expiresAt = now + 3600;
 
@@ -171,8 +175,8 @@ describe("Capsule Encryption Integration", () => {
     });
   });
 
-  describe("Decryption Edge Cases", () => {
-    it("should fail gracefully on invalid hex data", async () => {
+  describe("Decryption Edge Cases - Robustness against tampered/malformed data", () => {
+    it("should fail gracefully on invalid hex data (input validation)", async () => {
       const payload = {
         encryptedMessage: "not-valid-hex",
         encryptedDataKey: "also-not-hex",
@@ -189,7 +193,7 @@ describe("Capsule Encryption Integration", () => {
       ).rejects.toThrow();
     });
 
-    it("should fail on tampering with AAD metadata", async () => {
+    it("should fail on tampering with AAD metadata (AEAD authentication)", async () => {
       const now = Math.floor(Date.now() / 1000);
       const expiresAt = now + 3600;
 

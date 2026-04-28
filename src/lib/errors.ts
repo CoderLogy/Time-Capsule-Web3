@@ -45,10 +45,6 @@ export function classifyError(error: Error | string): ClassifiedError {
     return { type: 'drand_timeout', message: msg, userMessage: 'Service is slow. Try again.' };
   }
 
-  if (msg.includes('network') || msg.includes('CORS') || msg.includes('fetch')) {
-    return { type: 'drand_network', message: msg, userMessage: 'Network issue. Check connection.' };
-  }
-
   // Wallet errors
   if (msg.includes('original wallet') || msg.includes('wrong wallet')) {
     return { type: 'wallet_wrong', message: msg, userMessage: 'Use the same wallet that created this.' };
@@ -75,15 +71,23 @@ export function classifyError(error: Error | string): ClassifiedError {
     return { type: 'version_unsupported', message: msg, userMessage: 'Update the app to open this capsule.' };
   }
 
-  // Network errors
+  // Network errors - distinguish between drand network errors and generic network errors
+  if (msg.includes('drand') && (msg.includes('network') || msg.includes('CORS') || msg.includes('fetch'))) {
+    return { type: 'drand_network', message: msg, userMessage: 'Network issue. Check connection.' };
+  }
+
   if (msg.includes('Failed to fetch') || msg.includes('Unable to reach') || msg.includes('ERR_')) {
     return { type: 'network_error', message: msg, userMessage: 'Network error. Check connection.' };
+  }
+
+  if (msg.includes('network') || msg.includes('CORS')) {
+    return { type: 'drand_network', message: msg, userMessage: 'Network issue. Check connection.' };
   }
 
   return {
     type: 'unknown',
     message: msg,
-    userMessage: msg || 'Something went wrong. Try again.',
+    userMessage: (msg && msg !== '[object Object]') ? msg : 'Something went wrong. Try again.',
   };
   } finally {
     _classifyDepth--;
