@@ -1,10 +1,42 @@
 name: CI/CD Pipeline
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main, develop, test]
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.mdx'
+      - '**/*.txt'
+      - '**/*.png'
+      - '**/*.jpg'
+      - '**/*.jpeg'
+      - '**/*.gif'
+      - '**/*.svg'
+      - '**/*.ico'
+      - '.gitignore'
+      - 'LICENSE'
+      - 'docs/**'
+      - '.github/*.md'
   pull_request:
     branches: [main, develop]
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.mdx'
+      - '**/*.txt'
+      - '**/*.png'
+      - '**/*.jpg'
+      - '**/*.jpeg'
+      - '**/*.gif'
+      - '**/*.svg'
+      - '**/*.ico'
+      - '.gitignore'
+      - 'LICENSE'
+      - 'docs/**'
+      - '.github/*.md'
   workflow_dispatch:
 
 permissions:
@@ -17,13 +49,13 @@ jobs:
   checks:
     name: Tests & Quality Checks
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history for git operations
+          fetch-depth: 0
 
       - name: Fetch base branch
         if: github.event_name == 'pull_request'
@@ -38,14 +70,26 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22.x
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+      - name: Restore pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-store-${{ runner.os }}-
 
       - name: Install dependencies
         run: pnpm install
 
       - name: TypeScript compilation check
-        run: pnpm tsc --noEmit 2>&1 || true  # Report but don't fail on type warnings
+        run: pnpm tsc --noEmit 2>&1 || true
 
       - name: Run tests
         id: test-results
@@ -70,11 +114,12 @@ jobs:
             echo "✅ Test count acceptable: $TEST_COUNT"
           fi
 
-      - name: Security checks
+      - name: Security & quality checks
         run: |
-          echo "## Security Checks" >> $GITHUB_STEP_SUMMARY
+          echo "## Security & Code Quality" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
+          # Security checks
           if grep -r "PRIVATE_KEY\|SECRET\|PASSWORD" src/ --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v "process.env\|.env" | grep -v "test"; then
             echo "❌ Potential hardcoded secrets found!"
             exit 1
@@ -89,11 +134,7 @@ jobs:
             echo "✅ No eval() usage" >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: Code quality checks
-        run: |
-          echo "## Code Quality" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
+          # Code quality checks
           CONSOLE_LOGS=$(grep -r "console\.log" src/ --include="*.ts" --include="*.tsx" | wc -l)
           CONSOLE_DEBUG=$(grep -r "console\.debug" src/ --include="*.ts" --include="*.tsx" | wc -l)
 
@@ -109,9 +150,9 @@ jobs:
             echo "✅ No console.debug statements" >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: File safety checks
+      - name: File & package verification
         run: |
-          echo "## File Safety" >> $GITHUB_STEP_SUMMARY
+          echo "## File & Package Verification" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
           CRITICAL_FILES=(
@@ -140,10 +181,6 @@ jobs:
             exit 1
           fi
 
-      - name: Verify package.json
-        run: |
-          echo "## Package Info" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
           node -e "const pkg = require('./package.json'); console.log('- Version:', pkg.version); console.log('- Name:', pkg.name);" | while read line; do echo "$line" >> $GITHUB_STEP_SUMMARY; done
 
       - name: PR validation comment
@@ -205,8 +242,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22.x
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+      - name: Restore pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-store-${{ runner.os }}-
 
       - name: Install dependencies
         run: pnpm install
@@ -261,8 +310,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22.x
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+      - name: Restore pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-store-${{ runner.os }}-
 
       - name: Install dependencies
         run: pnpm install
