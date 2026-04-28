@@ -37,7 +37,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install ----no-frozen-lockfile
 
       - name: Run tests
         id: test-result
@@ -132,7 +132,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install ----no-frozen-lockfile
 
       - name: Run tests with coverage (if configured)
         run: |
@@ -166,7 +166,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install ----no-frozen-lockfile
 
       - name: Check for security issues
         run: |
