@@ -69,7 +69,6 @@ export function trackSignOutCompleted({
 
 // CAPSULE CREATION EVENTS
 
-
 export function trackCapsuleCreated({
     capsuleId,
     capsuleUnlockDate,
@@ -231,7 +230,11 @@ export function setUserProperties({
         identify.set("Has Completed Payment", hasCompletedPayment);
     }
     if (firstCapsuleCreatedAt) {
-        identify.set("First Capsule Created At", firstCapsuleCreatedAt);
+        const timestamp =
+            typeof firstCapsuleCreatedAt === "string"
+                ? firstCapsuleCreatedAt
+                : firstCapsuleCreatedAt.toISOString();
+        identify.set("First Capsule Created At", timestamp);
     }
     if (onboardingStatus) {
         identify.set("Onboarding Status", onboardingStatus);
