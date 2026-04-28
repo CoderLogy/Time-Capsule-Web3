@@ -1,6 +1,6 @@
 # Time Capsule Web3
 
-> Cryptographically time-locked messages on Ethereum. Decrypt on-chain at the exact moment you choose, powered by drand randomness and hybrid encryption.
+> Cryptographically time-locked messages on Ethereum. Decrypt on-chain at the exact moment you choose, powered by drand randomness, hybrid encryption and trustless architectural design.
 
 [![](https://img.shields.io/github/stars/CoderLogy/Time-Capsule-Web3?style=social)](https://github.com/CoderLogy/Time-Capsule-Web3)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
