@@ -6,7 +6,7 @@ concurrency:
 
 on:
   push:
-    branches: [main, develop, test]
+    branches: [main]  # Only main for production deploys
     paths-ignore:
       - '**/*.md'
       - '**/*.mdx'
@@ -22,7 +22,7 @@ on:
       - 'docs/**'
       - '.github/*.md'
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop]  # PR checking handles all branches
     paths-ignore:
       - '**/*.md'
       - '**/*.mdx'
@@ -37,7 +37,7 @@ on:
       - 'LICENSE'
       - 'docs/**'
       - '.github/*.md'
-  workflow_dispatch:
+  workflow_dispatch:  # Manual trigger for any branch
 
 permissions:
   contents: read
