@@ -11,7 +11,7 @@
 
 ## Features
 
-- 🔐 **Hybrid Encryption** - NaCl + AES-256 dual-layer protection
+- 🔐 **Wallet-Based Encryption** - EIP-712 signing + HKDF-SHA256 + AES-256-GCM
 - ⏰ **Cryptographic Time-Locks** - Mathematically impossible to unlock early
 - 🎲 **Drand Verification** - Distributed randomness from 18+ independent operators
 - ⛓️ **Non-Custodial** - No trusted third party needed
@@ -22,23 +22,31 @@
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  HYBRID NaCl + AES-256 ENCRYPTION                       │
-│  ├─ Curve25519 key exchange (ephemeral)                 │
-│  ├─ XSalsa20 stream cipher (authenticated)              │
-│  ├─ Poly1305 MAC (integrity verification)               │
-│  └─ AES-256-GCM layer (additional authentication)        │
+│  WALLET-BASED ENCRYPTION                               │
+│  ├─ EIP-712 typed data signing (per-capsule)           │
+│  ├─ Keccak256 hashing of signature                      │
+│  ├─ HKDF-SHA256 key derivation (with capsule metadata) │
+│  ├─ AES-256-GCM authenticated encryption                │
+│  └─ Per-message random IVs for each layer               │
 ├─────────────────────────────────────────────────────────┤
 │  DRAND RANDOMNESS INTEGRATION                           │
+│  ├─ Additional Authenticated Data (AAD) in all ciphers  │
+│  ├─ Decryption fails if capsule metadata is modified    │
+│  ├─ Prevents unauthorized unlock date or nonce changes  │
+│  └─ Ensures only original capsule data can be decrypted │
+├─────────────────────────────────────────────────────────┤
+│  DRAND TIME-LOCK INTEGRATION (Optional)                 │
 │  ├─ Distributed randomness beacon consensus             │
 │  ├─ Threshold BLS signatures (51%+ collusion needed)    │
-│  ├─ Verifiable time-proofs embedded in ciphertext       │
-│  └─ Impossible to forge or predict                      │
+│  ├─ Additional encryption layer over AES-256-GCM        │
+│  └─ Impossible to decrypt before drand round released   │
 ├─────────────────────────────────────────────────────────┤
 │  SMART CONTRACT VALIDATION                              │
-│  ├─ EdDSA (Ed25519) signature verification              │
-│  ├─ Non-repudiation guarantees                          │
-│  ├─ Multi-signature threshold schemes                   │
-│  └─ Immutable unlock audit trail                        │
+│  ├─ Fee collection (prevents spam)                      │
+│  ├─ Capsule ownership verification                       │
+│  ├─ Time-lock enforcement (can't unlock before date)    │
+│  ├─ Immutable audit trail of all capsule operations     │
+│  └─ Non-custodial (contract cannot decrypt messages)    │
 └─────────────────────────────────────────────────────────┘
 ```
 ### Why This Matters
@@ -110,17 +118,18 @@ We welcome contributions! Here's how to help:
 
 1. **Create** - Write a message and set an unlock date
 2. **Encrypt** - Your wallet signs the message for encryption
-3. **Store** - Message stored on IPFS, proof recorded on blockchain
-4. **Wait** - Drand randomness beacon reaches the unlock time
-5. **Decrypt** - Open the capsule with the same wallet
+2. **Sign & Encrypt** - Your wallet signs the message via EIP-712, key derived from signature
+3. **Store** - Encrypted message stored on IPFS, proof recorded on blockchain
+4. **Optional Time-Lock** - Payload can be wrapped with Drand encryption for additional security
+5. **Decrypt** - After unlock date, open capsule with the same wallet that created it
 
 ## Tech Stack
 
-- **Frontend** - React 19, TypeScript, TailwindCSS
-- **Blockchain** - Solidity, Wagmi, Viem
+- **Blockchain** - Solidity, Ethers.js, Wagmi, Viem
+- **Encryption** - WebCrypto API (AES-256-GCM, HKDF-SHA256)
 - **Storage** - IPFS (Pinata)
 - **Indexing** - The Graph
-- **Time-Lock** - drand (distributed randomness beacon)
+- **Time-Lock** - drand (distributed randomness beacon, optional)
 
 ## Network Status
 
