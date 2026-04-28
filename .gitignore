@@ -69,7 +69,7 @@ Desktop.ini
 # ==============================
 *.prettierrc
 /.github/SETUP.md
-/DEPLOYMENT.md
+DEPLOYMENT.md
 
 # ==============================
 # Local/Temporary files
