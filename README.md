@@ -117,7 +117,6 @@ We welcome contributions! Here's how to help:
 ## How It Works
 
 1. **Create** - Write a message and set an unlock date
-2. **Encrypt** - Your wallet signs the message for encryption
 2. **Sign & Encrypt** - Your wallet signs the message via EIP-712, key derived from signature
 3. **Store** - Encrypted message stored on IPFS, proof recorded on blockchain
 4. **Optional Time-Lock** - Payload can be wrapped with Drand encryption for additional security
