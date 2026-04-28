@@ -30,7 +30,7 @@ jobs:
                   cache: "pnpm"
 
             - name: Install dependencies
-              run: pnpm install ----no-frozen-lockfile
+              run: pnpm install --no-frozen-lockfile
 
             - name: Run Vitest
               run: pnpm vitest --run --reporter=verbose
@@ -154,7 +154,7 @@ jobs:
                   cache: "pnpm"
 
             - name: Install dependencies
-              run: pnpm install ----no-frozen-lockfile
+              run: pnpm install --no-frozen-lockfile
 
             - name: Check TypeScript compilation
               run: pnpm tsc --noEmit 2>&1 || true
