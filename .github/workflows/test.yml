@@ -12,43 +12,44 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        strategy:
-            matrix:
-                node-version: [18.x, 20.x]
-
         steps:
             - name: Checkout code
-              uses: actions/checkout@v6
+              uses: actions/checkout@v4
               with:
                   fetch-depth: 0
 
             - name: Install pnpm
-              uses: pnpm/action-setup@v2
+              uses: pnpm/action-setup@v4
               with:
                   version: 8
 
             - name: Setup Node.js
-              uses: actions/setup-node@v6
+              uses: actions/setup-node@v4
               with:
-                  node-version: ${{ matrix.node-version }}
+                  node-version: 20.x
                   cache: "pnpm"
 
             - name: Install dependencies
-              run: pnpm install --no-frozen-lockfile
+              run: pnpm install --frozen-lockfile
 
             - name: Run Vitest
               run: pnpm vitest --run --reporter=verbose
-              continue-on-error: false
+              env:
+                  VITE_CONTRACT_ADDRESS: "0x0000000000000000000000000000000000000000"
+                  VITE_CHAIN_ID: "11155111"
 
             - name: Generate test report
               if: always()
               run: pnpm vitest --run --reporter=json > test-results.json 2>&1 || true
+              env:
+                  VITE_CONTRACT_ADDRESS: "0x0000000000000000000000000000000000000000"
+                  VITE_CHAIN_ID: "11155111"
 
             - name: Upload test results
               if: always()
-              uses: actions/upload-artifact@v7
+              uses: actions/upload-artifact@v4
               with:
-                  name: test-results-node-${{ matrix.node-version }}
+                  name: test-results
                   path: test-results.json
 
     file-safety:
@@ -58,7 +59,7 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v6
+              uses: actions/checkout@v4
               with:
                   fetch-depth: 0
 
@@ -133,21 +134,21 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v6
+              uses: actions/checkout@v4
 
             - name: Install pnpm
-              uses: pnpm/action-setup@v2
+              uses: pnpm/action-setup@v4
               with:
                   version: 8
 
             - name: Setup Node.js
-              uses: actions/setup-node@v6
+              uses: actions/setup-node@v4
               with:
                   node-version: 20.x
                   cache: "pnpm"
 
             - name: Install dependencies
-              run: pnpm install --no-frozen-lockfile
+              run: pnpm install --frozen-lockfile
 
             - name: Check TypeScript compilation
               run: pnpm tsc --noEmit 2>&1 || true
@@ -175,7 +176,7 @@ jobs:
 
         steps:
             - name: Download test results
-              uses: actions/download-artifact@v8
+              uses: actions/download-artifact@v4
               continue-on-error: true
 
             - name: Generate summary

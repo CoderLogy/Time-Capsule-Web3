@@ -37,7 +37,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Run tests
         id: test-result
@@ -45,6 +45,9 @@ jobs:
           pnpm vitest --run 2>&1 | tee test-output.txt
           TEST_COUNT=$(grep "Tests" test-output.txt | grep -oE "[0-9]+ passed" | grep -oE "[0-9]+")
           echo "test_count=$TEST_COUNT" >> $GITHUB_OUTPUT
+        env:
+          VITE_CONTRACT_ADDRESS: "0x0000000000000000000000000000000000000000"
+          VITE_CHAIN_ID: "11155111"
 
       - name: Detect file changes
         id: file-changes
@@ -129,16 +132,18 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Run tests with coverage (if configured)
         run: |
-          # Check if vitest is configured for coverage
           if grep -q "coverage" pnpm-lock.yaml 2>/dev/null; then
             pnpm vitest --run --coverage 2>&1 || echo "Coverage not configured"
           else
             echo "✅ Coverage not configured, skipping..."
           fi
+        env:
+          VITE_CONTRACT_ADDRESS: "0x0000000000000000000000000000000000000000"
+          VITE_CHAIN_ID: "11155111"
 
   security-scan:
     name: Security & Lint Checks
@@ -161,20 +166,18 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Check for security issues
         run: |
           echo "🔍 Scanning for potential security issues..."
 
-          # Check for hardcoded secrets
           if grep -r "PRIVATE_KEY\|SECRET\|PASSWORD" src/ --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v "process.env\|.env" | grep -v "test"; then
             echo "⚠️  Potential hardcoded secrets found!"
           else
             echo "✅ No hardcoded secrets detected"
           fi
 
-          # Check for eval usage
           if grep -r "eval(" src/ --include="*.ts" --include="*.tsx"; then
             echo "❌ Dangerous eval() usage found!"
             exit 1
@@ -182,7 +185,6 @@ jobs:
             echo "✅ No eval() usage found"
           fi
 
-          # Check for console.log in production
           CONSOLE_LOGS=$(grep -r "console\.log" src/ --include="*.ts" --include="*.tsx" | wc -l)
           if [ $CONSOLE_LOGS -gt 0 ]; then
             echo "⚠️  Found $CONSOLE_LOGS console.log statements - consider using logger"
@@ -194,7 +196,6 @@ jobs:
         run: |
           echo "🛡️ Verifying error handling..."
 
-          # Check that error tests exist
           TEST_FILES=("tests/unit/error-handling.test.ts" "tests/unit/errors.test.ts")
           for file in "${TEST_FILES[@]}"; do
             if [ -f "$file" ]; then
