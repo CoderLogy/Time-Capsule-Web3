@@ -1,41 +1,24 @@
 import { BrowserProvider, ethers } from "ethers";
 import { getWalletClient } from "@wagmi/core";
-import { config } from "@/components/Wallet";
+import { getConfig } from "@/components/Wallet";
 import { WalletClient } from "viem";
 import { BLOCKCHAIN_CONFIG } from "@/lib/config";
 import { quicknet, encrypt as drandEncrypt, decrypt as drandDecrypt } from "@/lib/drand";
 
-/* ------------------------------------------------------------------ */
-/* Config                                                               */
-/* ------------------------------------------------------------------ */
-
-// Chain ID and contract address sourced from central config — no magic constants.
-// CONTRACT_ADDRESS is checksum-validated at module load so a bad config value
-// throws immediately rather than silently deriving wrong keys at runtime.
+// Chain ID and contract address sourced from central config — no magic constants
 const SEPOLIA_CHAIN_ID = BigInt(BLOCKCHAIN_CONFIG.chainId);
 export const CONTRACT_ADDRESS = ethers.getAddress(BLOCKCHAIN_CONFIG.contractAddress);
 
-// SUPPORTED_VERSIONS — add new versions here, never remove old ones.
+// Supported versions - add new ones here, never remove old ones
 const SUPPORTED_VERSIONS = new Set([3]);
 
-// FIX [High]: Round issuedAt to 15-minute windows to reduce timing oracle
-// precision. Still unique enough for key derivation, but no longer leaks
-// exact creation time.
+// Round timestamps to 15-minute windows to reduce timing oracle precision
 const TIMESTAMP_GRANULARITY_SECONDS = 15 * 60;
 function roundTimestamp(ts: number): number {
   return Math.floor(ts / TIMESTAMP_GRANULARITY_SECONDS) * TIMESTAMP_GRANULARITY_SECONDS;
 }
 
-/* ------------------------------------------------------------------ */
-/* Wallet signer                                                        */
-/* ------------------------------------------------------------------ */
-
-// FIX [High]: Eliminate module-level mutable global signer.
-// Callers should hold their own signer reference obtained from
-// setSignatureSigner() and pass it directly into encrypt/decrypt.
-// The legacy getSigner() accessor is retained for backward compat but
-// deprecated — it cannot be made safe in a multi-tab context.
-
+// Wallet signer (deprecated global - hold signer reference instead)
 let _signer: ethers.Signer | null = null;
 let _lastSignerAddress: string | null = null;
 
@@ -71,15 +54,7 @@ export function clearSignatureSigner() {
   _lastSignerAddress = null;
 }
 
-/* ------------------------------------------------------------------ */
-/* Provider pooling - FIX for multiple BrowserProvider instances     */
-/* ------------------------------------------------------------------ */
-// FIX [Critical]: Create ONE BrowserProvider from walletClient and reuse it
-// throughout the capsule creation flow. Multiple BrowserProvider instances
-// from the same transport cause "Failed to fetch" -32603 RPC errors on
-// eth_sendTransaction because MetaMask gets confused about which provider
-// is "active".
-
+// Provider pooling - create ONE BrowserProvider and reuse it to prevent RPC errors
 let _provider: ethers.BrowserProvider | null = null;
 let _providerWalletClient: WalletClient | null = null;
 
@@ -106,7 +81,7 @@ export async function getProvider(walletClient?: WalletClient): Promise<ethers.B
 
   // No walletClient provided and no cache - create from current wallet
   if (!walletClient && !_provider) {
-    const wc = await getWalletClient(config as Parameters<typeof getWalletClient>[0]);
+    const wc = await getWalletClient(getConfig() as Parameters<typeof getWalletClient>[0]);
     if (!wc) {
       throw new Error("[Provider] No wallet client available");
     }
@@ -125,10 +100,7 @@ export function clearProvider() {
   console.log("[Provider] Cleared cached provider");
 }
 
-/* ------------------------------------------------------------------ */
-/* Utils                                                                */
-/* ------------------------------------------------------------------ */
-
+// Utility functions for hex and random bytes
 export function randomBytes(length: number): Uint8Array {
   const arr = new Uint8Array(length);
   crypto.getRandomValues(arr);
@@ -139,8 +111,7 @@ export function toHex(bytes: Uint8Array): string {
   return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-// FIX [Medium]: Validate hex input before parsing to produce clean errors
-// instead of bare TypeErrors on malformed payloads.
+// Validate hex input before parsing to produce clean errors
 export function fromHex(hex: string): Uint8Array {
   if (typeof hex !== "string" || hex.length === 0 || hex.length % 2 !== 0) {
     throw new Error(`Invalid hex string (length=${hex?.length ?? "n/a"})`);
@@ -156,10 +127,7 @@ function zeroize(buf: Uint8Array): void {
   buf.fill(0);
 }
 
-/* ------------------------------------------------------------------ */
-/* Typed data (authorization only)                                      */
-/* ------------------------------------------------------------------ */
-
+// Typed data for authorization (EIP-712 signing)
 function getTypedData(capsuleNonce: string, issuedAt: number, expiresAt: number) {
   return {
     domain: {
@@ -185,37 +153,18 @@ function getTypedData(capsuleNonce: string, issuedAt: number, expiresAt: number)
   };
 }
 
-/* ------------------------------------------------------------------ */
-/* Master key derivation                                                */
-/* ------------------------------------------------------------------ */
-
+// Master key derivation from wallet signer - per-capsule signature isolation
 export async function deriveMasterKeyFromAddress(
   signer: ethers.Signer,
   capsuleNonce: string,
   issuedAt: number,
   expiresAt: number,
 ): Promise<CryptoKey> {
-  // SECURITY — per-capsule signature isolation.
-  //
-  // capsuleNonce lives INSIDE the EIP-712 typed-data struct that is signed.
-  // This means:
-  //   - Each capsule requires its own independent wallet signature.
-  //   - An attacker who captures signature_A can re-derive only capsule A's key.
-  //   - Replaying signature_A against capsule B's payload fails: the IKM is
-  //     bound to capsule A's nonce, so HKDF produces the wrong key entirely.
-  //   - Blast radius of any single leaked signature = exactly ONE capsule.
-  //
-  // Determinism is fully preserved: given the same wallet + same capsule
-  // inputs, signTypedData always returns the same signature (ECDSA with the
-  // same private key + same hash = same (r, s) for deterministic wallets).
+  // Each capsule gets its own signature - if one signature leaks, only that capsule's key is exposed
   const { domain, types, value } = getTypedData(capsuleNonce, issuedAt, expiresAt);
   const signature = await signer.signTypedData(domain, types, value);
 
-  // IKM: keccak256 of the raw signature bytes → uniform 32-byte secret.
-  // The signature already commits to capsuleNonce (via EIP-712 struct hash),
-  // so this IKM is capsule-specific by construction.
-  // ethers.getBytes(signature) converts the 0x-prefixed hex sig to raw bytes
-  // before hashing — avoids encoding ambiguity.
+  // Turn the signature into a key starting point
   const ikm = ethers.getBytes(ethers.keccak256(ethers.getBytes(signature)));
 
   const baseKey = await crypto.subtle.importKey(
@@ -226,9 +175,7 @@ export async function deriveMasterKeyFromAddress(
     ["deriveKey"],
   );
 
-  // SALT: stable domain constant — independent of IKM (RFC 5869 §3.1).
-  // Encodes protocol + version + contract so keys from different deployments
-  // or protocol versions are fully disjoint even if IKM collides.
+  // Add contract info to salt - ensures keys from different contracts don't mix
   const salt = ethers.getBytes(
     ethers.keccak256(
       ethers.solidityPacked(
@@ -238,10 +185,8 @@ export async function deriveMasterKeyFromAddress(
     ),
   );
 
-  // INFO: structured per-capsule context binding.
-  // Even in the (impossible) case of IKM collision across two capsules,
-  // differing nonces here guarantee different output keys.
-  // solidityPacked gives canonical, unambiguous encoding matching on-chain.
+  // Add capsule details to the key derivation
+  // This ensures each capsule has a unique key
   const info = ethers.getBytes(
     ethers.solidityPacked(
       ["string",          "string",      "uint256",  "uint256",  "address"],
@@ -258,10 +203,7 @@ export async function deriveMasterKeyFromAddress(
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Payload type                                                         */
-/* ------------------------------------------------------------------ */
-
+// Payload interface - includes optional drand time-lock fields for backward compatibility
 export interface CapsulePayload {
   encryptedMessage: string;
   encryptedDataKey: string;
@@ -278,23 +220,14 @@ export interface CapsulePayload {
   isDrandLocked?: boolean;       // Flag: is payload wrapped with drand timelock?
 }
 
-/* ------------------------------------------------------------------ */
-/* AAD construction                                                     */
-/*                                                                      */
-/* FIX [Critical]: Bind all plaintext metadata fields into AES-GCM's   */
-/* Additional Authenticated Data so that tampering with capsuleNonce,  */
-/* issuedAt, expiresAt, or version is detected and causes decryption   */
-/* to fail with an explicit authentication error.                       */
-/* ------------------------------------------------------------------ */
-
+// Additional Authenticated Data - detects tampering with metadata
 function buildAAD(
   capsuleNonce: string,
   issuedAt: number,
   expiresAt: number,
   version: number,
 ): Uint8Array {
-  // Deterministic canonical encoding: fields are length-prefixed to prevent
-  // ambiguous concatenations (e.g. "12" + "34" vs "1" + "234").
+  // Combine all metadata fields into one block - if anyone changes metadata, decryption fails
   const enc = new TextEncoder();
   const parts = [
     enc.encode(capsuleNonce),
@@ -303,12 +236,12 @@ function buildAAD(
     enc.encode(String(version)),
     enc.encode(CONTRACT_ADDRESS),
   ];
-  // Compute total length
+  // Add length prefix to each part to prevent concatenation tricks
   const total = parts.reduce((n, p) => n + 4 + p.byteLength, 0);
   const aad = new Uint8Array(total);
   let offset = 0;
   for (const part of parts) {
-    // 4-byte big-endian length prefix
+    // 4-byte length prefix
     new DataView(aad.buffer).setUint32(offset, part.byteLength, false);
     offset += 4;
     aad.set(part, offset);
@@ -317,23 +250,18 @@ function buildAAD(
   return aad;
 }
 
-/* ------------------------------------------------------------------ */
-/* Encrypt                                                              */
-/* ------------------------------------------------------------------ */
-
+// Encrypt message for wallet - creates CapsulePayload with encryption and signature
 export async function encryptForWallet(
   signer: ethers.Signer,
   plaintext: string,
   unlockDate: number,
 ): Promise<CapsulePayload> {
-  // FIX [High]: Validate the signer before proceeding to avoid silently
-  // encrypting to the wrong key with a stale cached signer.
+  // Make sure the wallet signer is valid before encrypting
   const signerAddr = await signer.getAddress().catch(() => {
     throw new Error("[Encrypt] Signer is not usable — call setSignatureSigner() first");
   });
-  console.log(`[Encrypt] Using signer address: ${signerAddr}`);
 
-  // FIX [Low]: Round issuedAt to reduce timing oracle precision.
+  // Get metadata for this capsule
   const issuedAt = roundTimestamp(Math.floor(Date.now() / 1000));
   const expiresAt = unlockDate;
   const version = 3;
@@ -401,31 +329,26 @@ export async function decryptForWallet(
   signer: ethers.Signer,
   payload: CapsulePayload,
 ): Promise<string> {
-  // FIX [Medium]: Reject unsupported versions explicitly before any
-  // crypto work, so schema mismatches produce a clear error.
+  // Reject unsupported versions early
   if (!SUPPORTED_VERSIONS.has(payload.version)) {
     throw new Error(
       `Unsupported capsule version: ${payload.version}. Supported: ${[...SUPPORTED_VERSIONS].join(", ")}`,
     );
   }
 
-  // FIX [High]: Enforce the time lock. expiresAt is in the key derivation but
-  // was never checked — callers could bypass it entirely.
+  // Check if the capsule has unlocked yet
   const nowSeconds = Math.floor(Date.now() / 1000);
   if (nowSeconds < payload.expiresAt) {
     const unlockDate = new Date(payload.expiresAt * 1000).toISOString();
     throw new Error(`Capsule is time-locked until ${unlockDate}`);
   }
 
-  // FIX [High]: Validate signer before deriving keys.
+  // Make sure we can use the signer
   const signerAddr = await signer.getAddress().catch(() => {
     throw new Error("[Decrypt] Signer is not usable — call setSignatureSigner() first");
   });
-  console.log(`[Decrypt] Using signer address: ${signerAddr}`);
 
-  // Reconstruct the same AAD that was used during encryption.
-  // FIX [Critical]: Any tampering with these plaintext fields will cause
-  // AES-GCM authentication to fail before any plaintext is produced.
+  // Recreate the same metadata that was used for encryption
   const aad = buildAAD(
     payload.capsuleNonce,
     payload.issuedAt,
@@ -433,6 +356,7 @@ export async function decryptForWallet(
     payload.version,
   );
 
+  // Derive the same key using the same wallet
   const masterKey = await deriveMasterKeyFromAddress(
     signer,
     payload.capsuleNonce,
@@ -467,19 +391,14 @@ export async function decryptForWallet(
 
     return new TextDecoder().decode(decrypted);
   } finally {
-    // FIX [Low]: Zero decrypted key bytes immediately after import.
+    // Clear the key bytes from memory for security
     zeroize(dataKeyRaw);
   }
 }
 
-/* ------------------------------------------------------------------ */
-/* Drand Time-Lock Integration                                         */
-/* ------------------------------------------------------------------ */
+/* Drand Time-Lock Integration */
 
-/**
- * Timeout wrapper for async operations
- * Prevents indefinite hangs from network issues
- */
+// Timeout wrapper for async operations - prevents indefinite hangs from network issues
 function withTimeout<T>(
   promise: Promise<T>,
   timeoutMs: number,
@@ -496,26 +415,13 @@ function withTimeout<T>(
   ]);
 }
 
-/**
- * Feature flag: enables drand time-lock encryption wrapper
- * Can be controlled via environment or config
- */
+// Feature flag: enables drand time-lock encryption wrapper
 export function shouldApplyDrandTimelock(): boolean {
-  // Check for environment variable or feature flag
-  // For now, default to false for backward compatibility
+  // Check for environment variable or feature flag - default to false for backward compatibility
   return import.meta.env.VITE_ENABLE_DRAND_TIMELOCK === "true";
 }
 
-/**
- * Wrap a capsule payload with drand time-lock encryption
- *
- * Encrypts the entire CapsulePayload with drand so that it can only be decrypted
- * after a specific time is reached (when the drand round is revealed).
- *
- * @param payload - The encrypted capsule payload (from encryptForWallet)
- * @param unlockDate - Unix timestamp when the capsule should become decryptable
- * @returns - New payload with drand-encrypted data
- */
+// Wrap capsule payload with drand time-lock encryption
 export async function wrapWithDrandTimelock(
   payload: CapsulePayload,
   unlockDate: number,
@@ -570,15 +476,7 @@ export async function wrapWithDrandTimelock(
   }
 }
 
-/**
- * Unwrap a drand time-locked payload to recover the original capsule
- *
- * Decrypts the drand-encrypted payload back to the original CapsulePayload.
- * This is only possible after the drand round has been revealed.
- *
- * @param payload - The drand-wrapped payload (from IPFS)
- * @returns - Original CapsulePayload ready for encryptForWallet decryption
- */
+// Unwrap drand time-locked payload to recover original capsule
 export async function unwrapDrandTimelock(
   payload: CapsulePayload,
 ): Promise<CapsulePayload> {

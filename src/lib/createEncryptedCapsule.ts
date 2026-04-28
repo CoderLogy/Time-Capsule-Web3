@@ -4,7 +4,7 @@ import { uploadCapsule } from "@/lib/ipfs";
 import { createCapsule, getCapsules, clearContract } from "@/lib/contract-api";
 import { toast } from "sonner";
 import { getWalletClient } from "@wagmi/core";
-import { config } from "@/components/Wallet";
+import { getConfig } from "@/components/Wallet";
 
 interface CreateEncryptedCapsuleArgs {
   address: string;
@@ -14,9 +14,7 @@ interface CreateEncryptedCapsuleArgs {
 }
 
 async function waitForIndexing(address: string, title: string): Promise<void> {
-  // Exponential backoff: poll frequently at first, then slower
-  // Sepolia subgraph typically needs 12-30+ seconds to index events
-  // Delays: 0ms, 1s, 2s, 5s, 10s, 15s, 20s, 25s, 30s = ~110 seconds total
+  // Exponential backoff: poll frequently at first, then slower (Sepolia subgraph needs 12-30+ seconds)
   const delays = [0, 1000, 2000, 5000, 10000, 15000, 20000, 25000, 30000];
 
   for (let i = 0; i < delays.length; i++) {
@@ -61,7 +59,7 @@ export async function createEncryptedCapsule({
 
     while (!walletClient && retries < maxRetries) {
       try {
-        walletClient = await getWalletClient(config as Parameters<typeof getWalletClient>[0]);
+        walletClient = await getWalletClient(getConfig() as Parameters<typeof getWalletClient>[0]);
         if (walletClient) break;
       } catch (err) {
         retries++;
@@ -151,7 +149,7 @@ export async function createEncryptedCapsule({
 
     // User-friendly error messages for common issues
     if (errorMessage.includes("User rejected")) {
-      toast.error("You rejected the transaction in your wallet");
+      toast.error("User canceled authorization for this.");
     } else if (errorMessage.includes("Wallet")) {
       toast.error("Wallet connection issue - please reconnect");
     } else if (errorMessage.includes("network")) {
