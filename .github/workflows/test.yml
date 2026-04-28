@@ -38,13 +38,11 @@ jobs:
                   VITE_CONTRACT_ADDRESS: "0x0000000000000000000000000000000000000000"
                   VITE_CHAIN_ID: "11155111"
 
-            - name: 'notify vercel'
-              uses: 'vercel/repository-dispatch/actions/status@v1'
+            - name: Notify Vercel
+              uses: vercel/repository-dispatch/actions/status@v1
               with:
-                name: Vercel - testtimecapsuleweb3: test
-                github_token: ${{ secrets.GITHUB_TOKEN }}
-              env:
-                PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+                  name: Vercel - testtimecapsuleweb3: test
+                  github_token: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Generate test report
               if: always()
@@ -156,7 +154,7 @@ jobs:
                   cache: "pnpm"
 
             - name: Install dependencies
-              run: pnpm install ----no-frozen-lockfile
+              run: pnpm install --no-frozen-lockfile
 
             - name: Check TypeScript compilation
               run: pnpm tsc --noEmit 2>&1 || true
