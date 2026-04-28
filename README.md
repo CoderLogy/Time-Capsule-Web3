@@ -148,5 +148,6 @@ MIT - See [LICENSE](LICENSE)
 ## Support
 
 - 📧 Email: support@example.com
+- Open up a issue in this repo and we will get back to you.
 
 ---
