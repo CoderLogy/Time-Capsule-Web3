@@ -37,7 +37,11 @@ jobs:
               env:
                   VITE_CONTRACT_ADDRESS: "0x0000000000000000000000000000000000000000"
                   VITE_CHAIN_ID: "11155111"
-
+            - name: 'notify vercel'
+              uses: 'vercel/repository-dispatch/actions/status@v1'
+              with:
+                name: "Vercel - testtimecapsuleweb3: test"
+                  
             - name: Generate test report
               if: always()
               run: pnpm vitest --run --reporter=json > test-results.json 2>&1 || true
