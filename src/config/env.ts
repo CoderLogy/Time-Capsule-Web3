@@ -27,7 +27,7 @@ export const serverEnv = {
     pinataApiSecret: process.env.VITE_PINATA_API_SECRET || "",
 
     // Ethereum RPC (for deployment/testing)
-    sepoliaRpcUrl: process.env.SEPOLIA_URL || "https://1rpc.io/sepolia",
+    sepoliaRpcUrl: process.env.SEPOLIA_URL || "https://ethereum-sepolia-rpc.publicnode.com",
     privateKey: process.env.PRIVATE_KEY || "",
     etherscanApiKey: process.env.ETHERSCAN_API_KEY || ""
 } as const;

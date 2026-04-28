@@ -8,7 +8,7 @@ import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { WALLET_CONFIG, BLOCKCHAIN_CONFIG } from "@/lib/config";
 import { WalletTracker } from "./WalletTracker";
 
-const SEPOLIA_RPC_URL = "https://1rpc.io/sepolia";
+const SEPOLIA_RPC_URL = "https://ethereum-sepolia-rpc.publicnode.com";
 
 // Only create config on client side
 let config: any = null;

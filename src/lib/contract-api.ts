@@ -17,7 +17,7 @@ let contract: ethers.Contract | null = null;
 
 export async function getCapsuleFee(): Promise<ethers.BigNumberish | null> {
   try {
-    const provider = new ethers.JsonRpcProvider('https://1rpc.io/sepolia');
+    const provider = new ethers.JsonRpcProvider('https://ethereum-sepolia-rpc.publicnode.com');
     const c = new ethers.Contract(BLOCKCHAIN_CONFIG.contractAddress, TimeCapsuleAbi.abi, provider);
     const fee = await c.capsuleFee();
     console.log('[CapsuleFee] Fee fetched from contract:', fee.toString());
@@ -34,7 +34,7 @@ export async function getGasPrices(): Promise<{
   baseFee: ethers.BigNumberish;
 } | null> {
   try {
-    const provider = new ethers.JsonRpcProvider('https://1rpc.io/sepolia');
+    const provider = new ethers.JsonRpcProvider('https://ethereum-sepolia-rpc.publicnode.com');
     const feeData = await provider.getFeeData();
 
     if (!feeData.maxFeePerGas || !feeData.maxPriorityFeePerGas) {
