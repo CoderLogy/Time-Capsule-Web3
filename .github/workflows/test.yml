@@ -41,7 +41,7 @@ jobs:
             - name: Notify Vercel
               uses: vercel/repository-dispatch/actions/status@v1
               with:
-                  name: Vercel - testtimecapsuleweb3: test
+                  name: 'Vercel - testtimecapsuleweb3: test'
                   github_token: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Generate test report
