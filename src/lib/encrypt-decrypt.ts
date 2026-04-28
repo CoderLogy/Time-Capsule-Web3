@@ -623,13 +623,25 @@ export async function unwrapDrandTimelock(
       errorMsg.includes("UNAVAILABLE")
     ) {
       throw new Error(
-        "Capsule is still time-locked. Please wait for the unlock time to arrive.",
+        `Drand round not yet available: Capsule is too early to unlock. Please wait for the drand round ${payload.drandRound} to be released.`,
       );
     }
 
     if (errorMsg.includes("timed out")) {
       throw new Error(
-        "Time-lock service is slow. Please try again in a moment.",
+        "Drand service is taking too long to respond. Please try again in a moment.",
+      );
+    }
+
+    if (errorMsg.includes("network") || errorMsg.includes("CORS")) {
+      throw new Error(
+        "Network error connecting to drand time-lock service. Please check your internet connection and try again.",
+      );
+    }
+
+    if (errorMsg.includes("malformed")) {
+      throw new Error(
+        "Capsule data is corrupted or was modified. Unable to decrypt.",
       );
     }
 

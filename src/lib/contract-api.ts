@@ -129,7 +129,30 @@ export async function createCapsule(
 export async function fetchCapsulePayload(dataUri: string): Promise<CapsulePayload> {
     const res = await fetch(dataUri);
     if (!res.ok) throw new Error("Failed to fetch IP");
-    return res.json();
+    const data = await res.json();
+
+    // Handle nested data structure where payload is in a "data" field (stringified JSON)
+    // This supports both old format (nested) and new format (flat)
+    let payload = data;
+    if (data.data && typeof data.data === 'string') {
+        try {
+            payload = JSON.parse(data.data);
+        } catch (e) {
+            console.error('[FetchPayload] Failed to parse nested data field:', e);
+            // Fall back to using data as-is if parsing fails
+            payload = data;
+        }
+    }
+
+    // Validate that we have required payload fields
+    if (!payload.version) {
+        throw new Error(
+            `Invalid capsule payload: missing or undefined version. Got: ${JSON.stringify(Object.keys(payload))}`
+        );
+    }
+
+    console.log('[FetchPayload] Successfully fetched payload with version:', payload.version);
+    return payload;
 }
 
 export async function getCapsules(owner: string): Promise<Capsule[]> {
