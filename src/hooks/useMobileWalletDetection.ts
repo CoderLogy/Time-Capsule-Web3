@@ -67,12 +67,7 @@ export function isMobileDevice(): boolean {
   );
 }
 
-/**
- * The key fix: use window.location.href directly — this is the most
- * reliable way to trigger deep links on both iOS and Android.
- * Hidden anchor clicks are often blocked by mobile browsers.
- * We only do the store fallback if document is still visible after 2s.
- */
+// Use window.location.href for deep links - most reliable on iOS and Android
 export function openInWallet(wallet: WalletInfo): void {
   const currentUrl = window.location.href;
   const deepLink = wallet.buildDeepLink(currentUrl);
@@ -99,10 +94,7 @@ export function openInWallet(wallet: WalletInfo): void {
   );
 }
 
-/**
- * Hook kept for backward compatibility with existing imports.
- * Returns wallet/mobile state — redirect logic lives in <WalletGate />.
- */
+// Hook kept for backward compatibility with existing imports. Returns wallet/mobile state — redirect logic lives in <WalletGate />.
 export function useMobileWalletDetection(): {
   isInsideWallet: boolean;
   isMobile: boolean;

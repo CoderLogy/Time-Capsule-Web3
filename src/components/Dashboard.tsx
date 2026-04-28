@@ -24,7 +24,6 @@ export default function Dashboard() {
     const [search, setSearch] = useState("");
     const cardsContainerRef = useRef<HTMLDivElement>(null);
 
-    // Setup wallet reconnection and recovery on app resume (mobile context switch)
     useWalletReconnect({});
 
     // Detect mobile and prompt to open in wallet browser

@@ -1,9 +1,6 @@
 import { useEffect, useCallback, useRef } from 'react';
 
-/**
- * Hook to detect when the app comes to foreground (page becomes visible)
- * Useful for triggering state recovery on mobile context switches
- */
+// Detect when app comes to foreground - useful for state recovery on mobile context switches
 export function useAppVisibility(onVisibilityChange?: (visible: boolean) => void) {
   const visibilityChangeRef = useRef<boolean>(true);
 

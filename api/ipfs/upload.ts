@@ -1,12 +1,4 @@
-/**
- * API endpoint for secure IPFS upload via Pinata
- * This runs server-side so secrets are never exposed to the browser
- *
- * POST /api/ipfs/upload
- * Request: { encryptedData: string, title: string }
- * Response: { cid: string, gateway_url: string }
- */
-
+// IPFS upload via Pinata (server-side)
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { PinataSDK } from "pinata";
 
@@ -38,7 +30,6 @@ interface UploadResponse {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    // Only allow POST requests
     if (req.method !== "POST") {
         return res.status(405).json({
             success: false,
@@ -49,7 +40,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
         const { encryptedData, title } = req.body as UploadRequest;
 
-        // Validate request
         if (!encryptedData || !title) {
             return res.status(400).json({
                 success: false,
@@ -59,7 +49,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const pinata = getPinataClient();
 
-        // Create JSON file from encrypted data
         const jsonData = {
             title,
             data: encryptedData,
@@ -70,10 +59,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             type: "application/json"
         });
 
-        // Upload to Pinata using the public network
         const upload = await pinata.upload.public.file(jsonFile);
 
-        // Construct gateway URL using the CID
         const gateway = process.env.VITE_PINATA_GATEWAY;
         const gatewayUrl = `https://${gateway}/ipfs/${upload.cid}`;
 

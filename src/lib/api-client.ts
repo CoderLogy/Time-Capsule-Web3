@@ -1,11 +1,6 @@
-/**
- * API client for communicating with backend Vercel Functions
- * All sensitive operations are handled server-side
- */
+// API client for Vercel Functions - sensitive operations handled server-side
 
-// ============================================================================
 // IPFS / Pinata Upload
-// ============================================================================
 
 export interface IPFSUploadResponse {
     success: boolean;
@@ -49,9 +44,7 @@ export async function uploadToPinata(
     };
 }
 
-// ============================================================================
 // GraphQL Queries
-// ============================================================================
 
 import { publicEnv } from "@/config/env";
 
@@ -97,9 +90,7 @@ export async function querySubgraph<T = any>(
     return result.data;
 }
 
-// ============================================================================
 // Price Data
-// ============================================================================
 
 export interface PriceData {
     price: number;

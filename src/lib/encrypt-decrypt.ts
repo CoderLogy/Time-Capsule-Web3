@@ -59,7 +59,6 @@ let _provider: ethers.BrowserProvider | null = null;
 let _providerWalletClient: WalletClient | null = null;
 
 export async function getProvider(walletClient?: WalletClient): Promise<ethers.BrowserProvider> {
-  // If walletClient is provided and different from cached one, create new provider
   if (walletClient && walletClient !== _providerWalletClient) {
     _provider = new ethers.BrowserProvider(walletClient.transport);
     _providerWalletClient = walletClient;
@@ -67,19 +66,16 @@ export async function getProvider(walletClient?: WalletClient): Promise<ethers.B
     return _provider;
   }
 
-  // If we have a cached provider from the same walletClient, reuse it
   if (_provider && walletClient === _providerWalletClient) {
     console.log("[Provider] Reusing cached BrowserProvider instance");
     return _provider;
   }
 
-  // No walletClient provided but we have a cached provider, reuse it
   if (_provider && !walletClient) {
     console.log("[Provider] Reusing cached BrowserProvider instance (no wallet specified)");
     return _provider;
   }
 
-  // No walletClient provided and no cache - create from current wallet
   if (!walletClient && !_provider) {
     const wc = await getWalletClient(getConfig() as Parameters<typeof getWalletClient>[0]);
     if (!wc) {
@@ -160,11 +156,8 @@ export async function deriveMasterKeyFromAddress(
   issuedAt: number,
   expiresAt: number,
 ): Promise<CryptoKey> {
-  // Each capsule gets its own signature - if one signature leaks, only that capsule's key is exposed
   const { domain, types, value } = getTypedData(capsuleNonce, issuedAt, expiresAt);
   const signature = await signer.signTypedData(domain, types, value);
-
-  // Turn the signature into a key starting point
   const ikm = ethers.getBytes(ethers.keccak256(ethers.getBytes(signature)));
 
   const baseKey = await crypto.subtle.importKey(
@@ -175,7 +168,7 @@ export async function deriveMasterKeyFromAddress(
     ["deriveKey"],
   );
 
-  // Add contract info to salt - ensures keys from different contracts don't mix
+  // Contract + capsule details in salt ensures keys don't cross contracts or capsules
   const salt = ethers.getBytes(
     ethers.keccak256(
       ethers.solidityPacked(
@@ -185,8 +178,6 @@ export async function deriveMasterKeyFromAddress(
     ),
   );
 
-  // Add capsule details to the key derivation
-  // This ensures each capsule has a unique key
   const info = ethers.getBytes(
     ethers.solidityPacked(
       ["string",          "string",      "uint256",  "uint256",  "address"],
@@ -220,14 +211,13 @@ export interface CapsulePayload {
   isDrandLocked?: boolean;       // Flag: is payload wrapped with drand timelock?
 }
 
-// Additional Authenticated Data - detects tampering with metadata
+// Additional Authenticated Data - detects tampering with metadata. If metadata is tampered with, AES-GCM authentication fails.
 function buildAAD(
   capsuleNonce: string,
   issuedAt: number,
   expiresAt: number,
   version: number,
 ): Uint8Array {
-  // Combine all metadata fields into one block - if anyone changes metadata, decryption fails
   const enc = new TextEncoder();
   const parts = [
     enc.encode(capsuleNonce),
@@ -236,12 +226,11 @@ function buildAAD(
     enc.encode(String(version)),
     enc.encode(CONTRACT_ADDRESS),
   ];
-  // Add length prefix to each part to prevent concatenation tricks
+  // Length prefix prevents concatenation tricks (e.g. "12"+"34" vs "1"+"234")
   const total = parts.reduce((n, p) => n + 4 + p.byteLength, 0);
   const aad = new Uint8Array(total);
   let offset = 0;
   for (const part of parts) {
-    // 4-byte length prefix
     new DataView(aad.buffer).setUint32(offset, part.byteLength, false);
     offset += 4;
     aad.set(part, offset);
@@ -256,19 +245,16 @@ export async function encryptForWallet(
   plaintext: string,
   unlockDate: number,
 ): Promise<CapsulePayload> {
-  // Make sure the wallet signer is valid before encrypting
-  const signerAddr = await signer.getAddress().catch(() => {
+  await signer.getAddress().catch(() => {
     throw new Error("[Encrypt] Signer is not usable — call setSignatureSigner() first");
   });
 
-  // Get metadata for this capsule
   const issuedAt = roundTimestamp(Math.floor(Date.now() / 1000));
   const expiresAt = unlockDate;
   const version = 3;
   const capsuleNonce = toHex(randomBytes(16));
 
   const aad = buildAAD(capsuleNonce, issuedAt, expiresAt, version);
-
   const masterKey = await deriveMasterKeyFromAddress(
     signer,
     capsuleNonce,
@@ -290,8 +276,7 @@ export async function encryptForWallet(
       ["encrypt", "decrypt"],
     );
 
-    // FIX [Critical]: Pass AAD to both encrypt calls so the ciphertext MAC
-    // covers the metadata. Both calls must use the same AAD on decrypt.
+    // Pass AAD to encrypt calls so MAC covers metadata
     const encryptedMessage = await crypto.subtle.encrypt(
       { name: "AES-GCM", iv: dataIv, additionalData: aad },
       dataKey,
@@ -315,40 +300,31 @@ export async function encryptForWallet(
       version,
     };
   } finally {
-    // FIX [Low]: Zero raw key bytes immediately after use regardless of
-    // success or failure. JS GC does not zero memory.
     zeroize(dataKeyRaw);
   }
 }
-
-/* ------------------------------------------------------------------ */
-/* Decrypt                                                              */
-/* ------------------------------------------------------------------ */
 
 export async function decryptForWallet(
   signer: ethers.Signer,
   payload: CapsulePayload,
 ): Promise<string> {
-  // Reject unsupported versions early
   if (!SUPPORTED_VERSIONS.has(payload.version)) {
     throw new Error(
       `Unsupported capsule version: ${payload.version}. Supported: ${[...SUPPORTED_VERSIONS].join(", ")}`,
     );
   }
 
-  // Check if the capsule has unlocked yet
   const nowSeconds = Math.floor(Date.now() / 1000);
   if (nowSeconds < payload.expiresAt) {
     const unlockDate = new Date(payload.expiresAt * 1000).toISOString();
     throw new Error(`Capsule is time-locked until ${unlockDate}`);
   }
 
-  // Make sure we can use the signer
-  const signerAddr = await signer.getAddress().catch(() => {
+  await signer.getAddress().catch(() => {
     throw new Error("[Decrypt] Signer is not usable — call setSignatureSigner() first");
   });
 
-  // Recreate the same metadata that was used for encryption
+  // Recreate AAD used during encryption; tampering with metadata causes authentication to fail
   const aad = buildAAD(
     payload.capsuleNonce,
     payload.issuedAt,
@@ -356,7 +332,6 @@ export async function decryptForWallet(
     payload.version,
   );
 
-  // Derive the same key using the same wallet
   const masterKey = await deriveMasterKeyFromAddress(
     signer,
     payload.capsuleNonce,
@@ -364,8 +339,6 @@ export async function decryptForWallet(
     payload.expiresAt,
   );
 
-  // FIX [Medium]: fromHex now validates input; any malformed hex throws a
-  // clean descriptive error rather than a bare TypeError.
   const dataKeyRaw = new Uint8Array(
     await crypto.subtle.decrypt(
       { name: "AES-GCM", iv: fromHex(payload.keyIv), additionalData: aad },

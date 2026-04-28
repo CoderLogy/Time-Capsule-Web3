@@ -10,10 +10,7 @@ interface ReconnectOptions {
   initialDelayMs?: number;
 }
 
-/**
- * Hook to automatically reconnect wallet and recover app state when switching back from background
- * (e.g., switching from mobile wallet app back to browser tab)
- */
+// Auto-reconnect wallet and recover state when switching back from background
 export function useWalletReconnect(options: ReconnectOptions = {}) {
   const {
     maxRetries = 3,

@@ -1,9 +1,4 @@
-/**
- * API endpoint for fetching ETH/USD price from CryptoCompare
- * GET /api/prices/eth-price
- * Response: { price: number, lastUpdated: number }
- */
-
+// Fetch ETH/USD price from CryptoCompare
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 interface PriceResponse {
@@ -16,7 +11,6 @@ interface ErrorResponse {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    // Only allow GET requests
     if (req.method !== "GET") {
         return res.status(405).json({ error: "Method not allowed. Use GET." });
     }
@@ -24,7 +18,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
         const apiUrl = process.env.CRYPTOPRICE_API_URL || "https://min-api.cryptocompare.com";
 
-        // Fetch ETH/USD price
         const response = await fetch(
             `${apiUrl}/data/price?fsym=ETH&tsyms=USD&extraParams=TimeCapsule`
         );
@@ -44,7 +37,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             });
         }
 
-        // Add cache headers (5 minutes)
         res.setHeader("Cache-Control", "public, max-age=300");
 
         return res.status(200).json({

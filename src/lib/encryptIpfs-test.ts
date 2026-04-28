@@ -6,16 +6,12 @@ import { encryptForWallet, decryptForWallet } from "./encrypt-decrypt.ts";
 
 import { uploadCapsule } from "./ipfs.ts";
 
-// -------------------------------------------------------------------
 // ENV
-// -------------------------------------------------------------------
 const RPC_URL = process.env.SEPOLIA_URL!;
 const PRIVATE_KEY = process.env.PRIVATE_KEY!;
 const PLAINTEXT = "hello from the other side of the world";
 
-// -------------------------------------------------------------------
 // Payload type (local only, for TypeScript type-checking)
-// -------------------------------------------------------------------
 interface CapsulePayload {
     encryptedMessage: string;
     encryptedDataKey: string;
@@ -27,9 +23,7 @@ interface CapsulePayload {
     version: number;
 }
 
-// -------------------------------------------------------------------
 // Test function
-// -------------------------------------------------------------------
 async function test() {
     // 1️⃣ Setup provider and signer
     const provider = new ethers.JsonRpcProvider(RPC_URL);
@@ -84,9 +78,7 @@ async function test() {
     }
 }
 
-// -------------------------------------------------------------------
 // Run test
-// -------------------------------------------------------------------
 test().catch((err) => {
     console.error("❌ Test error:", err);
     process.exit(1);

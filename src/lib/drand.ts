@@ -22,7 +22,6 @@ export function quicknet(): HttpChainClient {
 }
 
 export async function encrypt(client: HttpChainClient, plaintext: string, decryptionTime: number) {
-    // Validate inputs
     if (!plaintext || plaintext.length === 0) {
         throw new Error("Cannot encrypt empty plaintext");
     }
@@ -30,10 +29,8 @@ export async function encrypt(client: HttpChainClient, plaintext: string, decryp
         throw new Error("Decryption time must be in the future");
     }
 
-    // Get chain info
     const chainInfo = await client.chain().info();
 
-    // Validate chain info
     if (!chainInfo || typeof chainInfo.period !== "number") {
         throw new Error("Invalid chain info from drand service - cannot calculate round");
     }
@@ -41,7 +38,6 @@ export async function encrypt(client: HttpChainClient, plaintext: string, decryp
     // Calculate round number
     const roundNumber = roundAt(decryptionTime, chainInfo);
 
-    // Validate round number
     if (!roundNumber || typeof roundNumber !== "number" || roundNumber < 1) {
         throw new Error(
             `Invalid drand round calculated: ${roundNumber}. Please verify unlock time.`

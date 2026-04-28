@@ -27,7 +27,6 @@ export function CustomConnectButton() {
           );
         }
 
-        // 🔄 Reconnecting after background app switch
         if (isReconnecting) {
           return (
             <Button disabled className="opacity-70">
@@ -39,7 +38,6 @@ export function CustomConnectButton() {
           );
         }
 
-        // ❌ Not connected → Sign in
         if (!connected) {
           return (
             <Button
@@ -54,7 +52,6 @@ export function CustomConnectButton() {
           );
         }
 
-        // ⚠ Wrong network
         if (chain.unsupported) {
           return (
             <Button
@@ -66,7 +63,6 @@ export function CustomConnectButton() {
           );
         }
 
-        // ✅ Connected
         return (
           <Button
             onClick={openAccountModal}

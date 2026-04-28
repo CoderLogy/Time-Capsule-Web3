@@ -15,9 +15,6 @@ import { WalletClient } from "viem";
 
 let contract: ethers.Contract | null = null;
 
-/**
- * Get the capsule creation fee from the contract
- */
 export async function getCapsuleFee(): Promise<ethers.BigNumberish | null> {
   try {
     const provider = new ethers.JsonRpcProvider('https://1rpc.io/sepolia');
@@ -31,9 +28,6 @@ export async function getCapsuleFee(): Promise<ethers.BigNumberish | null> {
   }
 }
 
-/**
- * Fetch current gas prices from the RPC
- */
 export async function getGasPrices(): Promise<{
   maxFeePerGas: ethers.BigNumberish;
   maxPriorityFeePerGas: ethers.BigNumberish;
@@ -59,9 +53,7 @@ export async function getGasPrices(): Promise<{
   }
 }
 
-/**
- * Calculate total cost: capsule fee + gas costs
- */
+// Calculate total cost (capsule fee + gas costs)
 export async function getTotalCapsuleCost(): Promise<{
   capsuleFee: ethers.BigNumberish | null;
   gasCost: ethers.BigNumberish | null;
@@ -102,9 +94,6 @@ export async function getContract(walletClient?: WalletClient): Promise<ethers.C
     return contract;
 }
 
-/**
- * Clear cached contract instance - call this when wallet state changes
- */
 export function clearContract() {
     console.log("[Contract] Clearing cached contract");
     contract = null;
@@ -131,7 +120,6 @@ export async function fetchCapsulePayload(dataUri: string): Promise<CapsulePaylo
     if (!res.ok) throw new Error("Failed to fetch IP");
     const data = await res.json();
 
-    // Handle nested data structure where payload is in a "data" field (stringified JSON)
     // This supports both old format (nested) and new format (flat)
     let payload = data;
     if (data.data && typeof data.data === 'string') {
@@ -144,7 +132,6 @@ export async function fetchCapsulePayload(dataUri: string): Promise<CapsulePaylo
         }
     }
 
-    // Validate that we have required payload fields
     if (!payload.version) {
         throw new Error(
             `Invalid capsule payload: missing or undefined version. Got: ${JSON.stringify(Object.keys(payload))}`
@@ -175,7 +162,6 @@ export async function openCapsule(dataURI: string): Promise<string> {
 
         return await decryptForWallet(signer, decryptPayload);
     } finally {
-        // Clear cache after use to ensure fresh state
         clearProvider();
         clearContract();
     }

@@ -92,10 +92,7 @@ export async function GetUserCapsules(owner: string): Promise<Capsule[]> {
     }));
 }
 
-/**
- * Get all capsule activity (created and opened events) for a user
- * Returns combined activity timeline sorted by timestamp
- */
+// Get all capsule activity (created and opened events) for a user; returns combined activity timeline sorted by timestamp
 export async function GetAllCapsuleActivity(owner: string): Promise<CapsuleActivityItem[]> {
     const data: CapsuleActivityResponse = await querySubgraph(GET_ALL_CAPSULE_ACTIVITY, {
         owner: owner.toLowerCase()
@@ -120,9 +117,7 @@ export async function GetAllCapsuleActivity(owner: string): Promise<CapsuleActiv
     return allActivity;
 }
 
-/**
- * Get detailed capsule info with creation and open status
- */
+// Get detailed capsule info with creation and open status
 export async function GetCapsuleActivityWithStatus(
     owner: string
 ): Promise<

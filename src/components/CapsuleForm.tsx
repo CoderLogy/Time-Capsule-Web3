@@ -13,6 +13,13 @@ import React from "react";
 import { getEthPrice } from "@/lib/api-client";
 import { BLOCKCHAIN_CONFIG } from "@/lib/config";
 import { getTotalCapsuleCost } from "@/lib/contract-api";
+import {
+  trackCapsuleCreated,
+  trackErrorEncountered,
+  trackTransactionSubmitted,
+  trackTransactionConfirmed,
+  setUserProperties,
+} from "@/lib/amplitude-events";
 
 interface CapsuleFormProps {
     onPendingAdd: (title: string) => void;
@@ -36,7 +43,6 @@ const CapsuleForm = memo(function CapsuleForm({
     const [ethPrice, setEthPrice] = useState<number | null>(null);
     const [costData, setCostData] = useState<any>(null);
 
-    // Fetch ETH price
     useEffect(() => {
         const fetchPrice = async () => {
             try {
@@ -50,7 +56,6 @@ const CapsuleForm = memo(function CapsuleForm({
         fetchPrice();
     }, []);
 
-    // Fetch total cost (capsule fee + gas)
     useEffect(() => {
         if (!isConnected) return;
 
@@ -104,20 +109,65 @@ const CapsuleForm = memo(function CapsuleForm({
             });
 
             const timestamp = Math.floor(unlockDate.getTime() / 1000);
-            await createEncryptedCapsule({
+            const result = await createEncryptedCapsule({
                 address: address!,
                 plaintext: message,
                 unlockDate: timestamp,
                 title
             });
 
+            try {
+              if (result?.hash) {
+                trackTransactionSubmitted({
+                  capsuleId: `${address}-${Date.now()}`,
+                  transactionHash: result.hash,
+                  chainId: BLOCKCHAIN_CONFIG.chainId,
+                  walletAddress: address!,
+                  gasFeesNative: result.gasLimit ? formatEther(result.gasLimit) : undefined,
+                });
+              }
+            } catch (err) {
+              console.error('[CapsuleForm] Error tracking transaction submitted:', err);
+            }
+
+            try {
+              if (result?.hash) {
+                const receipt = await result.wait();
+                if (receipt) {
+                  trackTransactionConfirmed({
+                    capsuleId: `${address}-${Date.now()}`,
+                    transactionHash: result.hash,
+                    chainId: BLOCKCHAIN_CONFIG.chainId,
+                  });
+                }
+              }
+            } catch (err) {
+              console.error('[CapsuleForm] Error tracking transaction confirmed:', err);
+            }
+
             console.log("[CapsuleForm] Capsule created, waiting for onCreated callback...");
             await onCreated();
             console.log("[CapsuleForm] onCreated callback completed");
 
+            try {
+              const capsuleId = result?.hash || `${address}-${Date.now()}`;
+              trackCapsuleCreated({
+                capsuleId,
+                capsuleUnlockDate: unlockDate.toISOString(),
+                capsuleVisibility: 'private',
+                walletAddress: address!,
+              });
+              
+              setUserProperties({
+                hasCreatedCapsule: true,
+                firstCapsuleCreatedAt: new Date().toISOString(),
+              });
+            } catch (err) {
+              console.error('[CapsuleForm] Error tracking capsule created:', err);
+            }
+
             toast.success("Capsule created successfully");
 
-            // Only clear form on success
             console.log("[CapsuleForm] Clearing form after successful creation");
             setTitle("");
             setMessage("");
@@ -140,8 +190,19 @@ const CapsuleForm = memo(function CapsuleForm({
                 message: err instanceof Error ? err.message : String(err),
                 stack: err instanceof Error ? err.stack : undefined,
             });
+
+            try {
+              trackErrorEncountered({
+                errorCategory: 'capsule_creation',
+                errorMessage: err instanceof Error ? err.message : String(err),
+                errorContext: 'capsule_form_creation',
+                chainId: BLOCKCHAIN_CONFIG.chainId,
+              });
+            } catch (trackErr) {
+              console.error('[CapsuleForm] Error tracking error event:', trackErr);
+            }
+
             toast.error("Failed to create capsule - your data is preserved");
-            // Do NOT clear form on error - user can retry
             console.log("[CapsuleForm] Form data preserved, user can retry");
         } finally {
             setLoading(false);

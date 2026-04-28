@@ -1,7 +1,4 @@
-/**
- * Tests for error classification utility
- */
-
+// Tests for error classification utility
 import { classifyError, isDrandError, isWalletError, isNetworkError } from '../../src/lib/errors';
 import { describe, it, expect } from 'vitest';
 

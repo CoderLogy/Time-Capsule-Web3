@@ -17,53 +17,29 @@ type AnimationVariant =
   | "scaleDown"
 
 interface TextAnimateProps extends MotionProps {
-  /**
-   * The text content to animate
-   */
+  // Text content to animate
   children: string
-  /**
-   * The class name to be applied to the component
-   */
+  // Class name to apply to component
   className?: string
-  /**
-   * The class name to be applied to each segment
-   */
+  // Class name for each segment
   segmentClassName?: string
-  /**
-   * The delay before the animation starts
-   */
+  // Delay before animation starts
   delay?: number
-  /**
-   * The duration of the animation
-   */
+  // Duration of animation
   duration?: number
-  /**
-   * Custom motion variants for the animation
-   */
+  // Custom motion variants
   variants?: Variants
-  /**
-   * The element type to render
-   */
+  // Element type to render
   as?: ElementType
-  /**
-   * How to split the text ("text", "word", "character")
-   */
+  // How to split text ("text", "word", "character")
   by?: AnimationType
-  /**
-   * Whether to start animation when component enters viewport
-   */
+  // Start animation when component enters viewport
   startOnView?: boolean
-  /**
-   * Whether to animate only once
-   */
+  // Animate only once
   once?: boolean
-  /**
-   * The animation preset to use
-   */
+  // Animation preset to use
   animation?: AnimationVariant
-  /**
-   * Whether to enable accessibility features (default: true)
-   */
+  // Enable accessibility features (default: true)
   accessible?: boolean
 }
 
