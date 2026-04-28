@@ -76,9 +76,9 @@ pnpm install
 ### Development
 
 ```bash
-pnpm dev          # Start dev server
-pnpm build        # Build for production
-pnpm test         # Run tests
+pnpm run dev          # Start dev server
+pnpm run build        # Build for production
+pnpm vitest        # Run tests (28 successfull tests is enough)
 ```
 
 ### Environment Setup
