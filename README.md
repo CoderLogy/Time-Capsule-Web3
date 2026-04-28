@@ -109,7 +109,7 @@ We welcome contributions! Here's how to help:
 - [ ] Mainnet deployment with enhanced security audits
 - [ ] Multi-chain support (Optimism, Arbitrum, Polygon)
 - [ ] Zero-Knowledge Proof privacy mode
-- [ ] Social recovery for key management
+- [ ] Sharing capsules with others using a link
 - [ ] DAO governance for protocol parameters
 - [ ] NFT time capsule certificates with on-chain proofs
 - [ ] Cross-chain message passing via Wormhole
@@ -119,7 +119,6 @@ We welcome contributions! Here's how to help:
 1. **Create** - Write a message and set an unlock date
 2. **Sign & Encrypt** - Your wallet signs the message via EIP-712, key derived from signature
 3. **Store** - Encrypted message stored on IPFS, proof recorded on blockchain
-4. **Optional Time-Lock** - Payload can be wrapped with Drand encryption for additional security
 5. **Decrypt** - After unlock date, open capsule with the same wallet that created it
 
 ## Tech Stack
