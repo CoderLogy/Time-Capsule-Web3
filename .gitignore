@@ -63,3 +63,17 @@ Desktop.ini
 # Optional test coverage output
 # ==============================
 /coverage
+
+# ==============================
+# Configuration & Documentation
+# ==============================
+*.prettierrc
+/SETUP.md
+/DEPLOYMENT.md
+
+# ==============================
+# Local/Temporary files
+# ==============================
+*.tmp
+*.temp
+.cache/
