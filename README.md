@@ -17,7 +17,7 @@
 - ⛓️ **Non-Custodial** - No trusted third party needed
 - 🌐 **IPFS Storage** - Decentralized, immutable message storage
 
-### Our Breakthrough: Cryptographic Time-Locks
+### My Breakthrough: Cryptographic Time-Locks
 
 
 ```
@@ -78,7 +78,7 @@ pnpm install
 ```bash
 pnpm run dev          # Start dev server
 pnpm run build        # Build for production
-pnpm vitest        # Run tests (28 successfull tests is enough)
+pnpm vitest        # Run tests
 ```
 
 ### Environment Setup
