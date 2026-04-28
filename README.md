@@ -29,7 +29,7 @@
 │  ├─ AES-256-GCM authenticated encryption                │
 │  └─ Per-message random IVs for each layer               │
 ├─────────────────────────────────────────────────────────┤
-│  DRAND RANDOMNESS INTEGRATION                           │
+│  META-DATA TAMPERING RESISTANT                          │
 │  ├─ Additional Authenticated Data (AAD) in all ciphers  │
 │  ├─ Decryption fails if capsule metadata is modified    │
 │  ├─ Prevents unauthorized unlock date or nonce changes  │
