@@ -82,5 +82,12 @@
     "typescript-eslint": "^8.59.1",
     "vite": "^7.3.2",
     "vitest": "^4.1.5"
-  }
+  },
+  "pnpm": {
+    "supportedArchitectures": {
+      "os": ["win32", "linux"],
+      "cpu": ["x64"],
+      "libc": ["glibc"]
+    }
+}
 }
