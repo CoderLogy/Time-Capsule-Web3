@@ -51,12 +51,6 @@ jobs:
               with:
                   name: test-results
                   path: test-results.json
-                  
-            - name: Notify Vercel
-              if: always()
-              uses: vercel/repository-dispatch/actions/status@v1
-              with:
-                name: Vercel - testtimecapsuleweb3: test
 
     file-safety:
         name: File Safety Check
