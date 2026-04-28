@@ -56,7 +56,7 @@ jobs:
               if: always()
               uses: vercel/repository-dispatch/actions/status@v1
               with:
-                name: Vercel - testtimecapsuleweb3: test
+              name: Vercel - testtimecapsuleweb3: test.yml
 
     file-safety:
         name: File Safety Check
