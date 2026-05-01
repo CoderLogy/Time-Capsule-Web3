@@ -92,13 +92,12 @@ export async function GetUserCapsules(owner: string): Promise<Capsule[]> {
     }));
 }
 
-// Get all capsule activity (created and opened events) for a user; returns combined activity timeline sorted by timestamp
+// timeline sorted by timestamp
 export async function GetAllCapsuleActivity(owner: string): Promise<CapsuleActivityItem[]> {
     const data: CapsuleActivityResponse = await querySubgraph(GET_ALL_CAPSULE_ACTIVITY, {
         owner: owner.toLowerCase()
     });
 
-    // Combine created and opened events into a single timeline
     const createdItems: CapsuleActivityItem[] = data.created.map((event) => ({
         ...event,
         type: "created" as const
@@ -109,7 +108,6 @@ export async function GetAllCapsuleActivity(owner: string): Promise<CapsuleActiv
         type: "opened" as const
     }));
 
-    // Merge and sort by blockTimestamp descending (newest first)
     const allActivity = [...createdItems, ...openedItems].sort(
         (a, b) => Number(b.blockTimestamp) - Number(a.blockTimestamp)
     );
@@ -117,7 +115,6 @@ export async function GetAllCapsuleActivity(owner: string): Promise<CapsuleActiv
     return allActivity;
 }
 
-// Get detailed capsule info with creation and open status
 export async function GetCapsuleActivityWithStatus(
     owner: string
 ): Promise<
@@ -126,12 +123,10 @@ export async function GetCapsuleActivityWithStatus(
     const activity = await GetAllCapsuleActivity(owner);
     const now = Math.floor(Date.now() / 1000);
 
-    // Build a set of opened capsule IDs
     const openedIds = new Set(
         activity.filter((item) => item.type === "opened").map((item) => item.id)
     );
 
-    // Return created events with status and open tracking
     return activity
         .filter((item) => item.type === "created")
         .map((item) => ({

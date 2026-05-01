@@ -33,8 +33,8 @@ export default function Dashboard() {
         queryKey: ["capsules", address],
         queryFn: () => getCapsules(address!),
         enabled: !!address && isConnected,
-        refetchInterval: 5_000, // Poll every 5 seconds for faster visibility
-        staleTime: 3_000 // Capsules stale after 3 seconds
+        refetchInterval: 5_000,
+        staleTime: 3_000 // Capsules stales after 3 seconds
     });
 
     const searchCapsule = useMemo(() => {

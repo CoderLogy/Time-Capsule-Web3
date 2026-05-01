@@ -8,10 +8,7 @@ import {
     setUserProperties
 } from "@/lib/amplitude-events";
 
-/**
- * Component to track wallet connection/disconnection events with Amplitude
- * Wraps the application to monitor wallet state changes
- */
+
 export function WalletTracker() {
     const { address, isConnected, chainId, connector } = useAccount();
     const { connectors } = useConnect();
@@ -36,7 +33,6 @@ export function WalletTracker() {
                 isNewUser
             });
 
-            // Mark user as seen
             localStorage.setItem(userKey, "true");
 
             // Track account creation if new user
@@ -57,7 +53,7 @@ export function WalletTracker() {
                     trackSignInCompleted({
                         loginMethod: "wallet_connect",
                         walletProvider,
-                        walletAddress: address, // added
+                        walletAddress: address, 
                         chainId
                     });
                 } catch (err) {
@@ -72,7 +68,7 @@ export function WalletTracker() {
                     walletProvider,
                     primaryChainId: chainId,
                     signupMethod: isNewUser ? "wallet_connect" : undefined,
-                    isAuthenticated: true // added
+                    isAuthenticated: true 
                 });
             } catch (err) {
                 console.error("[WalletTracker] Error setting user properties:", err);

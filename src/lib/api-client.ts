@@ -1,7 +1,3 @@
-// API client for Vercel Functions - sensitive operations handled server-side
-
-// IPFS / Pinata Upload
-
 export interface IPFSUploadResponse {
     success: boolean;
     cid?: string;
@@ -89,8 +85,6 @@ export async function querySubgraph<T = any>(
 
     return result.data;
 }
-
-// Price Data
 
 export interface PriceData {
     price: number;

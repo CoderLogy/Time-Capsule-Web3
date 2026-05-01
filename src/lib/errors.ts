@@ -8,12 +8,12 @@ export interface ClassifiedError {
   userMessage: string;
 }
 
-// Prevent stack overflow from malformed error objects
+// Prevents stack overflow
 let _classifyDepth = 0;
 
 export function classifyError(error: Error | string): ClassifiedError {
   try {
-    // Guard against recursive calls or deeply malformed errors
+    // Guard against recursive calls
     if (_classifyDepth > 2) {
       return { type: 'unknown', message: 'Error classification failed', userMessage: 'Something went wrong. Try again.' };
     }

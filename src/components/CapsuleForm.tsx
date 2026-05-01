@@ -233,11 +233,11 @@ const CapsuleForm = memo(function CapsuleForm({
                 </Button>
             </div>
 
-            {/* Status bar */}
+            
             <div
                 className={`flex justify-around items-center w-full text-xs md:text-sm gap-1 ${
                     !isConnected ? "select-none pointer-events-none blur-[3px]" : ""
-                }`}
+                }`} //status bar
             >
                 <div className="bg-background/60 shadow-inner flex items-center h-8 px-4 py-2 rounded-full">
                     <span className="relative flex items-center justify-center h-2.5 w-2.5 sm:h-3 sm:w-3 mr-2">
@@ -257,7 +257,6 @@ const CapsuleForm = memo(function CapsuleForm({
                         </span>
                     </span>
 
-                    {/* Fee Breakdown Tooltip */}
                     {costData && (
                         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white text-xs rounded px-2 py-1 whitespace-nowrap pointer-events-none">
                             <div>Capsule: {formatEther(costData.capsuleFee?.toString() || "0")} ETH</div>
@@ -267,7 +266,7 @@ const CapsuleForm = memo(function CapsuleForm({
                 </div>
             </div>
 
-            {/* Wallet lock overlay */}
+            {/* Wallet blured overlay */}
             {!isConnected && (
                 <div className="absolute left-1/3 top-1/2 sm:left-1/4 md:left-1/3 md:top-1/3">
                     <span className="text-lg font-bold">🔒Signin with wallet!</span>

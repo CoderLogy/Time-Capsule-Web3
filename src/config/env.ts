@@ -1,6 +1,6 @@
-// Environment configuration with type safety - separates public from server-only variables
+// I made this environment configuration to separate public from server-only variables
 
-// PUBLIC VARIABLES (safe to expose in browser - loaded into VITE_*)
+// PUBLIC VARIABLES
 export const publicEnv = {
     // Blockchain
     contractAddress: import.meta.env.VITE_CONTRACT_ADDRESS,
@@ -17,7 +17,7 @@ export const publicEnv = {
     cryptoPriceApiUrl: import.meta.env.CRYPTOPRICE_API_URL || "https://min-api.cryptocompare.com"
 } as const;
 
-// SERVER-SIDE ONLY VARIABLES (accessed via process.env, never in browser)
+// SERVER-SIDE ONLY VARIABLES
 export const serverEnv = {
     // The Graph
     subgraphApiKey: process.env.VITE_SUBGRAPH_API_KEY || "",
@@ -26,7 +26,7 @@ export const serverEnv = {
     pinataJwt: process.env.VITE_PINATA_JWT || "",
     pinataApiSecret: process.env.VITE_PINATA_API_SECRET || "",
 
-    // Ethereum RPC (for deployment/testing)
+    // Ethereum RPC 
     sepoliaRpcUrl: process.env.SEPOLIA_URL || "https://1rpc.io/sepolia",
     privateKey: process.env.PRIVATE_KEY || "",
     etherscanApiKey: process.env.ETHERSCAN_API_KEY || ""
@@ -43,7 +43,7 @@ const requiredPublicVars = [
 
 const requiredServerVars = ["subgraphApiKey", "pinataJwt", "pinataApiSecret"] as const;
 
-// Validate public environment variables exist and have valid values
+// Validates public variables exist and have valid values
 export function validatePublicEnv() {
     const missing: string[] = [];
 
@@ -59,7 +59,7 @@ export function validatePublicEnv() {
     }
 }
 
-// Validate server environment variables exist and have valid values
+// Validates server variables exist and have valid values
 export function validateServerEnv() {
     const missing: string[] = [];
 
@@ -74,7 +74,7 @@ export function validateServerEnv() {
     }
 }
 
-// Initialize and validate environment on app startup
+
 export function initializeEnv() {
     try {
         validatePublicEnv();

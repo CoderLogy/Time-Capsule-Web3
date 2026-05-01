@@ -1,8 +1,4 @@
-// Capsule encryption and decryption integration tests
 // Tests the full lifecycle of creating, encrypting, and decrypting capsules
-// IMPACT: Critical for security - validates end-to-end encryption, time-locking, and key derivation
-// WHO: Security team (encryption validation), DevOps (production readiness), Users (trusted encryption)
-// WHY: Ensures capsules are properly encrypted, time-locked, and only decryptable by authorized wallets
 // RUN: `pnpm vitest tests/integration/capsule-encryption.test.ts` - requires local Hardhat node
 
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
@@ -29,7 +25,7 @@ describe("Capsule Encryption Integration - End-to-end encryption and time-lockin
         it("should encrypt and decrypt a message with wallet signature", async () => {
             const message = "Simple test message";
             const now = Math.floor(Date.now() / 1000);
-            const expiresAt = now - 1; // Already expired so it can be decrypted
+            const expiresAt = now - 1; // Expire immediately for test
 
             const encrypted = await encryptForWallet(signer, message, expiresAt);
             const decrypted = await decryptForWallet(signer, encrypted);
@@ -97,7 +93,7 @@ describe("Capsule Encryption Integration - End-to-end encryption and time-lockin
 
             const encrypted = await encryptForWallet(signer, "test", expiresAt);
 
-            // Tamper with metadata
+            // Lets Tamper with metadata
             const tampered = { ...encrypted, issuedAt: encrypted.issuedAt + 100 };
 
             await expect(decryptForWallet(signer, tampered)).rejects.toThrow();
@@ -105,6 +101,5 @@ describe("Capsule Encryption Integration - End-to-end encryption and time-lockin
     });
 
     afterAll(() => {
-        // Cleanup if needed
     });
 });

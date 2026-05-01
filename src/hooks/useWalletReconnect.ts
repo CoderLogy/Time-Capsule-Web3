@@ -14,8 +14,8 @@ interface ReconnectOptions {
 export function useWalletReconnect(options: ReconnectOptions = {}) {
   const {
     maxRetries = 3,
-    backoffMultiplier = 1.3,  // Reduced from 1.5 for gentler backoff
-    initialDelayMs = 2000,    // Increased from 500 to account for mobile wallet latency
+    backoffMultiplier = 1.3,  
+    initialDelayMs = 2000,    
   } = options;
 
   const queryClient = useQueryClient();
@@ -39,22 +39,21 @@ export function useWalletReconnect(options: ReconnectOptions = {}) {
     try {
       console.log(`[WalletReconnect] Attempt ${reconnectAttemptsRef.current}/${maxRetries}`);
 
-      // If we were previously connected, try to reconnect with the same connector
       if (address && connector) {
         console.log('[WalletReconnect] Attempting to reconnect to previous wallet');
 
         // Clear signer cache to force re-establishment
         clearSignatureSigner();
 
-        // Wait for mobile wallet to restore connection (3-5 seconds on mobile)
+        
         await new Promise(resolve => setTimeout(resolve, 2000));
 
-        // Check stability: wait another 500ms to ensure connection isn't a flicker
+        
         if (isConnected && address) {
           await new Promise(resolve => setTimeout(resolve, 500));
         }
 
-        // If still connected, we're good
+        
         if (isConnected && address) {
           console.log('[WalletReconnect] Successfully reconnected to wallet');
           reconnectAttemptsRef.current = 0;
@@ -70,7 +69,7 @@ export function useWalletReconnect(options: ReconnectOptions = {}) {
         }
       }
 
-      // If we get here, reconnection failed
+      // reconnection failed
       if (reconnectAttemptsRef.current < maxRetries) {
         const delay = initialDelayMs * Math.pow(backoffMultiplier, reconnectAttemptsRef.current - 1);
         console.log(`[WalletReconnect] Reconnect failed, retrying in ${Math.round(delay)}ms`);
@@ -108,10 +107,8 @@ export function useWalletReconnect(options: ReconnectOptions = {}) {
         clearTimeout(reconnectTimeoutRef.current);
       }
 
-      // Reset attempt counter
       reconnectAttemptsRef.current = 0;
 
-      // Start reconnection attempt
       attemptReconnect();
     }
   }, [attemptReconnect]);

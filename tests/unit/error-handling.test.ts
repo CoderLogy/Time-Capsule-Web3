@@ -1,8 +1,6 @@
-// Error handling and classification tests
-// Tests that errors are properly classified and user-friendly messages are shown
-// IMPACT: Critical for UX - ensures users see clear error messages instead of technical jargon
-// WHO: Frontend team (users see these messages), DevOps (monitors error types), Product team
-// WHY: Errors from drand, wallets, and network issues need distinct handling and messaging
+// Tests that errors are properly classified and user-friendly messages
+// IMPACT: Critical for UX
+
 
 import { describe, it, expect } from "vitest";
 import { classifyError, isDrandError, isWalletError, isNetworkError } from "@/lib/errors";

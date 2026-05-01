@@ -1,12 +1,8 @@
 import * as amplitude from "@amplitude/unified";
 
-// Track initialization state to ensure Amplitude is only initialized once
+
 let isInitialized = false;
 
-/**
- * Initialize Amplitude Analytics on the client side.
- * This should be called once during app initialization.
- */
 export function initializeAmplitude() {
     if (isInitialized) {
         console.warn("[Amplitude] Already initialized, skipping re-initialization");
@@ -26,16 +22,12 @@ export function initializeAmplitude() {
     }
 }
 
-/**
- * Check if Amplitude is initialized
- */
+
 export function isAmplitudeInitialized() {
     return isInitialized;
 }
 
-/**
- * Get the Amplitude instance (for direct access if needed)
- */
+
 export function getAmplitude() {
     return amplitude;
 }

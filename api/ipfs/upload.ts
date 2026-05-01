@@ -1,8 +1,8 @@
-// IPFS upload via Pinata (server-side)
+// IPFS upload via Pinata
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { PinataSDK } from "pinata";
 
-// Initialize Pinata SDK with server-side secrets
+
 function getPinataClient() {
     const jwt = process.env.PINATA_JWT;
     const gateway = process.env.VITE_PINATA_GATEWAY;

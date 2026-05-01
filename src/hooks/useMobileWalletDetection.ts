@@ -15,7 +15,6 @@ export const WALLET_CONFIGS: WalletInfo[] = [
     buildDeepLink: (fullUrl) => {
       // MetaMask universal link correct format:
       // Strip the protocol, pass host+path as the dapp path segment
-      // e.g. https://metamask.app.link/dapp/myapp.xyz/page
       const stripped = fullUrl.replace(/^https?:\/\//, "");
       return `https://metamask.app.link/dapp/${stripped}`;
     },
@@ -67,17 +66,17 @@ export function isMobileDevice(): boolean {
   );
 }
 
-// Use window.location.href for deep links - most reliable on iOS and Android
+//This is the most realiabl way to trigger deep link switching across android and ios at the moment.
 export function openInWallet(wallet: WalletInfo): void {
   const currentUrl = window.location.href;
   const deepLink = wallet.buildDeepLink(currentUrl);
 
   console.log(`[WalletGate] Opening ${wallet.name} with:`, deepLink);
 
-  // Direct assignment — most reliable way to trigger universal links / deep links
+  
   window.location.href = deepLink;
 
-  // Fallback to app store if app didn't open (page still visible after 2s)
+  // Fallback to app store if app didn't open
   const timer = setTimeout(() => {
     if (!document.hidden) {
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -94,7 +93,6 @@ export function openInWallet(wallet: WalletInfo): void {
   );
 }
 
-// Hook kept for backward compatibility with existing imports. Returns wallet/mobile state — redirect logic lives in <WalletGate />.
 export function useMobileWalletDetection(): {
   isInsideWallet: boolean;
   isMobile: boolean;
@@ -104,8 +102,6 @@ export function useMobileWalletDetection(): {
   useEffect(() => {
     if (hasRunRef.current) return;
     hasRunRef.current = true;
-    // Side-effect logic is intentionally handled by <WalletGate />.
-    // This hook just exposes state for other consumers.
   }, []);
 
   return {

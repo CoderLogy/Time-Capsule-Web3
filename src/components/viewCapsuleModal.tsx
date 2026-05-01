@@ -32,7 +32,7 @@ export default function ViewCapsuleModal({
     const handleOpen = async (isOpen: boolean) => {
         setOpen(isOpen);
         if (!isOpen) {
-            return; // Dialog is closing
+            return;
         }
 
         if (message) {

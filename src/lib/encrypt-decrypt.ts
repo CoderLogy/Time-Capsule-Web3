@@ -5,7 +5,7 @@ import { WalletClient } from "viem";
 import { BLOCKCHAIN_CONFIG } from "@/lib/config";
 import { quicknet, encrypt as drandEncrypt, decrypt as drandDecrypt } from "@/lib/drand";
 
-// Chain ID and contract address sourced from central config — no magic constants
+
 const SEPOLIA_CHAIN_ID = BigInt(BLOCKCHAIN_CONFIG.chainId);
 export const CONTRACT_ADDRESS = ethers.getAddress(BLOCKCHAIN_CONFIG.contractAddress);
 
@@ -18,7 +18,7 @@ function roundTimestamp(ts: number): number {
   return Math.floor(ts / TIMESTAMP_GRANULARITY_SECONDS) * TIMESTAMP_GRANULARITY_SECONDS;
 }
 
-// Wallet signer (deprecated global - hold signer reference instead)
+// Wallet signer
 let _signer: ethers.Signer | null = null;
 let _lastSignerAddress: string | null = null;
 
@@ -33,7 +33,7 @@ export async function setSignatureSigner(
   return s;
 }
 
-/** @deprecated — hold the signer returned by setSignatureSigner() instead */
+/** this needs to be fixed @deprecated */
 export function getSigner(): ethers.Signer {
   if (!_signer) throw new Error("Signer not initialized");
   return _signer;
@@ -54,7 +54,7 @@ export function clearSignatureSigner() {
   _lastSignerAddress = null;
 }
 
-// Provider pooling - create ONE BrowserProvider and reuse it to prevent RPC errors
+// Provider pooling to avoid rpc errors
 let _provider: ethers.BrowserProvider | null = null;
 let _providerWalletClient: WalletClient | null = null;
 
@@ -194,7 +194,7 @@ export async function deriveMasterKeyFromAddress(
   );
 }
 
-// Payload interface - includes optional drand time-lock fields for backward compatibility
+// Payload interface - includes optional drand time-lock fields
 export interface CapsulePayload {
   encryptedMessage: string;
   encryptedDataKey: string;
@@ -205,7 +205,7 @@ export interface CapsulePayload {
   expiresAt: number;
   version: number;
 
-  // Drand time-lock fields (optional, for backward compatibility)
+  // Drand time-lock fields
   drandCiphertext?: string;      // Base64-encoded drand-encrypted payload
   drandRound?: number;           // Drand round when payload became decryptable
   isDrandLocked?: boolean;       // Flag: is payload wrapped with drand timelock?
@@ -324,7 +324,7 @@ export async function decryptForWallet(
     throw new Error("[Decrypt] Signer is not usable — call setSignatureSigner() first");
   });
 
-  // Recreate AAD used during encryption; tampering with metadata causes authentication to fail
+  // Recreate AAD used during encryption
   const aad = buildAAD(
     payload.capsuleNonce,
     payload.issuedAt,
@@ -364,14 +364,13 @@ export async function decryptForWallet(
 
     return new TextDecoder().decode(decrypted);
   } finally {
-    // Clear the key bytes from memory for security
+    // Clear the key bytes from memory
     zeroize(dataKeyRaw);
   }
 }
 
-/* Drand Time-Lock Integration */
 
-// Timeout wrapper for async operations - prevents indefinite hangs from network issues
+// Timeout wrapper for async operations
 function withTimeout<T>(
   promise: Promise<T>,
   timeoutMs: number,
@@ -390,7 +389,6 @@ function withTimeout<T>(
 
 // Feature flag: enables drand time-lock encryption wrapper
 export function shouldApplyDrandTimelock(): boolean {
-  // Check for environment variable or feature flag - default to false for backward compatibility
   return import.meta.env.VITE_ENABLE_DRAND_TIMELOCK === "true";
 }
 
@@ -401,8 +399,6 @@ export async function wrapWithDrandTimelock(
 ): Promise<CapsulePayload> {
   try {
     console.log("[Drand] Wrapping payload with time-lock encryption...");
-
-    // Serialize the original payload to JSON string
     const payloadJson = JSON.stringify(payload);
 
     // Get drand client and encrypt the payload with 10-second timeout
@@ -421,7 +417,7 @@ export async function wrapWithDrandTimelock(
       encryptedDataKey: "",
       dataIv: "",
       keyIv: "",
-      capsuleNonce: payload.capsuleNonce,  // Keep for reference
+      capsuleNonce: payload.capsuleNonce,
       issuedAt: payload.issuedAt,
       expiresAt: unlockDate,
       version: payload.version,
@@ -468,12 +464,10 @@ export async function unwrapDrandTimelock(
       "[Drand] Decryption",
     );
 
-    // Parse recovered payload
     const recoveredPayload = JSON.parse(decrypted.plaintext) as CapsulePayload;
 
     console.log("[Drand] Payload unwrapped successfully");
 
-    // Validate that we got a proper CapsulePayload back
     if (
       !recoveredPayload.encryptedMessage ||
       !recoveredPayload.encryptedDataKey ||
@@ -488,7 +482,6 @@ export async function unwrapDrandTimelock(
     const errorMsg = error instanceof Error ? error.message : String(error);
     console.error("[Drand] Failed to unwrap timelock:", errorMsg);
 
-    // Provide helpful error messages for common issues
     if (
       errorMsg.includes("round not available") ||
       errorMsg.includes("UNAVAILABLE")

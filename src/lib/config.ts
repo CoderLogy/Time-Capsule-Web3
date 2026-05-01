@@ -17,7 +17,7 @@ export const SUBGRAPH_CONFIG = {
 export const IPFS_CONFIG = {
   gateway: publicEnv.pinataGateway,
   uploadEndpoint: '/api/ipfs/upload',
-  maxFileSize: 100 * 1024 * 1024,
+  maxFileSize: 500 * 1024 //500KB
 } as const;
 
 export const WALLET_CONFIG = {
@@ -40,7 +40,7 @@ export const UI_CONFIG = {
   apiRetryDelayMs: 1000,
 } as const;
 
-// Validate that all required configuration is present
+
 export function validateConfig(): void {
   const errors: string[] = [];
 

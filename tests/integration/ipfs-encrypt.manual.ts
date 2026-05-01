@@ -1,4 +1,3 @@
-// IPFS encryption and decryption test
 // Tests full capsule encryption, upload to IPFS, and decryption flow
 
 import { ethers } from "ethers";
@@ -37,16 +36,16 @@ async function testIPFSEncryption() {
   const expiresAt = issuedAt + 3600; // 1 hour validity
 
   // Test 1: Encrypt and upload single capsule
-  console.log("\n📝 Test 1: Single capsule encryption...");
+  console.log("\n Test 1: Single capsule encryption...");
   const encrypted = await encryptForWallet(signer, TEST_MESSAGE, expiresAt);
-  console.log("✓ Message encrypted");
+  console.log("Message encrypted");
 
   const ipfsCID = await uploadCapsule(encrypted, "Test Capsule 1");
-  console.log("✓ Uploaded to IPFS:", ipfsCID);
+  console.log("Uploaded to IPFS:", ipfsCID);
 
   // Fetch and decrypt
   const fetchedPayload = (await fetch(ipfsCID).then((r) => r.json())) as CapsulePayload;
-  console.log("✓ Fetched from IPFS");
+  console.log("Fetched from IPFS");
 
   const decrypted = await decryptForWallet(signer, fetchedPayload);
   console.log("✓ Message decrypted");
@@ -59,11 +58,11 @@ async function testIPFSEncryption() {
   }
 
   // Test 2: Multiple capsules with different messages
-  console.log("📝 Test 2: Multiple capsules with same wallet...");
+  console.log(" Test 2: Multiple capsules with same wallet...");
   const messages = [
     "First capsule",
     "Second capsule with longer message",
-    "Third capsule 🎉",
+    "Third capsule with special characters !@#$%^&*()",
   ];
 
   for (let i = 0; i < messages.length; i++) {
@@ -73,7 +72,7 @@ async function testIPFSEncryption() {
     const decrypted = await decryptForWallet(signer, payload);
 
     if (decrypted === messages[i]) {
-      console.log(`✓ Capsule ${i + 1} OK`);
+      console.log(`✅ Capsule ${i + 1} OK`);
     } else {
       console.error(`❌ Capsule ${i + 1} FAILED`);
       process.exit(1);
@@ -83,7 +82,7 @@ async function testIPFSEncryption() {
   console.log("✅ TEST 2 PASSED: All capsules encrypted and decrypted correctly\n");
 
   // Test 3: Verify metadata integrity (AAD)
-  console.log("📝 Test 3: Metadata integrity check...");
+  console.log("Test 3: Metadata integrity check...");
   const encrypted3 = await encryptForWallet(signer, "Metadata test", expiresAt);
   const cid3 = await uploadCapsule(encrypted3, "Metadata Test");
   const payload3 = (await fetch(cid3).then((r) => r.json())) as CapsulePayload;
@@ -115,7 +114,7 @@ async function testIPFSEncryption() {
   console.log("🎉 ALL TESTS PASSED");
 }
 
-// Run test
+
 testIPFSEncryption().catch((err) => {
   console.error("❌ Test error:", err);
   process.exit(1);

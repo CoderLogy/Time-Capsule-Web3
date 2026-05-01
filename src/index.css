@@ -271,7 +271,7 @@ textarea::-webkit-scrollbar {
     --rk-colors-modalTextSecondary: oklch(0.5 0.03 239) !important;
 }
 
-/* Hide empty leading cells and their weekday headers */
+
 .rdp-head_cell:nth-child(1),
 .rdp-head_cell:nth-child(2),
 .rdp-head_cell:nth-child(3) {
@@ -292,6 +292,3 @@ textarea::-webkit-scrollbar {
     overflow: hidden;
     display: none;
 }
-
-
-

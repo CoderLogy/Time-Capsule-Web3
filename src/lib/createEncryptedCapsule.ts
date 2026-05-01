@@ -14,8 +14,7 @@ interface CreateEncryptedCapsuleArgs {
 }
 
 async function waitForIndexing(address: string, title: string): Promise<void> {
-  // Exponential backoff: poll frequently at first, then slower (Sepolia subgraph needs 12-30+ seconds)
-  const delays = [0, 1000, 2000, 5000, 10000, 15000, 20000, 25000, 30000];
+  const delays = [0, 1000, 2000, 5000, 10000, 15000, 20000, 25000, 60000];
 
   for (let i = 0; i < delays.length; i++) {
     await new Promise((r) => setTimeout(r, delays[i]));
@@ -23,22 +22,19 @@ async function waitForIndexing(address: string, title: string): Promise<void> {
       console.log(`[Indexing] Polling for capsule '${title}' (attempt ${i + 1}/${delays.length})...`);
       const capsules = await getCapsules(address);
       if (capsules.some((c) => c.title === title)) {
-        console.log(`[Indexing] ✅ Capsule found after ${i} poll attempts (~${delays[i] / 1000}s)`);
+        console.log(`[Indexing] Capsule found after ${i} poll attempts (~${delays[i] / 1000}s)`);
         return;
       }
     } catch (err) {
       console.warn(
-        `[Indexing] ⚠️  Query failed on attempt ${i + 1}:`,
+        `[Indexing] Query failed on attempt ${i + 1}:`,
         err instanceof Error ? err.message : String(err)
       );
-      // Continue to next attempt - subgraph may be temporarily unavailable
     }
   }
 
-  // After exhausting all retries, don't throw - capsule may still appear later
-  // User will see it on next dashboard refresh (5-second interval)
   console.warn(
-    `[Indexing] ⚠️  Capsule not found after ${delays.length} attempts (~${Math.floor(delays.reduce((a, b) => a + b) / 1000)}s total). Indexing may be delayed. Dashboard will auto-refresh shortly.`
+    `[Indexing] Capsule not found after ${delays.length} attempts (~${Math.floor(delays.reduce((a, b) => a + b) / 1000)}s total). Indexing may be delayed. Dashboard will auto-refresh shortly.`
   );
 }
 
@@ -52,7 +48,6 @@ export async function createEncryptedCapsule({
   try {
     console.log("[CreateCapsule] Starting capsule creation for:", title);
 
-    // Get fresh wallet client - retry on mobile since connection can be lost when MetaMask opens
     let walletClient = null;
     let retries = 0;
     const maxRetries = 3;
@@ -81,7 +76,6 @@ export async function createEncryptedCapsule({
     const provider = await getProvider(walletClient);
     const walletSigner = await provider.getSigner();
 
-    // Validate signer is usable
     const signerAddress = await walletSigner.getAddress();
     console.log("[CreateCapsule] Got signer for address:", signerAddress);
 
@@ -97,7 +91,6 @@ export async function createEncryptedCapsule({
       unlockDate,
     );
 
-    // Apply drand time-lock encryption if enabled
     let finalPayload = payload;
     if (shouldApplyDrandTimelock()) {
       console.log("[CreateCapsule] Applying drand time-lock encryption...");
@@ -109,7 +102,6 @@ export async function createEncryptedCapsule({
 
     console.log("[CreateCapsule] Creating transaction...");
 
-    // Add timeout for transaction creation (MetaMask gas price page)
     const transactionPromise = createCapsule(
       title,
       unlockDate,
@@ -130,8 +122,7 @@ export async function createEncryptedCapsule({
     console.log("[CreateCapsule] Waiting for subgraph indexing...");
     await waitForIndexing(address, title);
 
-    console.log("[CreateCapsule] Capsule created ✅");
-    // Clear cached signer and contract to force re-creation on next use
+    console.log("[CreateCapsule] Capsule created");
     clearSignatureSigner();
     clearProvider();
     clearContract();
@@ -140,14 +131,12 @@ export async function createEncryptedCapsule({
   } catch (err) {
     console.error("[CreateCapsule] Capsule creation failed:", err);
 
-    // Clear cached signer and contract on any error
     clearSignatureSigner();
     clearProvider();
     clearContract();
 
     const errorMessage = err instanceof Error ? err.message : String(err);
 
-    // User-friendly error messages for common issues
     if (errorMessage.includes("User rejected")) {
       toast.error("User canceled authorization for this.");
     } else if (errorMessage.includes("Wallet")) {

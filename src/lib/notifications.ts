@@ -39,12 +39,12 @@ export function notifyError(error: Error | string): void {
   }
 }
 
-// Show decryption error
+
 export function notifyDecryptionError(error: Error | string): void {
   notifyError(error);
 }
 
-// Show creation error
+
 export function notifyCreationError(error: Error | string): void {
   try {
     const classified = classifyError(error);

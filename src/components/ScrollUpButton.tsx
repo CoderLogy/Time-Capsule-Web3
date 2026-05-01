@@ -15,7 +15,7 @@ const ScrollUpButton = function ScrollUp({
         if (!container) return;
 
         const handleScroll = () => {
-            // Show button if either window or container is scrolled
+            // This shows a button to scroll to the top
             const containerScrolled = container.scrollTop > 300;
             const windowScrolled = window.scrollY > 500;
             setShowScrollTop(containerScrolled || windowScrolled);
@@ -45,12 +45,9 @@ const ScrollUpButton = function ScrollUp({
                             const container = cardsContainerRef.current;
                             if (!container) return;
 
-                            // Scroll whichever one is actually scrolled
                             if (container.scrollTop > 300) {
-                                // Container is scrolled, scroll container
                                 container.scrollTo({ top: 0, behavior: "smooth" });
                             } else {
-                                // Window is scrolled, scroll window
                                 window.scrollTo({ top: 0, behavior: "smooth" });
                             }
                         }}

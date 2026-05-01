@@ -5,10 +5,9 @@ import { RainbowKitProvider, DisclaimerComponent, lightTheme } from "@rainbow-me
 import { sepolia } from "wagmi/chains";
 import { ReactNode } from "react";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
-import { WALLET_CONFIG, BLOCKCHAIN_CONFIG } from "@/lib/config";
+import { WALLET_CONFIG, BLOCKCHAIN_CONFIG} from "@/lib/config";
 import { WalletTracker } from "./WalletTracker";
 
-const SEPOLIA_RPC_URL = "https://1rpc.io/sepolia";
 
 // Only create config on client side
 let config: any = null;
@@ -20,7 +19,7 @@ const getConfig = () => {
             chains: [sepolia],
             ssr: false,
             transports: {
-                [sepolia.id]: http(SEPOLIA_RPC_URL)
+                [sepolia.id]: http(BLOCKCHAIN_CONFIG.rpcUrl)
             },
             storage: createStorage({
                 storage: typeof window !== "undefined" ? localStorage : (undefined as any)

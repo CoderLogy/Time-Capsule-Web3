@@ -8,8 +8,6 @@ import { Buffer } from "buffer";
 import { initializeAmplitude } from "@/lib/amplitude";
 
 window.Buffer = Buffer;
-
-// Initialize Amplitude Analytics on app startup (client-side only)
 initializeAmplitude();
 
 createRoot(document.getElementById("root")!).render(

@@ -1,4 +1,3 @@
-// Hardhat deployment and fee testing
 // Tests contract deployment and fee collection mechanism
 
 import hre from "hardhat";
@@ -30,7 +29,7 @@ async function testHardhatDeploy() {
   const receipt = await tx.wait();
   console.log("Capsule created! Tx hash:", tx.hash);
 
-  // Wait for confirmation, then query balance at that block
+  // Wait for confirmation
   const balanceAfter = await user.provider!.getBalance(
     feeReceiver,
     receipt.blockNumber,
@@ -54,7 +53,6 @@ async function testHardhatDeploy() {
   }
 }
 
-// Run test
 testHardhatDeploy().catch((error) => {
   console.error("❌ Test error:", error);
   process.exit(1);

@@ -53,7 +53,7 @@ export async function getGasPrices(): Promise<{
   }
 }
 
-// Calculate total cost (capsule fee + gas costs)
+
 export async function getTotalCapsuleCost(): Promise<{
   capsuleFee: ethers.BigNumberish | null;
   gasCost: ethers.BigNumberish | null;
@@ -68,7 +68,6 @@ export async function getTotalCapsuleCost(): Promise<{
       return null;
     }
 
-    // Estimated gas for createCapsule transaction: ~150k gas
     const estimatedGas = BigInt(150000);
     const gasCost = estimatedGas * BigInt(gasData.maxFeePerGas.toString());
     const totalCost = BigInt(capsuleFee.toString()) + gasCost;
@@ -120,14 +119,12 @@ export async function fetchCapsulePayload(dataUri: string): Promise<CapsulePaylo
     if (!res.ok) throw new Error("Failed to fetch IP");
     const data = await res.json();
 
-    // This supports both old format (nested) and new format (flat)
     let payload = data;
     if (data.data && typeof data.data === 'string') {
         try {
             payload = JSON.parse(data.data);
         } catch (e) {
             console.error('[FetchPayload] Failed to parse nested data field:', e);
-            // Fall back to using data as-is if parsing fails
             payload = data;
         }
     }
@@ -147,13 +144,12 @@ export async function getCapsules(owner: string): Promise<Capsule[]> {
     return capsules.map((c) => ({ ...c, message: undefined }));
 }
 
-// Called only when user clicks "Open Capsule" — fetches IPFS then decrypts
+
 export async function openCapsule(dataURI: string): Promise<string> {
     const signer = await setSignatureSigner();
     const payload = await fetchCapsulePayload(dataURI);
     console.log("Payload from Pinata:", payload);
     try {
-        // Unwrap drand time-lock if present
         let decryptPayload = payload;
         if (payload.isDrandLocked && payload.drandCiphertext) {
             console.log("[OpenCapsule] Unwrapping drand time-locked payload...");

@@ -17,7 +17,7 @@ export function quicknet(): HttpChainClient {
                 "83cf0f2896adee7eb8b5f01fcad3912212c437e0073e911fb90022d3e760183c8c4b450b6a0a6c3ac6a5776a2d1064510d1fec758c921cc22b0e17e63aaf4bcb5ed66304de9cf809bd274ca73bab4af5a6e9c76a4bc09e76eae8991ef5ece45a"
         }
     };
-    // passing an empty httpOptions arg to strip the user agent header to stop CORS issues
+    // passes empty httpOptions arg to stop CORS issues
     return new HttpChainClient(new HttpCachingChain(MAINNET_CHAIN_URL, clientOpts), clientOpts, {});
 }
 
@@ -35,7 +35,7 @@ export async function encrypt(client: HttpChainClient, plaintext: string, decryp
         throw new Error("Invalid chain info from drand service - cannot calculate round");
     }
 
-    // Calculate round number
+    // Calculate the future round number
     const roundNumber = roundAt(decryptionTime, chainInfo);
 
     if (!roundNumber || typeof roundNumber !== "number" || roundNumber < 1) {
@@ -46,7 +46,7 @@ export async function encrypt(client: HttpChainClient, plaintext: string, decryp
 
     console.log(`[Drand] Encrypting for round ${roundNumber}`);
 
-    // Encrypt
+    // Encrypt with time
     const ciphertext = await timelockEncrypt(roundNumber, Buffer.from(plaintext), client);
 
     if (!ciphertext || ciphertext.length === 0) {

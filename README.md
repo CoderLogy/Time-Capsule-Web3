@@ -22,10 +22,10 @@
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  WALLET-BASED ENCRYPTION                               │
-│  ├─ EIP-712 typed data signing (per-capsule)           │
+│  WALLET-BASED ENCRYPTION                                │
+│  ├─ EIP-712 typed data signing (per-capsule)            │
 │  ├─ Keccak256 hashing of signature                      │
-│  ├─ HKDF-SHA256 key derivation (with capsule metadata) │
+│  ├─ HKDF-SHA256 key derivation (with capsule metadata)  │
 │  ├─ AES-256-GCM authenticated encryption                │
 │  └─ Per-message random IVs for each layer               │
 ├─────────────────────────────────────────────────────────┤
@@ -35,7 +35,7 @@
 │  ├─ Prevents unauthorized unlock date or nonce changes  │
 │  └─ Ensures only original capsule data can be decrypted │
 ├─────────────────────────────────────────────────────────┤
-│  DRAND TIME-LOCK INTEGRATION (Optional)                 │
+│  DRAND TIME-LOCK INTEGRATION                            │
 │  ├─ Distributed randomness beacon consensus             │
 │  ├─ Threshold BLS signatures (51%+ collusion needed)    │
 │  ├─ Additional encryption layer over AES-256-GCM        │
@@ -43,7 +43,7 @@
 ├─────────────────────────────────────────────────────────┤
 │  SMART CONTRACT VALIDATION                              │
 │  ├─ Fee collection (prevents spam)                      │
-│  ├─ Capsule ownership verification                       │
+│  ├─ Capsule ownership verification                      │
 │  ├─ Time-lock enforcement (can't unlock before date)    │
 │  ├─ Immutable audit trail of all capsule operations     │
 │  └─ Non-custodial (contract cannot decrypt messages)    │
@@ -88,10 +88,11 @@ Copy `.env.example` to `.env` and fill in your values:
 ```env
 VITE_CONTRACT_ADDRESS=0x19FF5dc69033523f1C5b1B5589f95D49b5EF7926
 VITE_CHAIN_ID=11155111
-VITE_WALLETCONNECT_ID=your_wallet_connect_id
+VITE_WALLETCONNECT_ID=your_wallet_connect_id from reown
 ```
 
 ## 🤝 Contributing
+#### Development Status - Alpha
 We welcome contributions! Here's how to help:
 
 1. **Fork** the repository
@@ -127,17 +128,14 @@ We welcome contributions! Here's how to help:
 - **Encryption** - WebCrypto API (AES-256-GCM, HKDF-SHA256)
 - **Storage** - IPFS (Pinata)
 - **Indexing** - The Graph
-- **Time-Lock** - drand (distributed randomness beacon, optional)
+- **Time-Lock** - drand (distributed randomness beacon that predict randomness from future)
 
 ## Network Status
 
-- **Sepolia** - ✅ Live at `0x19FF5dc69033523f1C5b1B5589f95D49b5EF7926`
+- **Sepolia** - `0x19FF5dc69033523f1C5b1B5589f95D49b5EF7926`
 - **Mainnet** - Coming soon
 - **Optimism** - Coming soon
 
-## Contributing
-
-### 💬 Development Status
 
 ## Security
 
@@ -150,15 +148,19 @@ This project uses cryptographic time-locks that are mathematically impossible to
 
 ## Legal
 
-- **[Privacy Policy](PRIVACY.md)** - How we collect, use, and protect your data. Includes Amplitude tracking details and data deletion requests.
+- **[Privacy Policy](PRIVACY.md)** - How we collect, use, and protect your data.
 - **[Terms & Conditions](TERMS.md)** - Complete terms of service, disclaimers, liability limitations, and crypto risk warnings.
 
 **Important:** By using Time Capsule Web3, you agree to our [Terms & Conditions](TERMS.md) and [Privacy Policy](PRIVACY.md). Please read them carefully.
+
+#### Ai disclosure
+
+This readme and some other files within this project was generated with help of ai. Most of the work here is done by us, humans though. Just writing this to get the thought of using ai out of my mind.
 
 ## License
 
 MIT - See [LICENSE](LICENSE)
 
 ## Support
-- Open up a issue in this repo and I will get back to you.
----
+
+Open up a issue in this repo and I will get back to you.
