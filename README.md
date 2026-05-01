@@ -152,7 +152,7 @@ This some files within this project were generated with help of ai. Most of the 
 
 ## License
 
-MIT - See [LICENSE](LICENSE)
+MIT - [LICENSE](LICENSE)
 
 ## Support
 
