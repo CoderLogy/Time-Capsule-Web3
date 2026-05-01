@@ -86,22 +86,18 @@ VITE_CHAIN_ID=11155111
 VITE_WALLETCONNECT_ID=your_wallet_connect_id from reown
 ```
 
-## 🤝 Contributing
+## Contributing
 #### Development Status - Alpha
 We welcome contributions! Here's how to help:
 
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
-4. **Push** to the branch (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request
 ### Development Guidelines
+- Look at our roadmap
 - Follow TypeScript best practices
 - Write clear commit messages
 - Test your changes
-- Update documentation
+- Update documentation or Readme
 
-## 📋 Roadmap
+## Roadmap
 
 - [ ] Mainnet deployment with enhanced security audits
 - [ ] Multi-chain support (Optimism, Arbitrum, Polygon)
@@ -152,7 +148,7 @@ This project uses cryptographic time-locks that are mathematically impossible to
 
 #### Ai disclosure
 
-This some files within this project were generated with help of ai. Most of the work here is done by us, humans though. Just writing this to get the thought of using ai out of my mind.
+This some files within this project were generated with help of ai. Most of the work here is done by humans though. Just writing this to get the thought of using ai out of my mind.
 
 ## License
 
