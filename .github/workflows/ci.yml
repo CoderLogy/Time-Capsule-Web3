@@ -6,7 +6,7 @@ concurrency:
 
 on:
     push:
-        branches: [main] # Only main for production deploys
+        branches: [test]
         paths-ignore:
             - "**/*.md"
             - "**/*.mdx"
