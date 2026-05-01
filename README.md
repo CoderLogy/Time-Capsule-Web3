@@ -8,6 +8,7 @@
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Solidity](https://img.shields.io/badge/Solidity-0.8%2B-363636?logo=solidity&logoColor=white)](https://docs.soliditylang.org)
+[![CI/CD Pipeline](https://github.com/CoderLogy/Time-Capsule-Web3/actions/workflows/ci.yml/badge.svg)](https://github.com/CoderLogy/Time-Capsule-Web3/actions/workflows/ci.yml)
 
 ## Features
 
