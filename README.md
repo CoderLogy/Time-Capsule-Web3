@@ -78,7 +78,7 @@ pnpm vitest        # Run tests
 
 ### Environment Setup
 
-Copy `.env.example` to `.env` and fill in your values:
+Create a copy of `.env.example` and rename it as `.env` and fill in your values:
 
 ```env
 VITE_CONTRACT_ADDRESS=0x19FF5dc69033523f1C5b1B5589f95D49b5EF7926
