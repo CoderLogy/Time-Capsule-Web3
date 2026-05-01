@@ -6,7 +6,7 @@ concurrency:
 
 on:
     push:
-        branches: [test]
+        branches: [main]
         paths-ignore:
             - "**/*.md"
             - "**/*.mdx"
@@ -22,7 +22,7 @@ on:
             - "docs/**"
             - ".github/*.md"
     pull_request:
-        branches: [main, develop] # PR checking handles all branches
+        branches: [main, test] 
         paths-ignore:
             - "**/*.md"
             - "**/*.mdx"
