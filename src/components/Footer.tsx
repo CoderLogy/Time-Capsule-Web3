@@ -8,18 +8,18 @@ export default function Footer() {
           href="https://github.com/coderlogy/Time-Capsule-Web3"
           className="hover:text-accent transition-colors ease-in-out duration-200"
         >
-          <p>© 2026 Time Capsule App Decentralized.</p>
+          <p>© 2026 Time Capsule App Decentralized</p>
         </a>
         <div className="flex flex-wrap items-center justify-between gap-4 md:gap-6 md:justify-end text-xs">
           <a
             className="hover:text-accent transition-colors ease-in-out duration-200"
-            href="#"
+            href="https://github.com/CoderLogy/Time-Capsule-Web3/blob/main/PRIVACY.md"
           >
             Privacy
           </a>
           <a
             className="hover:text-accent transition-colors ease-in-out duration-200"
-            href="#"
+            href="https://github.com/CoderLogy/Time-Capsule-Web3/blob/main/TERMS.md"
           >
             Terms
           </a>

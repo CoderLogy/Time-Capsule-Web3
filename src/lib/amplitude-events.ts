@@ -36,17 +36,23 @@ export function trackAccountCreated({
         wallet_provider: walletProvider,
         chain_id: chainId
     });
+    amplitude.setUserId(walletAddress?.toLowerCase());
+    amplitude.identify(new amplitude.Identify().set("is_authenticated", true)); // added
 }
 
 export function trackSignInCompleted({
     loginMethod,
     walletProvider,
+    walletAddress, // added
     chainId
 }: {
     loginMethod: string;
     walletProvider: string;
+    walletAddress: string; // added
     chainId?: number | string;
 }) {
+    amplitude.setUserId(walletAddress?.toLowerCase()); // added
+    amplitude.identify(new amplitude.Identify().set("is_authenticated", true)); // added
     amplitude.track("Sign In Completed", {
         login_method: loginMethod,
         wallet_provider: walletProvider,
@@ -65,6 +71,8 @@ export function trackSignOutCompleted({
         sign_out_reason: signOutReason,
         wallet_provider: walletProvider
     });
+    amplitude.identify(new amplitude.Identify().set("is_authenticated", false)); // added
+    amplitude.reset(); // added
 }
 
 // CAPSULE CREATION EVENTS
@@ -197,7 +205,8 @@ export function setUserProperties({
     hasCompletedPayment,
     firstCapsuleCreatedAt,
     onboardingStatus,
-    pricingModel
+    pricingModel,
+    isAuthenticated // added
 }: {
     walletAddress?: string;
     walletProvider?: string;
@@ -208,6 +217,7 @@ export function setUserProperties({
     firstCapsuleCreatedAt?: string | Date;
     onboardingStatus?: string;
     pricingModel?: string;
+    isAuthenticated?: boolean; // added
 }) {
     const identify = new amplitude.Identify();
 
@@ -241,6 +251,9 @@ export function setUserProperties({
     }
     if (pricingModel) {
         identify.set("Pricing Model", pricingModel);
+    }
+    if (isAuthenticated !== undefined) {
+        identify.set("is_authenticated", isAuthenticated); // added
     }
 
     amplitude.identify(identify);

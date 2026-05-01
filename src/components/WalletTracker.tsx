@@ -57,6 +57,7 @@ export function WalletTracker() {
                     trackSignInCompleted({
                         loginMethod: "wallet_connect",
                         walletProvider,
+                        walletAddress: address, // added
                         chainId
                     });
                 } catch (err) {
@@ -70,7 +71,8 @@ export function WalletTracker() {
                     walletAddress: address,
                     walletProvider,
                     primaryChainId: chainId,
-                    signupMethod: isNewUser ? "wallet_connect" : undefined
+                    signupMethod: isNewUser ? "wallet_connect" : undefined,
+                    isAuthenticated: true // added
                 });
             } catch (err) {
                 console.error("[WalletTracker] Error setting user properties:", err);
@@ -101,5 +103,5 @@ export function WalletTracker() {
         }
     }, [isConnected, address, chainId, connector]);
 
-    return null; // This component doesn't render anything
+    return null;
 }

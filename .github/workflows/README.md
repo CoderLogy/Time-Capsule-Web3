@@ -7,7 +7,7 @@
 ## 3 Workflows
 
 ### 1. **test.yml** - Every Push/PR
-Runs all 35 tests on Node 18.x & 20.x, checks if critical files were deleted, verifies TypeScript compiles.
+Runs all 35 tests on 20.x, checks if critical files were deleted, verifies TypeScript compiles.
 
 ### 2. **pr-validation.yml** - Pull Requests
 Posts test results in PR comments, scans for secrets/eval() usage, blocks merge if checks fail.
@@ -73,5 +73,4 @@ Runs tests 3 times to find flaky tests, checks for outdated dependencies, audits
 **Change test requirement:**
 1. Edit `MIN_TESTS=30` in quality.yml
 
-**Change daily schedule:**
-1. Edit cron in quality.yml: `cron: '0 2 * * *'` (2 AM UTC)
+

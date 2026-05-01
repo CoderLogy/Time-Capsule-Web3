@@ -148,6 +148,13 @@ This project uses cryptographic time-locks that are mathematically impossible to
 - ✅ Test on Sepolia testnet first
 - ❌ Don't store sensitive information in messages
 
+## Legal
+
+- **[Privacy Policy](PRIVACY.md)** - How we collect, use, and protect your data. Includes Amplitude tracking details and data deletion requests.
+- **[Terms & Conditions](TERMS.md)** - Complete terms of service, disclaimers, liability limitations, and crypto risk warnings.
+
+**Important:** By using Time Capsule Web3, you agree to our [Terms & Conditions](TERMS.md) and [Privacy Policy](PRIVACY.md). Please read them carefully.
+
 ## License
 
 MIT - See [LICENSE](LICENSE)
