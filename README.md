@@ -10,16 +10,8 @@
 [![Solidity](https://img.shields.io/badge/Solidity-0.8%2B-363636?logo=solidity&logoColor=white)](https://docs.soliditylang.org)
 [![CI/CD Pipeline](https://github.com/CoderLogy/Time-Capsule-Web3/actions/workflows/ci.yml/badge.svg)](https://github.com/CoderLogy/Time-Capsule-Web3/actions/workflows/ci.yml)
 
-## Features
-
-- 🔐 **Wallet-Based Encryption** - EIP-712 signing + HKDF-SHA256 + AES-256-GCM
-- ⏰ **Cryptographic Time-Locks** - Mathematically impossible to unlock early
-- 🎲 **Drand Verification** - Distributed randomness from 18+ independent operators
-- ⛓️ **Non-Custodial** - No trusted third party needed
-- 🌐 **IPFS Storage** - Decentralized, immutable message storage
 
 ### My Breakthrough: Cryptographic Time-Locks
-
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -54,18 +46,20 @@
 
 | Aspect | Centralized Apps | Public Blockchains | **Time Capsule Web3** |
 |--------|------------------|--------------------|-----------------------|
-| **Can early unlock happen?** | Yes (server compromise) | Yes (front-running) | ❌ Cryptographically impossible |
-| **Who controls release?** | Platform | Miners/validators | ✅ Math, not people |
-| **Privacy after unlock?** | ❌ Readable to platform | ❌ Permanently public | ✅ Only decryptable by recipient |
-| **Trustlessness** | 0% | ⚠️ Partial | ✅ 100% |
-| **Proof of Release Time** | ❌ No | ⚠️ Timestamp only | ✅ Cryptographic proof |
+| **Can early unlock happen?** | Yes (server compromise) | Yes (front-running) | Cryptographically impossible |
+| **Who controls release?** | Platform | Miners/validators | Math not people |
+| **Privacy after unlock?** | Readable to platform | Permanently public | Only decryptable by recipient |
+| **Trustlessness** | 0% | Partial | 100% |
+| **Proof of Release Time** | No | Timestamp only | Cryptographic proof |
+
 ## Quick Start
 
 ### Prerequisites
-- Node.js 18+
+- Node.js 20+
 - Ethereum wallet (MetaMask, Rainbow, etc.)
 - Sepolia testnet ETH (for gas)
-
+- HardHat locally installed
+  
 ### Installation
 
 ```bash
@@ -106,6 +100,7 @@ We welcome contributions! Here's how to help:
 - Write clear commit messages
 - Test your changes
 - Update documentation
+
 ## 📋 Roadmap
 
 - [ ] Mainnet deployment with enhanced security audits
@@ -116,9 +111,10 @@ We welcome contributions! Here's how to help:
 - [ ] NFT time capsule certificates with on-chain proofs
 - [ ] Cross-chain message passing via Wormhole
 - [ ] Advanced analytics dashboard for capsule insights
+
 ## How It Works
 
-1. **Create** - Write a message and set an unlock date
+1. **Create** - You write a message and set an unlock date
 2. **Sign & Encrypt** - Your wallet signs the message via EIP-712, key derived from signature
 3. **Store** - Encrypted message stored on IPFS, proof recorded on blockchain
 5. **Decrypt** - After unlock date, open capsule with the same wallet that created it
@@ -128,7 +124,7 @@ We welcome contributions! Here's how to help:
 - **Blockchain** - Solidity, Ethers.js, Wagmi, Viem
 - **Encryption** - WebCrypto API (AES-256-GCM, HKDF-SHA256)
 - **Storage** - IPFS (Pinata)
-- **Indexing** - The Graph
+- **Indexing** - The Graph (graphql)
 - **Time-Lock** - drand (distributed randomness beacon that predict randomness from future)
 
 ## Network Status
@@ -142,9 +138,9 @@ We welcome contributions! Here's how to help:
 
 This project uses cryptographic time-locks that are mathematically impossible to break. However, always:
 
-- ✅ Use a secure wallet
-- ✅ Keep your private keys safe
-- ✅ Test on Sepolia testnet first
+- Use a secure wallet
+- Keep your private keys safe
+- Test on Sepolia testnet first
 - ❌ Don't store sensitive information in messages
 
 ## Legal
@@ -156,7 +152,7 @@ This project uses cryptographic time-locks that are mathematically impossible to
 
 #### Ai disclosure
 
-This readme and some other files within this project was generated with help of ai. Most of the work here is done by us, humans though. Just writing this to get the thought of using ai out of my mind.
+This some files within this project were generated with help of ai. Most of the work here is done by us, humans though. Just writing this to get the thought of using ai out of my mind.
 
 ## License
 
