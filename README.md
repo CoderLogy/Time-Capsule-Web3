@@ -146,10 +146,6 @@ This project uses cryptographic time-locks that are mathematically impossible to
 
 **Important:** By using Time Capsule Web3, you agree to our [Terms & Conditions](TERMS.md) and [Privacy Policy](PRIVACY.md). Please read them carefully.
 
-#### Ai disclosure
-
-This some files within this project were generated with help of ai. Most of the work here is done by humans though. Just writing this to get the thought of using ai out of my mind.
-
 ## License
 
 MIT - [LICENSE](LICENSE)
