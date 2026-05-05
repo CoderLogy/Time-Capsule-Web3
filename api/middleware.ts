@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "redis";
 
-// Redis client for rate limiting
+// rate limiting using Redis
 let redis: ReturnType<typeof createClient> | null = null;
 
 async function getRedisClient() {
@@ -12,8 +12,6 @@ async function getRedisClient() {
   return redis;
 }
 
-// Rate limiter using Vercel Redis
-// Tracks requests per IP with 60-second expiry window
 export async function checkRateLimit(
   ip: string,
   limit: number
@@ -23,10 +21,9 @@ export async function checkRateLimit(
   try {
     const client = await getRedisClient();
 
-    // Increment counter for this IP
     const count = await client.incr(key);
 
-    // Set expiry on first request (60 second window)
+    // Set expiry (60 second window)
     if (count === 1) {
       await client.expire(key, 60);
     }
@@ -52,7 +49,7 @@ export function getClientIp(req: VercelRequest): string {
   return req.socket.remoteAddress || "unknown";
 }
 
-// Auth validation - checks wallet address header (user already proved ownership via encryption signature)
+// Auth validation
 export function isAuthenticatedRequest(req: VercelRequest): {
   authenticated: boolean;
   walletAddress?: string;
@@ -67,7 +64,7 @@ export function isAuthenticatedRequest(req: VercelRequest): {
     };
   }
 
-  // Validate it looks like a wallet address
+  // Confirm it looks like a wallet address
   if (!/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
     return {
       authenticated: false,
@@ -81,7 +78,7 @@ export function isAuthenticatedRequest(req: VercelRequest): {
   };
 }
 
-// Middleware wrapper for rate limiting
+
 export function withRateLimit(
   handler: (req: VercelRequest, res: VercelResponse) => Promise<void>,
   limitPerMinute: number
@@ -103,7 +100,7 @@ export function withRateLimit(
   };
 }
 
-// Middleware wrapper for wallet auth check
+
 export function withAuth(
   handler: (req: VercelRequest, res: VercelResponse) => Promise<void>
 ) {
@@ -116,14 +113,13 @@ export function withAuth(
       });
     }
 
-    // Attach wallet address to request for logging
     (req as any).walletAddress = authResult.walletAddress;
 
     return handler(req, res);
   };
 }
 
-// Validate request body size
+
 export function validateRequestSize(
   req: VercelRequest,
   maxSizeBytes: number
@@ -132,8 +128,8 @@ export function validateRequestSize(
   if (!contentLength) {
     return { valid: false, error: "Missing content-length header" };
   }
-
-  const size = parseInt(contentLength, 10);
+  // 1 MB limit
+  const size = parseInt(contentLength, 1);
   if (size > maxSizeBytes) {
     return {
       valid: false,

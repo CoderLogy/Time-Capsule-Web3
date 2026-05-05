@@ -1,5 +1,5 @@
 // Tests that errors are properly classified and user-friendly messages
-// IMPACT: Critical for UX
+// WHY: Critical for UX
 
 
 import { describe, it, expect } from "vitest";

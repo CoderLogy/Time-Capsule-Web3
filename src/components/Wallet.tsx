@@ -9,7 +9,7 @@ import { WALLET_CONFIG, BLOCKCHAIN_CONFIG} from "@/lib/config";
 import { WalletTracker } from "./WalletTracker";
 
 
-// Only create config on client side
+// client-side configs
 let config: any = null;
 const getConfig = () => {
     if (!config) {

@@ -1,8 +1,5 @@
 import * as amplitude from "@amplitude/unified";
 
-// Event tracking utilities for Time Capsule
-
-// Wallet events
 export function trackWalletConnectionStarted({
     walletProvider,
     connectionSource,
@@ -37,22 +34,22 @@ export function trackAccountCreated({
         chain_id: chainId
     });
     amplitude.setUserId(walletAddress?.toLowerCase());
-    amplitude.identify(new amplitude.Identify().set("is_authenticated", true)); // added
+    amplitude.identify(new amplitude.Identify().set("is_authenticated", true));
 }
 
 export function trackSignInCompleted({
     loginMethod,
     walletProvider,
-    walletAddress, // added
+    walletAddress,
     chainId
 }: {
     loginMethod: string;
     walletProvider: string;
-    walletAddress: string; // added
+    walletAddress: string;
     chainId?: number | string;
 }) {
-    amplitude.setUserId(walletAddress?.toLowerCase()); // added
-    amplitude.identify(new amplitude.Identify().set("is_authenticated", true)); // added
+    amplitude.setUserId(walletAddress?.toLowerCase());
+    amplitude.identify(new amplitude.Identify().set("is_authenticated", true));
     amplitude.track("Sign In Completed", {
         login_method: loginMethod,
         wallet_provider: walletProvider,
@@ -71,8 +68,8 @@ export function trackSignOutCompleted({
         sign_out_reason: signOutReason,
         wallet_provider: walletProvider
     });
-    amplitude.identify(new amplitude.Identify().set("is_authenticated", false)); // added
-    amplitude.reset(); // added
+    amplitude.identify(new amplitude.Identify().set("is_authenticated", false));
+    amplitude.reset();
 }
 
 // CAPSULE CREATION EVENTS
@@ -206,7 +203,7 @@ export function setUserProperties({
     firstCapsuleCreatedAt,
     onboardingStatus,
     pricingModel,
-    isAuthenticated // added
+    isAuthenticated
 }: {
     walletAddress?: string;
     walletProvider?: string;
@@ -217,7 +214,7 @@ export function setUserProperties({
     firstCapsuleCreatedAt?: string | Date;
     onboardingStatus?: string;
     pricingModel?: string;
-    isAuthenticated?: boolean; // added
+    isAuthenticated?: boolean;
 }) {
     const identify = new amplitude.Identify();
 
@@ -253,7 +250,7 @@ export function setUserProperties({
         identify.set("Pricing Model", pricingModel);
     }
     if (isAuthenticated !== undefined) {
-        identify.set("is_authenticated", isAuthenticated); // added
+        identify.set("is_authenticated", isAuthenticated);
     }
 
     amplitude.identify(identify);

@@ -23,7 +23,7 @@ interface CapsulePayload {
 }
 
 async function testIPFSEncryption() {
-  console.log("🧪 Starting IPFS encryption test...\n");
+  console.log("..... Starting IPFS encryption test .....\n");
 
   // Setup wallet
   const provider = new ethers.JsonRpcProvider(RPC_URL);

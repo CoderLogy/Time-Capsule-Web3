@@ -81,9 +81,7 @@ export async function getTotalCapsuleCost(): Promise<{
 }
 
 export async function getContract(walletClient?: WalletClient): Promise<ethers.Contract> {
-    // Use getProvider to ensure we have a single provider instance
     const provider = await getProvider(walletClient);
-    // Use setSignatureSigner which will also use the same provider
     const signer = await setSignatureSigner(walletClient);
     contract = new ethers.Contract(BLOCKCHAIN_CONFIG.contractAddress, TimeCapsuleAbi.abi, signer);
     return contract;
@@ -113,19 +111,14 @@ function validateDataUri(uri: string): { valid: boolean; error?: string } {
     return { valid: false, error: "dataUri must be a non-empty string" };
   }
 
-  // Allow ipfs:// URIs and https:// URIs to whitelisted gateways
   if (uri.startsWith("ipfs://")) {
     return { valid: true };
   }
 
   if (uri.startsWith("https://")) {
-    // Whitelist common IPFS gateways
     const allowedGateways = [
-      "ipfs.io",
       "gateway.pinata.cloud",
       "aquamarine-kind-gull-833.mypinata.cloud",
-      "dweb.link",
-      "cf-ipfs.com",
     ];
 
     const uriUrl = new URL(uri);
@@ -158,7 +151,7 @@ export async function fetchCapsulePayload(
     throw new Error(`Invalid data URI: ${uriValidation.error}`);
   }
 
-  // Add timeout of 30 seconds
+  // 30S Timeout
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 30000);
 
@@ -169,11 +162,10 @@ export async function fetchCapsulePayload(
       throw new Error(`Failed to fetch capsule payload: HTTP ${res.status}`);
     }
 
-    // Validate content length
     const contentLength = res.headers.get("content-length");
     if (contentLength) {
       const size = parseInt(contentLength, 10);
-      const maxSize = 10 * 1024 * 1024; // 10MB max
+      const maxSize = 1024 * 1024; // 1MB max
       if (size > maxSize) {
         throw new Error(
           `Capsule payload too large: ${size} bytes (max ${maxSize} bytes)`
@@ -202,8 +194,7 @@ export async function fetchCapsulePayload(
   } catch (error) {
     const msg =
       error instanceof Error ? error.message : "Unknown error fetching payload";
-
-    // Sanitize error message (don't expose full URI in error)
+    
     if (msg.includes("CORS")) {
       throw new Error("Failed to fetch capsule: Network error (CORS)");
     }

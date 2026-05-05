@@ -130,7 +130,6 @@ export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ): Promise<void> {
-  // Apply middlewares in order: auth -> rate limit -> handler
   const withRateLimitHandler = withRateLimit(
     uploadHandler,
     RATE_LIMIT_PER_MINUTE

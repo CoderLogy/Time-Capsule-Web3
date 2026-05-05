@@ -20,8 +20,6 @@ export const publicEnv = {
 } as const;
 
 // SERVER-SIDE ONLY VARIABLES
-// WARNING: These should ONLY be accessed in API routes (api/* files)
-// If you import this on the client-side, it will break the build or leak secrets
 export const serverEnv = {
   // The Graph
   subgraphApiKey: process.env.VITE_SUBGRAPH_API_KEY || "",
@@ -67,10 +65,8 @@ export function validatePublicEnv() {
   }
 }
 
-// Validates server variables exist and have valid values
-// Only call this in API routes, never on the client-side
+
 export function validateServerEnv() {
-  // Check if running on server-side (API routes)
   if (typeof window !== "undefined") {
     console.error(
       "[ENV] ERROR: validateServerEnv() called on client-side. Server secrets must not be accessed from frontend code."
