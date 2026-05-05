@@ -29,7 +29,6 @@ export function useWalletReconnect(options: ReconnectOptions = {}) {
 
   const attemptReconnect = useCallback(async () => {
     if (isReconnectingRef.current) {
-      console.log('[WalletReconnect] Reconnect already in progress, skipping');
       return;
     }
 
@@ -37,11 +36,8 @@ export function useWalletReconnect(options: ReconnectOptions = {}) {
     reconnectAttemptsRef.current += 1;
 
     try {
-      console.log(`[WalletReconnect] Attempt ${reconnectAttemptsRef.current}/${maxRetries}`);
 
       if (address && connector) {
-        console.log('[WalletReconnect] Attempting to reconnect to previous wallet');
-
         // Clear signer cache to force re-establishment
         clearSignatureSigner();
 
@@ -55,41 +51,29 @@ export function useWalletReconnect(options: ReconnectOptions = {}) {
 
         
         if (isConnected && address) {
-          console.log('[WalletReconnect] Successfully reconnected to wallet');
-          reconnectAttemptsRef.current = 0;
-
-          // Invalidate all capsule queries to force refresh
+        // Invalidate all capsule queries to force refresh
           await queryClient.invalidateQueries({ queryKey: ['capsules'] });
-          console.log('[WalletReconnect] Invalidated query cache');
 
           isReconnectingRef.current = false;
           return;
         } else {
-          console.log('[WalletReconnect] Connection still not ready after stability check');
         }
       }
 
       // reconnection failed
       if (reconnectAttemptsRef.current < maxRetries) {
         const delay = initialDelayMs * Math.pow(backoffMultiplier, reconnectAttemptsRef.current - 1);
-        console.log(`[WalletReconnect] Reconnect failed, retrying in ${Math.round(delay)}ms`);
 
         reconnectTimeoutRef.current = setTimeout(attemptReconnect, delay);
       } else {
-        console.log('[WalletReconnect] Max reconnection attempts reached, giving up');
-        console.log('[WalletReconnect] User should manually reconnect wallet');
         reconnectAttemptsRef.current = 0;
       }
     } catch (error) {
-      console.error('[WalletReconnect] Error during reconnection attempt:', error);
-
       if (reconnectAttemptsRef.current < maxRetries) {
         const delay = initialDelayMs * Math.pow(backoffMultiplier, reconnectAttemptsRef.current - 1);
-        console.log(`[WalletReconnect] Error during reconnect, retrying in ${Math.round(delay)}ms`);
 
         reconnectTimeoutRef.current = setTimeout(attemptReconnect, delay);
       } else {
-        console.log('[WalletReconnect] Max reconnection attempts reached after error');
         reconnectAttemptsRef.current = 0;
       }
     } finally {
@@ -100,8 +84,6 @@ export function useWalletReconnect(options: ReconnectOptions = {}) {
   // Listen for app visibility changes
   const handleVisibilityChange = useCallback((visible: boolean) => {
     if (visible) {
-      console.log('[WalletReconnect] App became visible, attempting wallet recovery');
-
       // Clear any pending reconnect timeout
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);

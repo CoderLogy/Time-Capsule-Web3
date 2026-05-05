@@ -20,7 +20,6 @@ export async function getCapsuleFee(): Promise<ethers.BigNumberish | null> {
     const provider = new ethers.JsonRpcProvider('https://1rpc.io/sepolia');
     const c = new ethers.Contract(BLOCKCHAIN_CONFIG.contractAddress, TimeCapsuleAbi.abi, provider);
     const fee = await c.capsuleFee();
-    console.log('[CapsuleFee] Fee fetched from contract:', fee.toString());
     return fee;
   } catch (error) {
     console.error('[CapsuleFee] Failed to fetch capsule fee:', error);
@@ -38,7 +37,6 @@ export async function getGasPrices(): Promise<{
     const feeData = await provider.getFeeData();
 
     if (!feeData.maxFeePerGas || !feeData.maxPriorityFeePerGas) {
-      console.warn('[GasPrices] FeeData incomplete:', feeData);
       return null;
     }
 
@@ -64,7 +62,6 @@ export async function getTotalCapsuleCost(): Promise<{
     const gasData = await getGasPrices();
 
     if (!capsuleFee || !gasData?.maxFeePerGas) {
-      console.warn('[TotalCost] Missing fee or gas data');
       return null;
     }
 
@@ -89,12 +86,10 @@ export async function getContract(walletClient?: WalletClient): Promise<ethers.C
     // Use setSignatureSigner which will also use the same provider
     const signer = await setSignatureSigner(walletClient);
     contract = new ethers.Contract(BLOCKCHAIN_CONFIG.contractAddress, TimeCapsuleAbi.abi, signer);
-    console.log("[Contract] Created contract with shared provider instance");
     return contract;
 }
 
 export function clearContract() {
-    console.log("[Contract] Clearing cached contract");
     contract = null;
 }
 
@@ -110,33 +105,116 @@ export async function createCapsule(
     const tx: TransactionResponse = await c.createCapsule(title, unlockDate, dataURI, {
         value: fee
     });
-    console.log("Capsule fee in wei:", fee.toString());
     return tx;
 }
 
-export async function fetchCapsulePayload(dataUri: string): Promise<CapsulePayload> {
-    const res = await fetch(dataUri);
-    if (!res.ok) throw new Error("Failed to fetch IP");
+function validateDataUri(uri: string): { valid: boolean; error?: string } {
+  if (typeof uri !== "string" || uri.length === 0) {
+    return { valid: false, error: "dataUri must be a non-empty string" };
+  }
+
+  // Allow ipfs:// URIs and https:// URIs to whitelisted gateways
+  if (uri.startsWith("ipfs://")) {
+    return { valid: true };
+  }
+
+  if (uri.startsWith("https://")) {
+    // Whitelist common IPFS gateways
+    const allowedGateways = [
+      "ipfs.io",
+      "gateway.pinata.cloud",
+      "aquamarine-kind-gull-833.mypinata.cloud",
+      "dweb.link",
+      "cf-ipfs.com",
+    ];
+
+    const uriUrl = new URL(uri);
+    const isAllowed = allowedGateways.some((gateway) =>
+      uriUrl.hostname.includes(gateway)
+    );
+
+    if (!isAllowed) {
+      return {
+        valid: false,
+        error: "dataUri domain not whitelisted for IPFS gateway",
+      };
+    }
+
+    return { valid: true };
+  }
+
+  return {
+    valid: false,
+    error: "dataUri must start with ipfs:// or https:// from whitelisted gateway",
+  };
+}
+
+export async function fetchCapsulePayload(
+  dataUri: string
+): Promise<CapsulePayload> {
+  // Validate dataUri format
+  const uriValidation = validateDataUri(dataUri);
+  if (!uriValidation.valid) {
+    throw new Error(`Invalid data URI: ${uriValidation.error}`);
+  }
+
+  // Add timeout of 30 seconds
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+  try {
+    const res = await fetch(dataUri, { signal: controller.signal });
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch capsule payload: HTTP ${res.status}`);
+    }
+
+    // Validate content length
+    const contentLength = res.headers.get("content-length");
+    if (contentLength) {
+      const size = parseInt(contentLength, 10);
+      const maxSize = 10 * 1024 * 1024; // 10MB max
+      if (size > maxSize) {
+        throw new Error(
+          `Capsule payload too large: ${size} bytes (max ${maxSize} bytes)`
+        );
+      }
+    }
+
     const data = await res.json();
 
     let payload = data;
-    if (data.data && typeof data.data === 'string') {
-        try {
-            payload = JSON.parse(data.data);
-        } catch (e) {
-            console.error('[FetchPayload] Failed to parse nested data field:', e);
-            payload = data;
-        }
+    if (data.data && typeof data.data === "string") {
+      try {
+        payload = JSON.parse(data.data);
+      } catch (e) {
+        payload = data;
+      }
     }
 
     if (!payload.version) {
-        throw new Error(
-            `Invalid capsule payload: missing or undefined version. Got: ${JSON.stringify(Object.keys(payload))}`
-        );
+      throw new Error(
+        `Invalid capsule payload: missing or undefined version. Got: ${JSON.stringify(Object.keys(payload))}`
+      );
     }
 
-    console.log('[FetchPayload] Successfully fetched payload with version:', payload.version);
     return payload;
+  } catch (error) {
+    const msg =
+      error instanceof Error ? error.message : "Unknown error fetching payload";
+
+    // Sanitize error message (don't expose full URI in error)
+    if (msg.includes("CORS")) {
+      throw new Error("Failed to fetch capsule: Network error (CORS)");
+    }
+    if (msg.includes("abort")) {
+      throw new Error("Capsule fetch timeout - please try again");
+    }
+
+    throw new Error(msg);
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
 export async function getCapsules(owner: string): Promise<Capsule[]> {
@@ -148,11 +226,9 @@ export async function getCapsules(owner: string): Promise<Capsule[]> {
 export async function openCapsule(dataURI: string): Promise<string> {
     const signer = await setSignatureSigner();
     const payload = await fetchCapsulePayload(dataURI);
-    console.log("Payload from Pinata:", payload);
     try {
         let decryptPayload = payload;
         if (payload.isDrandLocked && payload.drandCiphertext) {
-            console.log("[OpenCapsule] Unwrapping drand time-locked payload...");
             decryptPayload = await unwrapDrandTimelock(payload);
         }
 

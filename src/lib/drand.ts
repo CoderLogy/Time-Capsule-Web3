@@ -44,8 +44,6 @@ export async function encrypt(client: HttpChainClient, plaintext: string, decryp
         );
     }
 
-    console.log(`[Drand] Encrypting for round ${roundNumber}`);
-
     // Encrypt with time
     const ciphertext = await timelockEncrypt(roundNumber, Buffer.from(plaintext), client);
 

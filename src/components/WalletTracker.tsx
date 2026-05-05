@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
-import { useAccount, useConnect, useDisconnect } from "wagmi";
+import { useAccount } from "wagmi";
 import {
-    trackWalletConnectionStarted,
     trackSignInCompleted,
     trackSignOutCompleted,
     trackAccountCreated,
@@ -11,13 +10,9 @@ import {
 
 export function WalletTracker() {
     const { address, isConnected, chainId, connector } = useAccount();
-    const { connectors } = useConnect();
-    const { disconnect } = useDisconnect();
 
     const prevConnectedRef = useRef(isConnected);
     const prevAddressRef = useRef(address);
-    const connectionStartedRef = useRef(false);
-    const isFirstConnectionRef = useRef(true);
 
     // Track when wallet is successfully connected
     useEffect(() => {
@@ -25,13 +20,6 @@ export function WalletTracker() {
             const walletProvider = connector?.name || "Unknown";
             const userKey = `user_${address.toLowerCase()}_seen`;
             const isNewUser = !localStorage.getItem(userKey);
-
-            console.log("[WalletTracker] Wallet connected:", {
-                address,
-                provider: walletProvider,
-                chainId,
-                isNewUser
-            });
 
             localStorage.setItem(userKey, "true");
 
@@ -80,10 +68,6 @@ export function WalletTracker() {
             // Track disconnection
             const walletProvider = connector?.name || "Unknown";
 
-            console.log("[WalletTracker] Wallet disconnected:", {
-                provider: walletProvider
-            });
-
             try {
                 trackSignOutCompleted({
                     signOutReason: "user_initiated",
@@ -94,8 +78,6 @@ export function WalletTracker() {
             }
 
             prevConnectedRef.current = false;
-            connectionStartedRef.current = false;
-            isFirstConnectionRef.current = true;
         }
     }, [isConnected, address, chainId, connector]);
 

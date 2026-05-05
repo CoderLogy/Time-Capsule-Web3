@@ -40,11 +40,6 @@ export function notifyError(error: Error | string): void {
 }
 
 
-export function notifyDecryptionError(error: Error | string): void {
-  notifyError(error);
-}
-
-
 export function notifyCreationError(error: Error | string): void {
   try {
     const classified = classifyError(error);

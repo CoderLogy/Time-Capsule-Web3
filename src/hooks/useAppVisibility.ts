@@ -9,11 +9,9 @@ export function useAppVisibility(onVisibilityChange?: (visible: boolean) => void
 
     // Only trigger callback on transition to visible, not on every change
     if (isVisible && !visibilityChangeRef.current) {
-      console.log('[AppVisibility] App resumed from background');
       visibilityChangeRef.current = true;
       onVisibilityChange?.(true);
     } else if (!isVisible && visibilityChangeRef.current) {
-      console.log('[AppVisibility] App backgrounded');
       visibilityChangeRef.current = false;
       onVisibilityChange?.(false);
     }

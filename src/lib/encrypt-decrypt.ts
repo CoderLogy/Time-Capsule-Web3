@@ -33,12 +33,6 @@ export async function setSignatureSigner(
   return s;
 }
 
-/** this needs to be fixed @deprecated */
-export function getSigner(): ethers.Signer {
-  if (!_signer) throw new Error("Signer not initialized");
-  return _signer;
-}
-
 export async function isSignerValid(): Promise<boolean> {
   if (!_signer) return false;
   try {
@@ -62,38 +56,25 @@ export async function getProvider(walletClient?: WalletClient): Promise<ethers.B
   if (walletClient && walletClient !== _providerWalletClient) {
     _provider = new ethers.BrowserProvider(walletClient.transport);
     _providerWalletClient = walletClient;
-    console.log("[Provider] Created new BrowserProvider instance");
     return _provider;
   }
 
-  if (_provider && walletClient === _providerWalletClient) {
-    console.log("[Provider] Reusing cached BrowserProvider instance");
+  if (_provider) {
     return _provider;
   }
 
-  if (_provider && !walletClient) {
-    console.log("[Provider] Reusing cached BrowserProvider instance (no wallet specified)");
-    return _provider;
+  const wc = await getWalletClient(getConfig() as Parameters<typeof getWalletClient>[0]);
+  if (!wc) {
+    throw new Error("[Provider] No wallet client available");
   }
-
-  if (!walletClient && !_provider) {
-    const wc = await getWalletClient(getConfig() as Parameters<typeof getWalletClient>[0]);
-    if (!wc) {
-      throw new Error("[Provider] No wallet client available");
-    }
-    _provider = new ethers.BrowserProvider(wc.transport);
-    _providerWalletClient = wc;
-    console.log("[Provider] Created BrowserProvider from default wallet");
-    return _provider;
-  }
-
-  throw new Error("[Provider] No provider available");
+  _provider = new ethers.BrowserProvider(wc.transport);
+  _providerWalletClient = wc;
+  return _provider;
 }
 
 export function clearProvider() {
   _provider = null;
   _providerWalletClient = null;
-  console.log("[Provider] Cleared cached provider");
 }
 
 // Utility functions for hex and random bytes
@@ -398,7 +379,6 @@ export async function wrapWithDrandTimelock(
   unlockDate: number,
 ): Promise<CapsulePayload> {
   try {
-    console.log("[Drand] Wrapping payload with time-lock encryption...");
     const payloadJson = JSON.stringify(payload);
 
     // Get drand client and encrypt the payload with 10-second timeout
@@ -454,8 +434,6 @@ export async function unwrapDrandTimelock(
       throw new Error("Payload is not drand-locked or missing ciphertext");
     }
 
-    console.log(`[Drand] Unwrapping drand-locked payload (round: ${payload.drandRound})...`);
-
     // Get drand client and decrypt with 10-second timeout
     const client = quicknet();
     const decrypted = await withTimeout(
@@ -465,8 +443,6 @@ export async function unwrapDrandTimelock(
     );
 
     const recoveredPayload = JSON.parse(decrypted.plaintext) as CapsulePayload;
-
-    console.log("[Drand] Payload unwrapped successfully");
 
     if (
       !recoveredPayload.encryptedMessage ||

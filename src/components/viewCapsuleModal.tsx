@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { openCapsule } from "@/lib/contract-api";
-import { notifyDecryptionError } from "@/lib/notifications";
+import { notifyError } from "@/lib/notifications";
 import { trackCapsuleOpened, trackErrorEncountered } from "@/lib/amplitude-events";
 
 type ViewCapsuleModalProps = {
@@ -56,7 +56,7 @@ export default function ViewCapsuleModal({
                 console.error("[ViewCapsuleModal] Error tracking capsule opened:", err);
             }
         } catch (err) {
-            notifyDecryptionError(err instanceof Error ? err : String(err));
+            notifyError(err instanceof Error ? err : String(err));
             setError("Failed to decrypt capsule. Make sure you're using the original wallet.");
 
             try {

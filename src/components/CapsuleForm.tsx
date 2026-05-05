@@ -49,7 +49,6 @@ const CapsuleForm = memo(function CapsuleForm({
                 const priceData = await getEthPrice();
                 setEthPrice(priceData.price);
             } catch (err) {
-                console.error("Failed to fetch ETH price", err);
             }
         };
 
@@ -63,9 +62,7 @@ const CapsuleForm = memo(function CapsuleForm({
             try {
                 const cost = await getTotalCapsuleCost();
                 setCostData(cost);
-                console.log("[CapsuleForm] Total cost data:", cost);
             } catch (err) {
-                console.error("Failed to fetch total cost", err);
             }
         };
 
@@ -82,7 +79,6 @@ const CapsuleForm = memo(function CapsuleForm({
         try {
             return Number(formatEther(costData.totalCost.toString()));
         } catch (err) {
-            console.error("Error formatting total fee:", err);
             return undefined;
         }
     }, [costData]);
@@ -101,13 +97,6 @@ const CapsuleForm = memo(function CapsuleForm({
         onPendingAdd(currentTitle);
 
         try {
-            console.log("[CapsuleForm] Starting capsule creation with:", {
-                title,
-                address,
-                messageLength: message.length,
-                unlockDate: unlockDate?.toISOString(),
-            });
-
             const timestamp = Math.floor(unlockDate.getTime() / 1000);
             const result = await createEncryptedCapsule({
                 address: address!,
@@ -125,13 +114,7 @@ const CapsuleForm = memo(function CapsuleForm({
                   walletAddress: address!,
                   gasFeesNative: result.gasLimit ? formatEther(result.gasLimit) : undefined,
                 });
-              }
-            } catch (err) {
-              console.error('[CapsuleForm] Error tracking transaction submitted:', err);
-            }
 
-            try {
-              if (result?.hash) {
                 const receipt = await result.wait();
                 if (receipt) {
                   trackTransactionConfirmed({
@@ -140,35 +123,28 @@ const CapsuleForm = memo(function CapsuleForm({
                     chainId: BLOCKCHAIN_CONFIG.chainId,
                   });
                 }
+
+                const capsuleId = result.hash || `${address}-${Date.now()}`;
+                trackCapsuleCreated({
+                  capsuleId,
+                  capsuleUnlockDate: unlockDate.toISOString(),
+                  capsuleVisibility: 'private',
+                  walletAddress: address!,
+                });
+
+                setUserProperties({
+                  hasCreatedCapsule: true,
+                  firstCapsuleCreatedAt: new Date().toISOString(),
+                });
               }
             } catch (err) {
-              console.error('[CapsuleForm] Error tracking transaction confirmed:', err);
+              console.error("[CapsuleForm] Analytics tracking failed:", err);
             }
 
-            console.log("[CapsuleForm] Capsule created, waiting for onCreated callback...");
             await onCreated();
-            console.log("[CapsuleForm] onCreated callback completed");
-
-            try {
-              const capsuleId = result?.hash || `${address}-${Date.now()}`;
-              trackCapsuleCreated({
-                capsuleId,
-                capsuleUnlockDate: unlockDate.toISOString(),
-                capsuleVisibility: 'private',
-                walletAddress: address!,
-              });
-              
-              setUserProperties({
-                hasCreatedCapsule: true,
-                firstCapsuleCreatedAt: new Date().toISOString(),
-              });
-            } catch (err) {
-              console.error('[CapsuleForm] Error tracking capsule created:', err);
-            }
 
             toast.success("Capsule created successfully");
 
-            console.log("[CapsuleForm] Clearing form after successful creation");
             setTitle("");
             setMessage("");
             setUnlockDate(undefined);
@@ -185,12 +161,6 @@ const CapsuleForm = memo(function CapsuleForm({
                 });
             }, 500);
         } catch (err) {
-            console.error("[CapsuleForm] Failed to create capsule:", err);
-            console.error("[CapsuleForm] Error details:", {
-                message: err instanceof Error ? err.message : String(err),
-                stack: err instanceof Error ? err.stack : undefined,
-            });
-
             try {
               trackErrorEncountered({
                 errorCategory: 'capsule_creation',
@@ -199,11 +169,10 @@ const CapsuleForm = memo(function CapsuleForm({
                 chainId: BLOCKCHAIN_CONFIG.chainId,
               });
             } catch (trackErr) {
-              console.error('[CapsuleForm] Error tracking error event:', trackErr);
+              console.error("[CapsuleForm] Error tracking failed:", trackErr);
             }
 
             toast.error("Failed to create capsule - your data is preserved");
-            console.log("[CapsuleForm] Form data preserved, user can retry");
         } finally {
             setLoading(false);
             onPendingRemove(currentTitle);

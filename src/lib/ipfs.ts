@@ -1,30 +1,35 @@
 import { uploadToPinata } from "@/lib/api-client";
+import { ethers } from "ethers";
 
 export interface CapsulePayload {
-    encryptedMessage: string;
-    encryptedDataKey: string;
-    dataIv: string;
-    keyIv: string;
-    capsuleNonce: string;
-    issuedAt?: number;
-    expiresAt?: number;
-    version?: number;
-    createdAt?: number;
+  encryptedMessage: string;
+  encryptedDataKey: string;
+  dataIv: string;
+  keyIv: string;
+  capsuleNonce: string;
+  issuedAt?: number;
+  expiresAt?: number;
+  version?: number;
+  createdAt?: number;
 
-    // Drand time-lock fields
-    drandCiphertext?: string;
-    drandRound?: number;
-    isDrandLocked?: boolean;
+  // Drand time-lock fields
+  drandCiphertext?: string;
+  drandRound?: number;
+  isDrandLocked?: boolean;
 }
 
-export async function uploadCapsule(payload: CapsulePayload, titleString: string) {
-    // Serialize the payload as JSON and send to backend for secure upload
-    const encryptedData = JSON.stringify({
-        title: titleString,
-        ...payload,
-        createdAt: payload.createdAt ?? Date.now()
-    });
+export async function uploadCapsule(
+  payload: CapsulePayload,
+  titleString: string,
+  signer?: ethers.Signer
+) {
+  // Serialize the payload as JSON and send to backend for secure upload
+  const encryptedData = JSON.stringify({
+    title: titleString,
+    ...payload,
+    createdAt: payload.createdAt ?? Date.now(),
+  });
 
-    const { gateway_url } = await uploadToPinata(encryptedData, titleString);
-    return gateway_url;
+  const { gateway_url } = await uploadToPinata(encryptedData, titleString, signer);
+  return gateway_url;
 }

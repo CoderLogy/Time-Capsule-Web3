@@ -93,16 +93,3 @@ export function classifyError(error: Error | string): ClassifiedError {
     _classifyDepth--;
   }
 }
-
-export function isDrandError(error: Error | string): boolean {
-  return classifyError(error).type.startsWith('drand_');
-}
-
-export function isWalletError(error: Error | string): boolean {
-  return classifyError(error).type.startsWith('wallet_');
-}
-
-export function isNetworkError(error: Error | string): boolean {
-  const type = classifyError(error).type;
-  return type === 'network_error' || type === 'drand_network';
-}

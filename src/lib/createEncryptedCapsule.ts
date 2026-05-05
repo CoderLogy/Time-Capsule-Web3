@@ -19,23 +19,13 @@ async function waitForIndexing(address: string, title: string): Promise<void> {
   for (let i = 0; i < delays.length; i++) {
     await new Promise((r) => setTimeout(r, delays[i]));
     try {
-      console.log(`[Indexing] Polling for capsule '${title}' (attempt ${i + 1}/${delays.length})...`);
       const capsules = await getCapsules(address);
       if (capsules.some((c) => c.title === title)) {
-        console.log(`[Indexing] Capsule found after ${i} poll attempts (~${delays[i] / 1000}s)`);
         return;
       }
     } catch (err) {
-      console.warn(
-        `[Indexing] Query failed on attempt ${i + 1}:`,
-        err instanceof Error ? err.message : String(err)
-      );
     }
   }
-
-  console.warn(
-    `[Indexing] Capsule not found after ${delays.length} attempts (~${Math.floor(delays.reduce((a, b) => a + b) / 1000)}s total). Indexing may be delayed. Dashboard will auto-refresh shortly.`
-  );
 }
 
 
@@ -46,8 +36,6 @@ export async function createEncryptedCapsule({
   title,
 }: CreateEncryptedCapsuleArgs): Promise<TransactionResponse> {
   try {
-    console.log("[CreateCapsule] Starting capsule creation for:", title);
-
     let walletClient = null;
     let retries = 0;
     const maxRetries = 3;
@@ -58,7 +46,6 @@ export async function createEncryptedCapsule({
         if (walletClient) break;
       } catch (err) {
         retries++;
-        console.warn(`[CreateCapsule] Wallet client fetch failed (attempt ${retries}/${maxRetries}):`, err);
         if (retries < maxRetries) {
           // Wait before retry
           await new Promise(r => setTimeout(r, 1000 * retries));
@@ -67,24 +54,18 @@ export async function createEncryptedCapsule({
     }
 
     if (!walletClient) {
-      console.error("[CreateCapsule] No wallet client available after retries");
       throw new Error("Wallet not connected. Please make sure MetaMask is open and try again.");
     }
-
-    console.log("[CreateCapsule] Got wallet client");
 
     const provider = await getProvider(walletClient);
     const walletSigner = await provider.getSigner();
 
     const signerAddress = await walletSigner.getAddress();
-    console.log("[CreateCapsule] Got signer for address:", signerAddress);
 
     if (signerAddress.toLowerCase() !== address.toLowerCase()) {
-      console.error("[CreateCapsule] Signer address mismatch:", signerAddress, "vs", address);
       throw new Error("Wallet address mismatch. Please check your wallet connection.");
     }
 
-    console.log("[CreateCapsule] Encrypting message...");
     const payload: CapsulePayload = await encryptForWallet(
       walletSigner,
       plaintext,
@@ -93,14 +74,10 @@ export async function createEncryptedCapsule({
 
     let finalPayload = payload;
     if (shouldApplyDrandTimelock()) {
-      console.log("[CreateCapsule] Applying drand time-lock encryption...");
       finalPayload = await wrapWithDrandTimelock(payload, unlockDate);
     }
 
-    console.log("[CreateCapsule] Uploading encrypted payload to IPFS...");
-    const dataURI = await uploadCapsule(finalPayload, title);
-
-    console.log("[CreateCapsule] Creating transaction...");
+    const dataURI = await uploadCapsule(finalPayload, title, walletSigner);
 
     const transactionPromise = createCapsule(
       title,
@@ -114,23 +91,17 @@ export async function createEncryptedCapsule({
     );
 
     const tx: TransactionResponse = await Promise.race([transactionPromise, timeoutPromise]);
-    console.log("[CreateCapsule] Transaction hash:", tx.hash);
 
-    console.log("[CreateCapsule] Waiting for transaction confirmation...");
     await tx.wait();
 
-    console.log("[CreateCapsule] Waiting for subgraph indexing...");
     await waitForIndexing(address, title);
 
-    console.log("[CreateCapsule] Capsule created");
     clearSignatureSigner();
     clearProvider();
     clearContract();
 
     return tx;
   } catch (err) {
-    console.error("[CreateCapsule] Capsule creation failed:", err);
-
     clearSignatureSigner();
     clearProvider();
     clearContract();
@@ -145,8 +116,6 @@ export async function createEncryptedCapsule({
       toast.error("Network error - please check your connection");
     } else {
       toast.error("Capsule creation failed — check console for details");
-      if ((err as Error & { data?: unknown }).data)
-        console.error("[CreateCapsule] Revert data:", (err as Error & { data?: unknown }).data);
     }
 
     throw err;
