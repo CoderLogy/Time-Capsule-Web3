@@ -90,8 +90,8 @@ export default function Dashboard() {
 
                     <div className="w-full lg:w-5/12 xl:w-4/12 flex flex-col gap-6 mt-8 md:mt-10 lg:mt-16">
                         <div
-                            className={`flex gap-3 items-center ${
-                                capsules.length < 5 ? "flex-col" : "flex-row justify-between"
+                            className={`flex flex-col lg:flex-row lg:justify-between gap-4 items-center lg:items-start${
+                                capsules.length < 5 ? "" : ""
                             } px-0 md:px-2 md:mx-4`}
                         >
                             <Label htmlFor="SearchCapsules">
@@ -118,7 +118,7 @@ export default function Dashboard() {
                                     </span>
                                 </h2>
                             </Label>
-                            <div className={`flex grow-2 ${capsules.length === 0 ? "hidden" : ""}`}>
+                            <div className={`flex grow-2 w-full lg:flex-1 lg:min-w-0 ${capsules.length === 0 ? "hidden" : ""}`}>
                                 {capsules.length >= 5 && (
                                     <input
                                         id="SearchCapsules"
