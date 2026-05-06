@@ -1,11 +1,10 @@
-// Centralized configuration
 import { publicEnv } from '@/config/env';
 
 export const BLOCKCHAIN_CONFIG = {
   contractAddress: publicEnv.contractAddress,
   chainId: publicEnv.chainId,
   chainName: 'Sepolia',
-  rpcUrl: 'https://1rpc.io/sepolia',
+  rpcUrl: 'https://ethereum-sepolia-rpc.publicnode.com',
   blockExplorer: 'https://sepolia.etherscan.io',
 } as const;
 

@@ -59,6 +59,10 @@ export async function getProvider(walletClient?: WalletClient): Promise<ethers.B
     if (_provider) {
         return _provider;
     }
+    if (typeof window !== "undefined" && window.ethereum) {
+        _provider = new ethers.BrowserProvider(window.ethereum);
+        return _provider;
+    }
 
     const wc = await getWalletClient(getConfig() as Parameters<typeof getWalletClient>[0]);
     if (!wc) {

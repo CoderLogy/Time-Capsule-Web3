@@ -1,6 +1,6 @@
 // I made this environment configuration to separate public from server-only variables
 
-// PUBLIC VARIABLES (Safe to expose in frontend bundle)
+// PUBLIC VARIABLES
 export const publicEnv = {
   // Blockchain
   contractAddress: import.meta.env.VITE_CONTRACT_ADDRESS,
@@ -29,7 +29,7 @@ export const serverEnv = {
   pinataApiSecret: process.env.VITE_PINATA_API_SECRET || "",
 
   // Ethereum RPC
-  sepoliaRpcUrl: process.env.SEPOLIA_URL || "https://1rpc.io/sepolia",
+  sepoliaRpcUrl: process.env.SEPOLIA_URL || "https://ethereum-sepolia-rpc.publicnode.com",
   privateKey: process.env.PRIVATE_KEY || "",
   etherscanApiKey: process.env.ETHERSCAN_API_KEY || "",
 } as const;

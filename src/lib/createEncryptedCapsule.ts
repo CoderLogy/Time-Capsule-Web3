@@ -1,13 +1,5 @@
 import { ethers, TransactionResponse } from "ethers";
-import {
-    encryptForWallet,
-    CapsulePayload,
-    clearSignatureSigner,
-    wrapWithDrandTimelock,
-    shouldApplyDrandTimelock,
-    getProvider,
-    clearProvider
-} from "./encrypt-decrypt";
+import { encryptForWallet, CapsulePayload, clearSignatureSigner, wrapWithDrandTimelock, shouldApplyDrandTimelock, getProvider, clearProvider } from "./encrypt-decrypt";
 import { uploadCapsule } from "@/lib/ipfs";
 import { createCapsule, getCapsules, clearContract } from "@/lib/contract-api";
 import { toast } from "sonner";
@@ -15,24 +7,25 @@ import { getWalletClient } from "@wagmi/core";
 import { getConfig } from "@/components/Wallet";
 
 interface CreateEncryptedCapsuleArgs {
-    address: string;
-    plaintext: string;
-    unlockDate: number;
-    title: string;
+  address: string;
+  plaintext: string;
+  unlockDate: number;
+  title: string;
 }
 
 async function waitForIndexing(address: string, title: string): Promise<void> {
-    const delays = [0, 1000, 2000, 5000, 10000, 15000, 20000, 25000, 60000];
+  const delays = [0, 1000, 2000, 5000, 10000, 15000, 20000, 25000, 60000];
 
-    for (let i = 0; i < delays.length; i++) {
-        await new Promise((r) => setTimeout(r, delays[i]));
-        try {
-            const capsules = await getCapsules(address);
-            if (capsules.some((c) => c.title === title)) {
-                return;
-            }
-        } catch (err) {}
+  for (let i = 0; i < delays.length; i++) {
+    await new Promise((r) => setTimeout(r, delays[i]));
+    try {
+      const capsules = await getCapsules(address);
+      if (capsules.some((c) => c.title === title)) {
+        return;
+      }
+    } catch (err) {
     }
+  }
 }
 
 export async function createEncryptedCapsule({
@@ -42,34 +35,14 @@ export async function createEncryptedCapsule({
     title
 }: CreateEncryptedCapsuleArgs): Promise<TransactionResponse> {
     try {
-        let walletClient = null;
-        let retries = 0;
-        const maxRetries = 3;
-
-        while (!walletClient && retries < maxRetries) {
-            try {
-                walletClient = await getWalletClient(
-                    getConfig() as Parameters<typeof getWalletClient>[0]
-                );
-                if (walletClient) break;
-            } catch (err) {
-                retries++;
-                if (retries < maxRetries) {
-                    // Wait before retry
-                    await new Promise((r) => setTimeout(r, 1000 * retries));
-                }
-            }
-        }
-
-        if (!walletClient) {
+        if (!window.ethereum) {
             throw new Error(
                 "Wallet not connected. Please make sure MetaMask is open and try again."
             );
         }
 
-        const provider = await getProvider(walletClient);
+        const provider = new ethers.BrowserProvider(window.ethereum);
         const walletSigner = await provider.getSigner();
-
         const signerAddress = await walletSigner.getAddress();
 
         if (signerAddress.toLowerCase() !== address.toLowerCase()) {
@@ -85,7 +58,7 @@ export async function createEncryptedCapsule({
 
         const dataURI = await uploadCapsule(finalPayload, title, walletSigner);
 
-        const transactionPromise = createCapsule(title, unlockDate, dataURI, walletClient);
+        const transactionPromise = createCapsule(title, unlockDate, dataURI);
 
         const timeoutPromise = new Promise<never>((_, reject) =>
             setTimeout(

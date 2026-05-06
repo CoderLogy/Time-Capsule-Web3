@@ -77,3 +77,4 @@ DEPLOYMENT.md
 *.tmp
 *.temp
 .cache/
+.vercel

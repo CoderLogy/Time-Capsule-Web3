@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useRef } from "react";
 
-// Detect when app comes to foreground - useful for state recovery on mobile context switches
+// Detect when app comes to foreground
 export function useAppVisibility(onVisibilityChange?: (visible: boolean) => void) {
     const visibilityChangeRef = useRef<boolean>(true);
 
