@@ -1,18 +1,13 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { createClient } from "redis";
+import { Redis } from "@upstash/redis";
 
-type RedisClient = ReturnType<typeof createClient>;
+function getRedisClient(): Redis {
+  const redis = new Redis({
+    url: process.env.UPSTASH_URL_KV_REST_API_URL,
+    token: process.env.UPSTASH_URL_KV_REST_API_TOKEN,
+  });
 
-async function getRedisClient(): Promise<RedisClient> {
-  if (!process.env.REDIS_URL) {
-    throw new Error("REDIS_URL not configured");
-  }
-
-  const client = createClient({ url: process.env.REDIS_URL });
-
-  await client.connect();
-
-  return client;
+  return redis;
 }
 
 export async function checkRateLimit(
@@ -22,24 +17,20 @@ export async function checkRateLimit(
   const key = `ratelimit:${ip}`;
 
   try {
-    const client = await getRedisClient();
+    const redis = getRedisClient();
 
-    try {
-      const count = await client.incr(key);
+    const count = await redis.incr(key);
 
-      if (count === 1) {
-        await client.expire(key, 60);
-      }
-
-      const remaining = Math.max(0, limit - count);
-
-      return {
-        allowed: count <= limit,
-        remaining,
-      };
-    } finally {
-      await client.quit();
+    if (count === 1) {
+      await redis.expire(key, 60);
     }
+
+    const remaining = Math.max(0, limit - count);
+
+    return {
+      allowed: count <= limit,
+      remaining,
+    };
   } catch (error) {
     console.error("[RateLimit] Redis error:", error);
     return { allowed: true, remaining: limit };

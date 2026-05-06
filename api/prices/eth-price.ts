@@ -11,9 +11,10 @@ interface PriceResponse {
 async function priceHandler(
   req: VercelRequest,
   res: VercelResponse
-): Promise<void> {
+) {
   if (req.method !== "GET") {
-    return res.status(405).json({ error: "Method not allowed. Use GET." });
+    res.status(405).json({ error: "Method not allowed. Use GET." });
+    return;
   }
 
   try {
@@ -27,22 +28,24 @@ async function priceHandler(
 
     if (!response.ok) {
       console.error(`CryptoCompare request failed: ${response.status}`);
-      return res.status(500).json({
+      res.status(500).json({
         error: `Failed to fetch price: ${response.status}`,
       });
+      return;
     }
 
     const data = (await response.json()) as Record<string, number>;
 
     if (!data.USD || typeof data.USD !== "number") {
-      return res.status(500).json({
+      res.status(500).json({
         error: "Invalid price data received",
       });
+      return;
     }
 
     res.setHeader("Cache-Control", "public, max-age=300");
 
-    return res.status(200).json({
+    res.status(200).json({
       price: data.USD,
       lastUpdated: Date.now(),
     } as PriceResponse);
@@ -50,7 +53,7 @@ async function priceHandler(
     console.error("[Price] Fetch error:", error);
     const errorMsg =
       error instanceof Error ? error.message : "Failed to fetch price";
-    return res.status(500).json({
+    res.status(500).json({
       error: errorMsg,
     });
   }
