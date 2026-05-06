@@ -60,14 +60,27 @@ export function isAuthenticatedRequest(req: VercelRequest): {
     walletAddress?: string;
     error?: string;
 } {
-    const walletAddress = req.headers["x-wallet-address"];
+    const rawHeader = (req.headers["x-wallet-address"] || req.headers["x-walletaddress"]) as
+        | string
+        | string[]
+        | undefined;
+    let walletAddress: string | undefined;
+    if (Array.isArray(rawHeader)) {
+        walletAddress = rawHeader[0];
+    } else if (typeof rawHeader === "string") {
+        walletAddress = rawHeader;
+    } else {
+        walletAddress = undefined;
+    }
 
-    if (!walletAddress || typeof walletAddress !== "string") {
+    if (!walletAddress) {
         return {
             authenticated: false,
             error: "Missing wallet address. Please connect your wallet."
         };
     }
+
+    walletAddress = walletAddress.trim();
 
     if (!/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
         return {

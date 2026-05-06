@@ -80,6 +80,13 @@ async function uploadHandler(req: VercelRequest, res: VercelResponse) {
             return;
         }
 
+        try {
+            const incomingWallet = req.headers["x-wallet-address"] || req.headers["x-walletaddress"];
+            console.log("[Upload] x-wallet-address header:", incomingWallet);
+        } catch (e) {
+            console.error("[Upload] Error reading headers for debug:", e);
+        }
+
         const pinata = getPinataClient();
 
         const jsonData = {
