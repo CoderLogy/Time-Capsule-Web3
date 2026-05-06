@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { withRateLimit } from "../middleware";
+import { withRateLimit } from "../middleware.js";
 
 const RATE_LIMIT_PER_MINUTE = 60;
 

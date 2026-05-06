@@ -1,13 +1,13 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { PinataSDK } from "pinata";
-import { withAuth, withRateLimit, validateRequestSize, validateJSON } from "../middleware";
+import { withAuth, withRateLimit, validateRequestSize, validateJSON } from "../middleware.js";
 
 const MAX_UPLOAD_SIZE = 1024 * 1024;
 const RATE_LIMIT_PER_MINUTE = 10;
 
 function getPinataClient() {
-    const jwt = process.env.PINATA_JWT;
-    const gateway = process.env.PINATA_GATEWAY;
+    const jwt = process.env.PINATA_JWT!;
+    const gateway = process.env.PINATA_GATEWAY!;
 
     if (!jwt || !gateway) {
         throw new Error("Missing Pinata configuration in environment variables");
