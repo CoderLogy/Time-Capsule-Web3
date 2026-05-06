@@ -3,8 +3,6 @@ import { encryptForWallet, CapsulePayload, clearSignatureSigner, wrapWithDrandTi
 import { uploadCapsule } from "@/lib/ipfs";
 import { createCapsule, getCapsules, clearContract } from "@/lib/contract-api";
 import { toast } from "sonner";
-import { getWalletClient } from "@wagmi/core";
-import { getConfig } from "@/components/Wallet";
 
 interface CreateEncryptedCapsuleArgs {
   address: string;
