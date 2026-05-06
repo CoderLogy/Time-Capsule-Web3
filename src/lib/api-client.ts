@@ -2,62 +2,65 @@ import { ethers } from "ethers";
 import { publicEnv } from "@/config/env";
 
 export interface IPFSUploadResponse {
-    success: boolean;
-    cid?: string;
-    gateway_url?: string;
-    error?: string;
+  success: boolean;
+  cid?: string;
+  gateway_url?: string;
+  error?: string;
 }
 
-export async function getWalletAuthHeaders(signer: ethers.Signer): Promise<Record<string, string>> {
-    const walletAddress = await signer.getAddress();
+export async function getWalletAuthHeaders(
+  signer: ethers.Signer
+): Promise<Record<string, string>> {
+  const walletAddress = await signer.getAddress();
 
-    return {
-        "X-Wallet-Address": walletAddress
-    };
+  // Just pass wallet address - user already signed for encryption!
+  return {
+    "X-Wallet-Address": walletAddress,
+  };
 }
 
 export async function uploadToPinata(
-    encryptedData: string,
-    title: string,
-    signer?: ethers.Signer
+  encryptedData: string,
+  title: string,
+  signer?: ethers.Signer
 ): Promise<{ cid: string; gateway_url: string }> {
-    let authHeaders: Record<string, string> = {};
+  let authHeaders: Record<string, string> = {};
 
-    if (signer) {
-        authHeaders = await getWalletAuthHeaders(signer);
-    }
+  if (signer) {
+    authHeaders = await getWalletAuthHeaders(signer);
+  }
 
-    const response = await fetch("/api/ipfs/upload", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            ...authHeaders
-        },
-        body: JSON.stringify({
-            encryptedData,
-            title
-        })
-    });
+  const response = await fetch("/api/ipfs/upload", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders,
+    },
+    body: JSON.stringify({
+      encryptedData,
+      title,
+    }),
+  });
 
-    if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: response.statusText }));
-        throw new Error(`Upload failed: ${error.error || response.statusText}`);
-    }
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: response.statusText }));
+    throw new Error(`Upload failed: ${error.error || response.statusText}`);
+  }
 
-    const result = (await response.json()) as IPFSUploadResponse;
+  const result = (await response.json()) as IPFSUploadResponse;
 
-    if (!result.success) {
-        throw new Error(result.error || "Upload failed");
-    }
+  if (!result.success) {
+    throw new Error(result.error || "Upload failed");
+  }
 
-    if (!result.cid || !result.gateway_url) {
-        throw new Error("Invalid response from upload endpoint");
-    }
+  if (!result.cid || !result.gateway_url) {
+    throw new Error("Invalid response from upload endpoint");
+  }
 
-    return {
-        cid: result.cid,
-        gateway_url: result.gateway_url
-    };
+  return {
+    cid: result.cid,
+    gateway_url: result.gateway_url,
+  };
 }
 
 // GraphQL Queries

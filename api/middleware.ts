@@ -3,13 +3,41 @@ import { createClient } from "redis";
 
 // rate limiting using Redis
 let redis: ReturnType<typeof createClient> | null = null;
+let redisConnecting = false;
 
 async function getRedisClient() {
-  if (!redis) {
-    redis = createClient({ url: process.env.REDIS_URL });
-    await redis.connect();
+  if (!process.env.REDIS_URL) {
+    throw new Error("REDIS_URL not configured");
   }
-  return redis;
+
+  if (redis) {
+    return redis;
+  }
+
+  if (redisConnecting) {
+    let attempts = 0;
+    while (!redis && attempts < 50) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      attempts++;
+    }
+    if (!redis) {
+      throw new Error("Redis connection timeout");
+    }
+    return redis;
+  }
+
+  redisConnecting = true;
+  try {
+    redis = createClient({ url: process.env.REDIS_URL });
+    redis.on("error", (err) => {
+      console.error("[Redis] Connection error:", err);
+      redis = null;
+    });
+    await redis.connect();
+    return redis;
+  } finally {
+    redisConnecting = false;
+  }
 }
 
 export async function checkRateLimit(
