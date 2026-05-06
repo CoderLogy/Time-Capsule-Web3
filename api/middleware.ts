@@ -2,8 +2,8 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { Redis } from "@upstash/redis";
 
 const redis = new Redis({
-    url: process.env.REDIS_URL!,
-    token: process.env.REDIS_TOKEN!,
+    url: process.env.UPSTASH_URL_KV_REST_API_URL!,
+    token: process.env.UPSTASH_URL_KV_REST_API_TOKEN!,
 });
 
 export async function checkRateLimit(
