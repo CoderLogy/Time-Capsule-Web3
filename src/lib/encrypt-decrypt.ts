@@ -176,7 +176,7 @@ export interface CapsulePayload {
     version: number;
 }
 
-// Additional Authenticated Data - detects tampering with metadata. If metadata is tampered with, AES-GCM authentication fails.
+// Additional Authenticated Data
 function buildAAD(
     capsuleNonce: string,
     issuedAt: number,

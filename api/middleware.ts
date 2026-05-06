@@ -1,43 +1,18 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "redis";
 
-// rate limiting using Redis
-let redis: ReturnType<typeof createClient> | null = null;
-let redisConnecting = false;
+type RedisClient = ReturnType<typeof createClient>;
 
-async function getRedisClient() {
+async function getRedisClient(): Promise<RedisClient> {
   if (!process.env.REDIS_URL) {
     throw new Error("REDIS_URL not configured");
   }
 
-  if (redis) {
-    return redis;
-  }
+  const client = createClient({ url: process.env.REDIS_URL });
 
-  if (redisConnecting) {
-    let attempts = 0;
-    while (!redis && attempts < 50) {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      attempts++;
-    }
-    if (!redis) {
-      throw new Error("Redis connection timeout");
-    }
-    return redis;
-  }
+  await client.connect();
 
-  redisConnecting = true;
-  try {
-    redis = createClient({ url: process.env.REDIS_URL });
-    redis.on("error", (err) => {
-      console.error("[Redis] Connection error:", err);
-      redis = null;
-    });
-    await redis.connect();
-    return redis;
-  } finally {
-    redisConnecting = false;
-  }
+  return client;
 }
 
 export async function checkRateLimit(
@@ -49,22 +24,24 @@ export async function checkRateLimit(
   try {
     const client = await getRedisClient();
 
-    const count = await client.incr(key);
+    try {
+      const count = await client.incr(key);
 
-    // Set expiry (60 second window)
-    if (count === 1) {
-      await client.expire(key, 60);
+      if (count === 1) {
+        await client.expire(key, 60);
+      }
+
+      const remaining = Math.max(0, limit - count);
+
+      return {
+        allowed: count <= limit,
+        remaining,
+      };
+    } finally {
+      await client.quit();
     }
-
-    const remaining = Math.max(0, limit - count);
-
-    return {
-      allowed: count <= limit,
-      remaining,
-    };
   } catch (error) {
     console.error("[RateLimit] Redis error:", error);
-    // If Redis fails, allow request (fail open)
     return { allowed: true, remaining: limit };
   }
 }
@@ -77,7 +54,6 @@ export function getClientIp(req: VercelRequest): string {
   return req.socket.remoteAddress || "unknown";
 }
 
-// Auth validation
 export function isAuthenticatedRequest(req: VercelRequest): {
   authenticated: boolean;
   walletAddress?: string;
@@ -92,7 +68,6 @@ export function isAuthenticatedRequest(req: VercelRequest): {
     };
   }
 
-  // Confirm it looks like a wallet address
   if (!/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
     return {
       authenticated: false,
@@ -105,7 +80,6 @@ export function isAuthenticatedRequest(req: VercelRequest): {
     walletAddress,
   };
 }
-
 
 export function withRateLimit(
   handler: (req: VercelRequest, res: VercelResponse) => Promise<void>,
@@ -128,7 +102,6 @@ export function withRateLimit(
   };
 }
 
-
 export function withAuth(
   handler: (req: VercelRequest, res: VercelResponse) => Promise<void>
 ) {
@@ -147,18 +120,33 @@ export function withAuth(
   };
 }
 
-
-export function validateRequestSize(
+export async function validateRequestSize(
   req: VercelRequest,
   maxSizeBytes: number
-): { valid: boolean; error?: string } {
+): Promise<{ valid: boolean; error?: string }> {
   const contentLength = req.headers["content-length"];
-  if (!contentLength) {
-    return { valid: false, error: "Missing content-length header" };
+
+  if (contentLength) {
+    const size = parseInt(contentLength, 10);
+    if (size > maxSizeBytes) {
+      return {
+        valid: false,
+        error: `Payload too large. Max size: ${maxSizeBytes / 1024 / 1024}MB`,
+      };
+    }
+    return { valid: true };
   }
-  // 1 MB limit
-  const size = parseInt(contentLength, 1);
-  if (size > maxSizeBytes) {
+
+  const bytes = await new Promise<number>((resolve, reject) => {
+    let total = 0;
+    req.on("data", (chunk: Buffer) => {
+      total += chunk.length;
+    });
+    req.on("end", () => resolve(total));
+    req.on("error", reject);
+  });
+
+  if (bytes > maxSizeBytes) {
     return {
       valid: false,
       error: `Payload too large. Max size: ${maxSizeBytes / 1024 / 1024}MB`,
@@ -168,7 +156,6 @@ export function validateRequestSize(
   return { valid: true };
 }
 
-// Validate JSON data
 export function validateJSON(
   data: unknown
 ): { valid: boolean; error?: string } {
