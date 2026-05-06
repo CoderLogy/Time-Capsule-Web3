@@ -100,6 +100,5 @@ describe("Capsule Encryption Integration - End-to-end encryption and time-lockin
         });
     });
 
-    afterAll(() => {
-    });
+    afterAll(() => {});
 });
