@@ -1,4 +1,3 @@
-// IPFS upload via Pinata
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { PinataSDK } from "pinata";
 import {
@@ -8,7 +7,7 @@ import {
   validateJSON,
 } from "../middleware";
 
-const MAX_UPLOAD_SIZE = 1024 * 1024; // 1MB
+const MAX_UPLOAD_SIZE = 1024 * 1024;
 const RATE_LIMIT_PER_MINUTE = 10;
 
 function getPinataClient() {
@@ -42,8 +41,7 @@ async function uploadHandler(
   }
 
   try {
-    // Validate request size
-    const sizeCheck = validateRequestSize(req, MAX_UPLOAD_SIZE);
+    const sizeCheck = await validateRequestSize(req, MAX_UPLOAD_SIZE);
     if (!sizeCheck.valid) {
       return res.status(413).json({
         success: false,
@@ -51,7 +49,6 @@ async function uploadHandler(
       });
     }
 
-    // Validate JSON body
     const jsonCheck = validateJSON(req.body);
     if (!jsonCheck.valid) {
       return res.status(400).json({
@@ -62,7 +59,6 @@ async function uploadHandler(
 
     const { encryptedData, title } = req.body as UploadRequest;
 
-    // Validate required fields
     if (!encryptedData || typeof encryptedData !== "string") {
       return res.status(400).json({
         success: false,
@@ -77,7 +73,6 @@ async function uploadHandler(
       });
     }
 
-    // Validate encryptedData is valid JSON
     try {
       JSON.parse(encryptedData);
     } catch {
@@ -113,7 +108,6 @@ async function uploadHandler(
     const errorMsg =
       error instanceof Error ? error.message : "Failed to upload to IPFS";
 
-    // Don't expose sensitive error details
     const safeMsg =
       errorMsg.includes("Pinata") || errorMsg.includes("jwt")
         ? "Upload service error"
@@ -126,15 +120,4 @@ async function uploadHandler(
   }
 }
 
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse
-): Promise<void> {
-  const withRateLimitHandler = withRateLimit(
-    uploadHandler,
-    RATE_LIMIT_PER_MINUTE
-  );
-  const withAuthHandler = withAuth(withRateLimitHandler);
-
-  return withAuthHandler(req, res);
-}
+export default withAuth(withRateLimit(uploadHandler, RATE_LIMIT_PER_MINUTE));

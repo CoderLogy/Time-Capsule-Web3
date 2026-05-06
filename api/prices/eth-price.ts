@@ -1,4 +1,3 @@
-// Fetch ETH/USD price from CryptoCompare
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { withRateLimit } from "../middleware";
 
@@ -57,10 +56,4 @@ async function priceHandler(
   }
 }
 
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse
-): Promise<void> {
-  const withRateLimitHandler = withRateLimit(priceHandler, RATE_LIMIT_PER_MINUTE);
-  return withRateLimitHandler(req, res);
-}
+export default withRateLimit(priceHandler, RATE_LIMIT_PER_MINUTE);
