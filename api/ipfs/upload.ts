@@ -87,16 +87,21 @@ async function uploadHandler(req: VercelRequest, res: VercelResponse) {
             console.error("[Upload] Error reading headers for debug:", e);
         }
 
+        console.log("[Upload] Creating Pinata client...");
         const pinata = getPinataClient();
+        console.log("[Upload] Pinata client created successfully");
 
         const jsonData = {
             title,
             data: encryptedData,
             uploadedAt: new Date().toISOString()
         };
+        console.log("[Upload] JSON data prepared, size:", JSON.stringify(jsonData).length, "bytes");
 
         // Use Pinata SDK's JSON upload (Node-friendly) instead of browser File API
+        console.log("[Upload] Calling pinata.upload.public.json()...");
         const upload = await pinata.upload.public.json(jsonData);
+        console.log("[Upload] Upload successful, CID:", upload.cid);
 
         const gateway = process.env.PINATA_GATEWAY;
         const gatewayUrl = gateway
@@ -110,6 +115,7 @@ async function uploadHandler(req: VercelRequest, res: VercelResponse) {
         });
     } catch (error) {
         const errorMsg = error instanceof Error ? error.message : "Failed to upload to IPFS";
+        console.error("[Upload] Error:", errorMsg);
 
         const safeMsg =
             errorMsg.includes("Pinata") || errorMsg.includes("jwt")
