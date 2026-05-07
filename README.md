@@ -38,7 +38,7 @@ I wanted a message system that I genuinely cannot open early and be encrypted so
 │  └─ Impossible to decrypt before drand round released   │
 ├─────────────────────────────────────────────────────────┤
 │  SMART CONTRACT VALIDATION                              │
-│  ├─ Fee collection (prevents spam)                      │
+│  ├─ Fee collection (helps me pay for bills)                      │
 │  ├─ Capsule ownership verification                      │
 │  ├─ Time-lock enforcement (can't unlock before date)    │
 │  ├─ Immutable audit trail of all capsule operations     │

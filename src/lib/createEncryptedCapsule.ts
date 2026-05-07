@@ -56,6 +56,8 @@ export async function createEncryptedCapsule({
 
         const dataURI = await uploadCapsule(finalPayload, title, walletSigner);
 
+        console.log(`Capsule pinned at: ${dataURI}`);
+
         const transactionPromise = createCapsule(title, unlockDate, dataURI);
 
         const timeoutPromise = new Promise<never>((_, reject) =>

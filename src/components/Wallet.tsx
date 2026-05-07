@@ -54,9 +54,9 @@ const queryClient = new QueryClient({
 const Disclaimer: DisclaimerComponent = ({ Text, Link }) => (
     <Text>
         By connecting your wallet, you agree to the{" "}
-        <Link href="https://github.com/CoderLogy/Time-Capsule-Web3/blob/main/TERMS.md">Terms & Conditions</Link>
+        <Link href="https://github.com/CoderLogy/Time-Capsule-Web3/blob/test/public/TERMS.md">Terms & Conditions</Link>
         {" "}and acknowledge you have read and understand the{" "}
-        <Link href="https://github.com/CoderLogy/Time-Capsule-Web3/blob/main/PRIVACY.md">Privacy Policy</Link>
+        <Link href="https://github.com/CoderLogy/Time-Capsule-Web3/blob/test/public/PRIVACY.md">Privacy Policy</Link>
     </Text>
 );
 

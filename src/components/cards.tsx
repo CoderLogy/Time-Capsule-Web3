@@ -22,7 +22,7 @@ function LockedCard({ capsule }: { capsule: Capsule }) {
     }, []);
     const [animatedWidth, setAnimatedWidth] = React.useState(0);
     const unlockTs = Number(capsule.unlockDate) * 1000;
-    // Hybrid scale for this  30-day for short-term and 100-day for long-term
+    // 30-day for short-term and 100-day for long-term
     const daysRemaining = (unlockTs - now) / (1000 * 60 * 60 * 24);
     const maxDays = daysRemaining <= 30 ? 30 : 100;
     const progress = Math.min(100, Math.max(2, 100 - (daysRemaining / maxDays) * 100));

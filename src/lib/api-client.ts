@@ -13,7 +13,7 @@ export async function getWalletAuthHeaders(
 ): Promise<Record<string, string>> {
   const walletAddress = await signer.getAddress();
 
-  // Just pass wallet address - user already signed for encryption!
+  // Just pass wallet address
   return {
     "X-Wallet-Address": walletAddress,
   };
