@@ -10,7 +10,9 @@
 [![Solidity](https://img.shields.io/badge/Solidity-0.8%2B-363636?logo=solidity&logoColor=white)](https://docs.soliditylang.org)
 [![CI/CD Pipeline](https://github.com/CoderLogy/Time-Capsule-Web3/actions/workflows/ci.yml/badge.svg)](https://github.com/CoderLogy/Time-Capsule-Web3/actions/workflows/ci.yml)
 
-## Why I built this: I wanted a message system that I genuinely cannot open early and be encrypted so, others can't read it.
+## Why I built this: 
+
+I wanted a message system that I genuinely cannot open early and be encrypted so, others can't read it.
 
 ### My Breakthrough: Cryptographic Time-Locks
 
