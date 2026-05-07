@@ -50,6 +50,7 @@ function DialogContent({
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
 }) {
+  const isFullscreen = className?.includes("w-screen") || className?.includes("h-screen");
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -57,6 +58,7 @@ function DialogContent({
         data-slot="dialog-content"
         className={cn(
           "bg-background data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 ring-foreground/10 grid max-w-[calc(100%-2rem)] gap-6 rounded-xl p-6 text-sm ring-1 duration-100 sm:max-w-md fixed top-1/2 left-1/2 z-50 w-full -translate-x-1/2 -translate-y-1/2",
+          isFullscreen && "!top-0 !left-0 !-translate-x-0 !-translate-y-0 !rounded-none !max-w-none !grid",
           className
         )}
         {...props}
