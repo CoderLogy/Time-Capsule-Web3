@@ -7,10 +7,11 @@ import { Analytics } from "@vercel/analytics/react";
 import "./index.css";
 
 export function App() {
-  return (
-    <Wallet>
-      <div className="min-h-screen bg-background w-full relative text-foreground antialiased">
-        {/*
+    return (
+        <Wallet>
+            
+            <div className="min-h-screen bg-background w-full relative text-foreground antialiased">
+                {/*
             <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
                 <Beams
                     beamWidth={2}
@@ -24,25 +25,25 @@ export function App() {
                 />
             </div>
         */}
-        <div
-          className="pointer-events-none fixed inset-0 z-0"
-          style={{
-            background:
-              "radial-gradient(ellipse at center, transparent 60%, rgba(60,80,95,0.5) 100%)",
-          }}
-        />
-         <Analytics />
-        <Dashboard />
-        <Toaster
-          toastOptions={{
-            classNames: {
-              toast: "!glass-ios !bg-transparent",
-            },
-          }}
-        />
-      </div>
-    </Wallet>
-  );
+                <div
+                    className="pointer-events-none fixed inset-0 z-0"
+                    style={{
+                        background:
+                            "radial-gradient(ellipse at center, transparent 60%, rgba(60,80,95,0.5) 100%)"
+                    }}
+                />
+                <Analytics />
+                <Dashboard />
+                <Toaster
+                    toastOptions={{
+                        classNames: {
+                            toast: "!glass-ios !bg-transparent"
+                        }
+                    }}
+                />
+            </div>
+        </Wallet>
+    );
 }
 
 export default App;

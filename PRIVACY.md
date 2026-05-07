@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last Updated:** April 2026 | **Version:** 4.0
+**Last Updated:** May 06 2026 | **Version:** 4.0
 **Repository:** https://github.com/CoderLogy/Time-Capsule-Web3
 
 ---
@@ -68,7 +68,6 @@ We never receive, store, or process:
 - **Personal identity** — no name, email, phone number, address, date of birth, or any personally identifying information. Your wallet address is not personal identity information.
 - **Cryptographic material** — no private keys, seed phrases, wallet passwords, or decryption keys. These never leave your device.
 - **Financial information** — no bank accounts, credit card data, non-blockchain financial history, income, or tax information.
-- **Capsule ownership mapping** — by design, we do not map capsules to wallets. We do not store which wallet created which capsule. This protects anonymity but means we cannot identify your capsules even with your cooperation.
 - **Off-service activity** — no browsing history, apps, or activities outside this application.
 - **Device contents** — no contacts, photos, files, calendar, email, or device identifiers.
 
@@ -140,8 +139,6 @@ We will respond within approximately one month. Response time is not guaranteed 
 | Data Type | Retention |
 |---|---|
 | Amplitude Analytics | 12+ months (per Amplitude's policy) |
-| Transaction Logs | 30–90 days |
-| Error Logs | Up to 30 days |
 | Session Data | Until deletion or service closure |
 | Blockchain Data | Permanent (immutable by design) |
 | IPFS/Pinata Data | Indefinite (distributed storage) |
@@ -159,11 +156,11 @@ We may update this policy at any time without notice. Changes take effect immedi
 ## 9. Contact
 
 **Privacy questions:** sourceboxtv+timecapsuleprivacy@gmail.com
+
 **Bugs and issues:** https://github.com/CoderLogy/Time-Capsule-Web3/issues
+
 **Source code:** https://github.com/CoderLogy/Time-Capsule-Web3
 
 ---
 
 This Privacy Policy, together with our Terms & Conditions, constitutes the entire agreement regarding data practices. If any part is found unenforceable, the remaining parts remain in full effect.
-
-**Last Modified:** April 2026 | **Version:** 4.0 | **License:** MIT

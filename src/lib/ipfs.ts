@@ -23,7 +23,7 @@ export async function uploadCapsule(
   titleString: string,
   signer?: ethers.Signer
 ) {
-  // Serialize the payload as JSON and send to backend for secure upload
+  // Serialize the payload as JSON and encrypt it before uploading to IPFS
   const encryptedData = JSON.stringify({
     title: titleString,
     ...payload,

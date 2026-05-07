@@ -182,7 +182,7 @@ const CapsuleForm = memo(function CapsuleForm({
     return (
         <div className="bg-white/80 my-4 rounded-2xl p-5 lg:my-8 md:p-8 relative z-10">
             {/* Header */}
-            <div className="flex items-center whitespace-nowrap justify-between mb-8">
+            <div className={`flex items-center whitespace-nowrap justify-between mb-8 ${!isConnected ? "select-none pointer-events-none opacity-50 blur-[1.8px]" : ""}`}>
                 <div>
                     <h2
                         className="text-xl md:text-2xl font-bold mb-1 flex items-center gap-2"
@@ -202,7 +202,6 @@ const CapsuleForm = memo(function CapsuleForm({
                 </Button>
             </div>
 
-            
             <div
                 className={`flex justify-around items-center w-full text-xs md:text-sm gap-1 ${
                     !isConnected ? "select-none pointer-events-none blur-[3px]" : ""
@@ -237,8 +236,8 @@ const CapsuleForm = memo(function CapsuleForm({
 
             {/* Wallet blured overlay */}
             {!isConnected && (
-                <div className="absolute left-1/3 top-1/2 sm:left-1/4 md:left-1/3 md:top-1/3">
-                    <span className="text-lg font-bold">🔒Signin with wallet!</span>
+                <div className="absolute inset-0 md:bottom-35 sm:bottom-40 bottom-50 flex items-center justify-center z-50">
+                    <span className="text-xl md:text-2xl font-bold">🔒Signin with wallet!</span>
                 </div>
             )}
 
@@ -283,6 +282,7 @@ const CapsuleForm = memo(function CapsuleForm({
                             buttonClassName="hover:bg-transparent bg-transparent border-gray-300! shadow-md rounded-xl h-12 focus:scale-102 active:scale-102"
                         />
                     </div>
+
                     <div className="col-span-0 sm:col-span-2">
                         <Label
                             htmlFor="CapsuleMessage"

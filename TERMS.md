@@ -1,6 +1,6 @@
 # Terms & Conditions
 
-**Last Updated:** April 2026 | **Version:** 3.0
+**Last Updated:** May 06 2026 | **Version:** 4.0
 **Repository:** https://github.com/CoderLogy/Time-Capsule-Web3
 
 ---
@@ -174,5 +174,3 @@ These Terms, together with our Privacy Policy, constitute the entire agreement b
 ---
 
 **Contact:** sourceboxtv+timecapsuleprivacy@gmail.com · https://github.com/CoderLogy/Time-Capsule-Web3/issues
-
-**Last Modified:** April 2026 | **Version:** 3.0 | **License:** MIT
