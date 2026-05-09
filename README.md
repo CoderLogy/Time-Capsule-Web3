@@ -12,7 +12,10 @@
 
 ## Why I built this: 
 
-I wanted a message system that I genuinely cannot open early and be encrypted so, others can't read it.
+I wanted a system where I can save my messages so that I genuinely cannot open them early and they are encrypted, so others can’t read them.
+
+## Demo Video:
+[![Watch the video](https://img.youtube.com/vi/1kbmC9SI4Ts/maxresdefault.jpg)](https://www.youtube.com/watch?v=1kbmC9SI4Ts)
 
 ### My Breakthrough: Cryptographic Time-Locks
 
